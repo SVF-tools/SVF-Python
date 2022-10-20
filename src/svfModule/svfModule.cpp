@@ -21,9 +21,10 @@ extern "C" {
     VFG* vfg;
     SVFGBuilder* svfBuilder;
     SVFG* svfg;
-    void processArguments(int argc, char **argv);
+
     void ParseCommandLineOptions();
     void buildSVFModule();
+    void setModuleNameVec(char* name);
     void buildSymbolTableInfo();
     void build();
     void createAndersenWaveDiff();
@@ -40,22 +41,24 @@ extern "C" {
     void llvm_shutdown();
 }
 
-
-void processArguments(int argc, char **argv){
-    // printf("len: %d\n", argc);
-    // for(int i = 0; i < argc; i++){
-    //     printf("argv[%d]:%s\n", i, argv[i]);
-    // }
-    arg_value = new char*[argc];
-    SVFUtil::processArguments(argc, argv, arg_num, arg_value, moduleNameVec);
-}
-
 void ParseCommandLineOptions(){
-     cl::ParseCommandLineOptions(arg_num, arg_value, "Whole Program Points-to Analysis\n");
+    printf("arg_num: %d\n", arg_num);
+    for(int i = 0; i < arg_num; i++){
+        printf("arg_value[%d]:%s\n", i, arg_value[i]);
+    }
+    cl::ParseCommandLineOptions(arg_num, arg_value, "Whole Program Points-to Analysis\n");
 }
 
 void buildSVFModule(){
     svfModule = LLVMModuleSet::getLLVMModuleSet()->buildSVFModule(moduleNameVec);
+}
+
+void setModuleNameVec(char* name){
+    if(name != nullptr){
+        std::string s(name);
+        printf("name:%s\n", name);
+        moduleNameVec.push_back(s);
+    }
 }
 
 void buildSymbolTableInfo(){

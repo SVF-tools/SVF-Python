@@ -5,20 +5,18 @@ import sys
 # import os
 # sys.path.append(os.getcwd() + '/py')
 
-from svfModule import SVFG, SVFUtil, cl
+from svfLLVMUtil import LLVMUtil
+from svfModule import SVFG, cl
 from svfModule import LLVMModuleSet
 from svfModule import SVFIRBuilder
 from svfModule import AndersenWaveDiff
 from svfModule import SVFIR, VFG, SVFGBuilder
 
-
-
 def main(argv):
-
-    SVFUtil.processArguments(argv)
-    cl.ParseCommandLineOptions()
-
-    svfModule = LLVMModuleSet.buildSVFModule()
+    moduleNameVec = []
+    LLVMUtil.processArguments(argv, moduleNameVec)
+    # cl.ParseCommandLineOptions()
+    svfModule = LLVMModuleSet.buildSVFModule(moduleNameVec)
 
     svfModule.buildSymbolTableInfo()
     
@@ -43,4 +41,5 @@ def main(argv):
 
 if __name__ == "__main__":
     # execute only if run as a script
-    main(sys.argv)
+    argv = sys.argv
+    main(argv)

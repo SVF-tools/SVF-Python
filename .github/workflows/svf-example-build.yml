@@ -45,5 +45,5 @@ jobs:
          cmake .
          make 
          clang -S -c -g -fno-discard-value-names -emit-llvm example.c -o example.ll
-         python3 ./src/svf-ex.py example.ll
+         
 

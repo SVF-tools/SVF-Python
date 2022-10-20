@@ -25,7 +25,9 @@ class SVFUtil(object):
 class LLVMModuleSet(object) :
     global libSvfModule
     llv = libSvfModule
-    def buildSVFModule(self):
+    def buildSVFModule(self, moduleNameVec):
+        for i in moduleNameVec:
+            self.llv.setModuleNameVec(ctypes.c_char_p(i.encode('utf-8')))
         self.llv.buildSVFModule()
         return SVFModule
     def dumpModulesToFile(self, s):

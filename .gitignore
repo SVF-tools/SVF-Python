@@ -9,3 +9,4 @@ example.svf.bc
 py/cpp/libsvfModule.so
 example.ll
 src/svfModule/libsvfModule.so
+src/svfLLVMUtil/libsvfLLVMUtil.so
