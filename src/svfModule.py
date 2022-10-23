@@ -6,7 +6,7 @@ import ctypes
 import os
 import sys
 
-print('sys.platform:' + sys.platform)
+# print('sys.platform:' + sys.platform)
 
 if(sys.platform ==  'linux'):
     libSvfModule = ctypes.cdll.LoadLibrary(os.getcwd() + '/src/svfModule/libsvfModule.so')
