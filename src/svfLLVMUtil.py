@@ -19,15 +19,18 @@ class LLVMUtil(object):
         select = (ctypes.c_char_p * len(argv))()
         for key, item in enumerate(argv):
             select[key] = item.encode('utf-8')
-        self.LLVMUtil.processArguments(len(argv), select)
+        self.LLVMUtil.processArguments(ctypes.c_int(len(argv)), select)
         num =  self.LLVMUtil.getModuleNameVecLen()
+        # print('num = ' + str(num))
         i = 0
         while i < num:
-            index = ctypes.c_int(i)
-            s = self.LLVMUtil.getModuleNameVecItem(index)
-            moduleNameVec.append(str(ctypes.c_char_p(s).value.decode("utf-8")))
+            result = ctypes.create_string_buffer(100)
+            self.LLVMUtil.getModuleNameVecItem(ctypes.c_int(i), result)
+            # str_p = self.LLVMUtil.getModuleNameVecItem(ctypes.c_int(i)) 
+            # print('s: '  + result.value.decode('utf-8'))
+            moduleNameVec.append(result.value.decode('utf-8'))
             i = i + 1
-        print(moduleNameVec)
+        # print(moduleNameVec)
 
 
 LLVMUtil = LLVMUtil()

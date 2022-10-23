@@ -9,7 +9,7 @@ extern "C" {
     int moduleNameVecLen = 0;
     void processArguments(int argc, char **argv);
     int getModuleNameVecLen();
-    const char* getModuleNameVecItem(int index);
+    const char* getModuleNameVecItem(int index, char* result);
 }
 
 
@@ -24,9 +24,13 @@ int getModuleNameVecLen(){
     return moduleNameVec.size();
 }
 
-const char* getModuleNameVecItem(int index){
-    // printf("moduleNameVec[index]:%s\n", moduleNameVec[index].c_str());
-    return moduleNameVec[index].c_str();
+const char* getModuleNameVecItem(int index, char* result){
+    // printf("moduleNameVec.size():%ld, index: %d\n", moduleNameVec.size(), index);
+    if(index < moduleNameVec.size()){
+        // printf("moduleNameVec[index]:%s\n", moduleNameVec[index].c_str());
+        snprintf(result, strlen(moduleNameVec[index].c_str()) + 1, "%s", moduleNameVec[index].c_str());
+    }
+    return result;
 }
 
 
