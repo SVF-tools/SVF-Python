@@ -56,7 +56,7 @@ void buildSVFModule(){
 void setModuleNameVec(char* name){
     if(name != nullptr){
         std::string s(name);
-        printf("name:%s\n", name);
+        // printf("name:%s\n", name);
         moduleNameVec.push_back(s);
     }
 }

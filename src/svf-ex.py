@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import re
 import sys
 # import os
 # sys.path.append(os.getcwd() + '/py')
@@ -14,10 +15,12 @@ from svfModule import SVFIR, VFG, SVFGBuilder
 
 def main(argv):
     moduleNameVec = []
+    
     LLVMUtil.processArguments(argv, moduleNameVec)
     # cl.ParseCommandLineOptions()
+    
     svfModule = LLVMModuleSet.buildSVFModule(moduleNameVec)
-
+    
     svfModule.buildSymbolTableInfo()
     
     pag = SVFIRBuilder.build()
