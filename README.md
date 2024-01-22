@@ -12,14 +12,24 @@ npm i --silent svf-lib --prefix ${HOME}
 ```
 git clone https://github.com/SVF-tools/SVF-example.git
 ```
-
-## 3. Setup SVF environment and create python lib
+## 3. Install repository
+```
+cd noce_modules/svf-lib
+./llvm_install.sh   
+```
+```
+For mac arm64 system replace two files
+node_modules/SVF/Release-build/svf/libSvfCore.a
+node_modules/SVF/Release-build/svf-llvm/libSvfLLVM.a
+to the given file in MacLib respectively
+```
+## 4. Setup SVF environment and create python lib
 ```
 source ./env.sh
 cmake . && make
 ```
-## 4. Analyze a bc file using svf-ex.py
+## 5. Analyze a bc file using svf-ex.py
 ```
 clang -S -c -g -fno-discard-value-names -emit-llvm example.c -o example.ll
-python3 ./src/svf-ex.py example.ll
+python3 ./src/svfpy/svf-ex.py example.ll
 ```
