@@ -23,6 +23,16 @@ node_modules/SVF/Release-build/svf/libSvfCore.a
 node_modules/SVF/Release-build/svf-llvm/libSvfLLVM.a
 to the given file in MacLib respectively
 ```
+```
+For mac arm64 system need to use 
+brew install llvm@14 
+install the correct llvm for the arm64
+open the terminal and input
+cd /opt/homebrew/Cellar
+then copy the file llvm@14 and paste it into node_modules
+and change the file name to llvm-14.0.0.obj
+```
+
 ## 4. Setup SVF environment and create python lib
 ```
 source ./env.sh
@@ -32,4 +42,8 @@ cmake . && make
 ```
 clang -S -c -g -fno-discard-value-names -emit-llvm example.c -o example.ll
 python3 ./src/svfpy/svf-ex.py example.ll
+```
+
+```
+the path of node_modules is in the /User/@username/node_modules
 ```
