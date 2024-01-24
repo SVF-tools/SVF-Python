@@ -1,11 +1,8 @@
 import ctypes
 from .package import libSvfModule
 
-libSvfModule = libSvfModule
-
 
 class SVFUtil(object):
-    global libSvfModule
     svfUtil = libSvfModule
 
     def processArguments(self, argv):

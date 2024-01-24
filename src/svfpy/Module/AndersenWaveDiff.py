@@ -1,11 +1,8 @@
 from .package import libSvfModule
 from .Andersen import Andersen
 
-libSvfModule = libSvfModule
-
 
 class AndersenWaveDiff(object):
-    global libSvfModule
     andersenWaveDiff = libSvfModule
 
     def createAndersenWaveDiff(self, pag):

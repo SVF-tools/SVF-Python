@@ -21,7 +21,7 @@ def main(arg_value):
     LLVMUtil.processArguments(arg_value, moduleNameVec)
     CL.ParseCommandLineOptions()
 
-    svfModule = LLVMModuleSet.buildSVFModule(moduleNameVec)
+    LLVMModuleSet.buildSVFModule(moduleNameVec)
 
     # svfModule.buildSymbolTableInfo()
 

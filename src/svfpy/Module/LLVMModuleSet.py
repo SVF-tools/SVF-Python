@@ -2,11 +2,8 @@ import ctypes
 from .package import libSvfModule
 from .SVFModule import SVFModule
 
-libSvfModule = libSvfModule
-
 
 class LLVMModuleSet(object):
-    global libSvfModule
     llv = libSvfModule
 
     def buildSVFModule(self, moduleNameVec):

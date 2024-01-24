@@ -1,10 +1,7 @@
 from .package import libSvfModule
 
-libSvfModule = libSvfModule
-
 
 class VFG(object):
-    global libSvfModule
     vfg = libSvfModule
 
     def newInstances(self, callgraph):
@@ -15,4 +12,3 @@ class VFG(object):
 
 
 VFG = VFG()
-

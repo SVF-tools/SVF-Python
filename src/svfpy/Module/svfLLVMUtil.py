@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 import ctypes
 from .package import libSvfModule
-libSvfModule = libSvfModule
 
 
 class LLVMUtil(object):
-    global libsvfLLVMUtil
     LLVMUtil = libSvfModule
 
     def processArguments(self, argv, moduleNameVec):
