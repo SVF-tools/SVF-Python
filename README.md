@@ -10,7 +10,7 @@ npm i --silent svf-lib --prefix ${HOME}
 
 ## 2. Clone repository
 ```
-git clone https://github.com/SVF-tools/SVF-example.git
+git clone https://github.com/SVF-tools/SVF-Python
 ```
 ## 3. Install repository
 ```
