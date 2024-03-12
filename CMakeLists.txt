@@ -123,7 +123,6 @@ include_directories(${svfModule_DIR})
 # -------------------------------------------------------------------------------
 
 
-
 llvm_map_components_to_libnames(llvm_libs bitwriter core ipo irreader instcombine instrumentation target linker analysis scalaropts support)
 
 
@@ -134,8 +133,9 @@ set(PYBIND_SRC "./src/srcPybind/")
 
 pybind11_add_module(svfModule_pybind ${PYBIND_SRC}/pybind_module.cpp ${svfModule_DIR}/svfModule.cpp)
 
-
 target_link_libraries(svfModule_pybind PRIVATE ${SVF_LIB} ${llvm_libs})
 target_link_libraries(svfModule_pybind PRIVATE ${Z3_LIBRARIES})
+
+set_target_properties(svfModule_pybind PROPERTIES LINK_FLAGS "-w")
 
 
