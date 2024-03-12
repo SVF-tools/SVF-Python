@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.4.3)
-project(SVF-TOOL) # 设置项目名称
+project(SVF-TOOL) 
 
 
-# 这里是在设置LLVM_DIR的路径
+# Set LLVM Path
 # -------------------------------------------------------------------------------
 if (DEFINED LLVM_DIR)
     set(ENV{LLVM_DIR} "${LLVM_DIR}")
@@ -35,7 +35,7 @@ endif()
 # -------------------------------------------------------------------------------
 
 
-# 这里是在设置SVF_DIR的路径
+# Set SVF Path
 # -------------------------------------------------------------------------------
 set(SVF_DIR $ENV{SVF_DIR})
 message(${SVF_DIR})
@@ -71,9 +71,8 @@ set(SVF_BIN_HEADER "${SVF_BIN}/include")
 include_directories(${SVF_HEADER} ${SVF_LLVM_HEADER} ${SVF_BIN_HEADER})
 # -------------------------------------------------------------------------------
 
-# 这里是在设置Z3_DIR的路径
+# Set Z3 Path 
 # -------------------------------------------------------------------------------
-#set z3 env
 if (DEFINED Z3_DIR)
     set(ENV{Z3_DIR} "${Z3_DIR}")
 endif()
@@ -109,18 +108,14 @@ else()
 endif()
 # -------------------------------------------------------------------------------
 
-# add_subdirectory(src/svfModule)
 
 
-
-# 这里是在设置svfModule_DIR的路径
+# Set svfModule Path 
 # -------------------------------------------------------------------------------
 if(DEFINED ENV{svfModule_DIR})
     set(svfModule_DIR $ENV{svfModule_DIR})
     message(${svfModule_DIR})
-# if(DEFINED svfModule_DIR)
 else()
-    # export svfModule_DIR=/Users/jiaweideng/Documents/SVF/test/ExtraLib/Lib
     message(FATAL_ERROR "\
 WARNING: The svfModule_DIR var was not set (required for an out-of-source build)!\n\
 Please set this to environment variable to point to the svfModule_DIR directory or set this variable to cmake configuration\n
