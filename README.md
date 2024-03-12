@@ -34,7 +34,7 @@ cd SVF-Python
 source ./env.sh
 cmake . && make
 ```
-## 5. Analyze a bc file using svf-ex.py
+## 5. Analyze a bc file using python_svfModule.py
 ```
 clang -S -c -g -fno-discard-value-names -emit-llvm example.c -o example.ll
 python3 python_svfModule.py example.ll

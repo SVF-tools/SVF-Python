@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/svfModule_pybind.dir/pybind_module.cpp.o"
-  "CMakeFiles/svfModule_pybind.dir/pybind_module.cpp.o.d"
+  "CMakeFiles/svfModule_pybind.dir/src/srcPybind/pybind_module.cpp.o"
+  "CMakeFiles/svfModule_pybind.dir/src/srcPybind/pybind_module.cpp.o.d"
   "CMakeFiles/svfModule_pybind.dir/src/svfModule/svfModule.cpp.o"
   "CMakeFiles/svfModule_pybind.dir/src/svfModule/svfModule.cpp.o.d"
   "svfModule_pybind.cpython-312-darwin.so"

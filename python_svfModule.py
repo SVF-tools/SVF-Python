@@ -3,16 +3,16 @@
 
 
 import sys
-from src.svfpy.Module.SVFG import SVFG
-from src.svfpy.Module.CL import CL
-from src.svfpy.Module.svfLLVMUtil import LLVMUtil
-from src.svfpy.Module.LLVMModuleSet import LLVMModuleSet
-from src.svfpy.Module.SVFIRBuilder import SVFIRBuilder
-from src.svfpy.Module.AndersenWaveDiff import AndersenWaveDiff
-from src.svfpy.Module.SVFIR import SVFIR
-from src.svfpy.Module.VFG import VFG
-from src.svfpy.Module.SVFGBuilder import SVFGBuilder
-from src.svfpy.Module.SVFUtil import SVFUtil
+from src.srcPythonModule.SVFG import SVFG
+from src.srcPythonModule.CL import CL
+from src.srcPythonModule.svfLLVMUtil import LLVMUtil
+from src.srcPythonModule.LLVMModuleSet import LLVMModuleSet
+from src.srcPythonModule.SVFIRBuilder import SVFIRBuilder
+from src.srcPythonModule.AndersenWaveDiff import AndersenWaveDiff
+from src.srcPythonModule.SVFIR import SVFIR
+from src.srcPythonModule.VFG import VFG
+from src.srcPythonModule.SVFGBuilder import SVFGBuilder
+from src.srcPythonModule.SVFUtil import SVFUtil
 
 
 def main(arg_value):

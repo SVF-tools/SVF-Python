@@ -181,29 +181,29 @@ svfModule_pybind/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/svfModule_pybind.dir/build.make CMakeFiles/svfModule_pybind.dir/build
 .PHONY : svfModule_pybind/fast
 
-pybind_module.o: pybind_module.cpp.o
-.PHONY : pybind_module.o
+src/srcPybind/pybind_module.o: src/srcPybind/pybind_module.cpp.o
+.PHONY : src/srcPybind/pybind_module.o
 
 # target to build an object file
-pybind_module.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/svfModule_pybind.dir/build.make CMakeFiles/svfModule_pybind.dir/pybind_module.cpp.o
-.PHONY : pybind_module.cpp.o
+src/srcPybind/pybind_module.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/svfModule_pybind.dir/build.make CMakeFiles/svfModule_pybind.dir/src/srcPybind/pybind_module.cpp.o
+.PHONY : src/srcPybind/pybind_module.cpp.o
 
-pybind_module.i: pybind_module.cpp.i
-.PHONY : pybind_module.i
+src/srcPybind/pybind_module.i: src/srcPybind/pybind_module.cpp.i
+.PHONY : src/srcPybind/pybind_module.i
 
 # target to preprocess a source file
-pybind_module.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/svfModule_pybind.dir/build.make CMakeFiles/svfModule_pybind.dir/pybind_module.cpp.i
-.PHONY : pybind_module.cpp.i
+src/srcPybind/pybind_module.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/svfModule_pybind.dir/build.make CMakeFiles/svfModule_pybind.dir/src/srcPybind/pybind_module.cpp.i
+.PHONY : src/srcPybind/pybind_module.cpp.i
 
-pybind_module.s: pybind_module.cpp.s
-.PHONY : pybind_module.s
+src/srcPybind/pybind_module.s: src/srcPybind/pybind_module.cpp.s
+.PHONY : src/srcPybind/pybind_module.s
 
 # target to generate assembly for a file
-pybind_module.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/svfModule_pybind.dir/build.make CMakeFiles/svfModule_pybind.dir/pybind_module.cpp.s
-.PHONY : pybind_module.cpp.s
+src/srcPybind/pybind_module.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/svfModule_pybind.dir/build.make CMakeFiles/svfModule_pybind.dir/src/srcPybind/pybind_module.cpp.s
+.PHONY : src/srcPybind/pybind_module.cpp.s
 
 src/svfModule/svfModule.o: src/svfModule/svfModule.cpp.o
 .PHONY : src/svfModule/svfModule.o
@@ -242,9 +242,9 @@ help:
 	@echo "... intrinsics_gen"
 	@echo "... omp_gen"
 	@echo "... svfModule_pybind"
-	@echo "... pybind_module.o"
-	@echo "... pybind_module.i"
-	@echo "... pybind_module.s"
+	@echo "... src/srcPybind/pybind_module.o"
+	@echo "... src/srcPybind/pybind_module.i"
+	@echo "... src/srcPybind/pybind_module.s"
 	@echo "... src/svfModule/svfModule.o"
 	@echo "... src/svfModule/svfModule.i"
 	@echo "... src/svfModule/svfModule.s"
