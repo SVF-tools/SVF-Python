@@ -1,9 +1,9 @@
-from .package import libSvfModule
+import svfModule_pybind
 from .SVFIR import SVFIR
 
 
 class SVFIRBuilder(object):
-    svfIRBuilder = libSvfModule
+    svfIRBuilder = svfModule_pybind
 
     def build(self):
         self.svfIRBuilder.build()

@@ -1,9 +1,9 @@
-from .package import libSvfModule
+import svfModule_pybind
 from .Andersen import Andersen
 
 
 class AndersenWaveDiff(object):
-    andersenWaveDiff = libSvfModule
+    andersenWaveDiff = svfModule_pybind
 
     def createAndersenWaveDiff(self, pag):
         self.andersenWaveDiff.createAndersenWaveDiff()

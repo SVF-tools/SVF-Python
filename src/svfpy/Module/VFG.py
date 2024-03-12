@@ -1,8 +1,8 @@
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class VFG(object):
-    vfg = libSvfModule
+    vfg = svfModule_pybind
 
     def newInstances(self, callgraph):
         self.vfg.newInstances()

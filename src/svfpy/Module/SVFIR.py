@@ -1,4 +1,4 @@
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class ICFG(object):
@@ -6,7 +6,7 @@ class ICFG(object):
 
 
 class SVFIR(object):
-    svfIR = libSvfModule
+    svfIR = svfModule_pybind
 
     def getICFG(self):
         self.svfIR.getICFG()

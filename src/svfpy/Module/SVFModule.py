@@ -1,8 +1,8 @@
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class SVFModule(object):
-    svfModule = libSvfModule
+    svfModule = svfModule_pybind
 
     def buildSymbolTableInfo(self):
         self.svfModule.buildSymbolTableInfo()

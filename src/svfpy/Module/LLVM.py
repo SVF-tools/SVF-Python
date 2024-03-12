@@ -1,8 +1,8 @@
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class LLVM(object):
-    llvm = libSvfModule
+    llvm = svfModule_pybind
 
     def llvm_shutdown(self):
         self.llvm.llvm_shutdown()

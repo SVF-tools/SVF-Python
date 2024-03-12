@@ -1,8 +1,8 @@
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class SVFG(object):
-    svfg = libSvfModule
+    svfg = svfModule_pybind
 
     def delete(self):
         self.svfg.deleteSvfg()

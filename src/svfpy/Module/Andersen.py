@@ -1,4 +1,4 @@
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class PTACallGraph(object):
@@ -6,7 +6,7 @@ class PTACallGraph(object):
 
 
 class Andersen(object):
-    andersen = libSvfModule
+    andersen = svfModule_pybind
 
     def getPTACallGraph(self):
         self.andersen.getPTACallGraph()

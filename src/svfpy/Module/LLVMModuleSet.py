@@ -1,22 +1,21 @@
-import ctypes
-from .package import libSvfModule
+import svfModule_pybind
 from .SVFModule import SVFModule
 
 
 class LLVMModuleSet(object):
-    llv = libSvfModule
+    llv = svfModule_pybind
 
     def buildSVFModule(self, moduleNameVec):
         for i in moduleNameVec:
-            self.llv.setModuleNameVec(ctypes.c_char_p(i.encode('utf-8')))
+            svfModule_pybind.setModuleNameVec(i)
         self.llv.buildSVFModule()
         return SVFModule
 
     def dumpModulesToFile(self, s):
-        self.llv.dumpModulesToFile(ctypes.c_char_p(s.encode('utf-8')))
+        svfModule_pybind.dumpModulesToFile(s)
 
     def releaseLLVMModuleSet(self):
-        self.llv.releaseLLVMModuleSet()
+        svfModule_pybind.releaseLLVMModuleSet()
 
 
 LLVMModuleSet = LLVMModuleSet()

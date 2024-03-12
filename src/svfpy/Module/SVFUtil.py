@@ -1,12 +1,11 @@
-import ctypes
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class SVFUtil(object):
-    svfUtil = libSvfModule
+    svfUtil = svfModule_pybind
 
     def processArguments(self, argv):
-        select = (ctypes.c_char_p * len(argv))()
+        select = [0] * len(argv)
         for key, item in enumerate(argv):
             select[key] = item.encode('utf-8')
         self.svfUtil.processArguments(len(argv), select)

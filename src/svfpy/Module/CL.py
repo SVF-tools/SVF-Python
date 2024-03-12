@@ -1,8 +1,8 @@
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class CL(object):
-    _cl = libSvfModule
+    _cl = svfModule_pybind
 
     def ParseCommandLineOptions(self):
         self._cl.ParseCommandLineOptions()

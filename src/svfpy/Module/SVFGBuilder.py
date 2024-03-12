@@ -1,8 +1,8 @@
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class SVFGBuilder(object):
-    svfgBuilder = libSvfModule
+    svfgBuilder = svfModule_pybind
 
     def buildFullSVFG(self, ander):
         self.svfgBuilder.buildFullSVFG()

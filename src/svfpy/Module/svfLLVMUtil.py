@@ -1,29 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import ctypes
-from .package import libSvfModule
+import svfModule_pybind
 
 
 class LLVMUtil(object):
-    LLVMUtil = libSvfModule
+    LLVMUtil = svfModule_pybind
 
     def processArguments(self, argv, moduleNameVec):
-        select = (ctypes.c_char_p * len(argv))()
+
+        select = [0] * len(argv)
         for key, item in enumerate(argv):
-            select[key] = item.encode('utf-8')
-        self.LLVMUtil.processArguments(ctypes.c_int(len(argv)), select)
-        num = self.LLVMUtil.getModuleNameVecLen()
-        # print('num = ' + str(num))
+            select[key] = item
+        svfModule_pybind.processArguments(len(argv), select)
+        num = svfModule_pybind.getModuleNameVecLen()
         i = 0
         while i < num:
-            # 创建一个C可识别的字符串
-            result = ctypes.create_string_buffer(100)
-            self.LLVMUtil.getModuleNameVecItem(ctypes.c_int(i), result)
-            # str_p = self.LLVMUtil.getModuleNameVecItem(ctypes.c_int(i)) 
-            # print('s: '  + result.value.decode('utf-8'))
-            moduleNameVec.append(result.value.decode('utf-8'))
+            result = str()
+            result = svfModule_pybind.getModuleNameVecItem(i, result)
+            moduleNameVec.append(result)
             i = i + 1
-        print(moduleNameVec)
+
 
 
 LLVMUtil = LLVMUtil()
