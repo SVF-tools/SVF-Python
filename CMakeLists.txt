@@ -60,23 +60,15 @@ else()
 endif()
 set(SVF_HEADER "${SVF_DIR}/svf/include")
 
-# added
-set(SVF_IMPLEM "${SVF_DIR}/svf/lib")
-# added
 
 message(${SVF_HEADER})
 set(S)
 set(SVF_LLVM_HEADER "${SVF_DIR}/svf-llvm/include")
 
-# added
-set(SVF_LLVM_IMPLEM "${SVF_DIR}/svf-llvm/lib")
-# added
-
 set(SVF_LIB "${SVF_BIN}/lib/libSvfLLVM.a" "${SVF_BIN}/lib/libSvfCore.a")
 set(SVF_BIN_HEADER "${SVF_BIN}/include")
-include_directories(${SVF_HEADER} ${SVF_IMPLEM}
-        ${SVF_LLVM_HEADER} ${SVF_LLVM_IMPLEM}
-        ${SVF_BIN_HEADER})
+
+include_directories(${SVF_HEADER} ${SVF_LLVM_HEADER} ${SVF_BIN_HEADER})
 # -------------------------------------------------------------------------------
 
 # 这里是在设置Z3_DIR的路径
@@ -139,11 +131,6 @@ endif()
 include_directories(${svfModule_DIR})
 # -------------------------------------------------------------------------------
 
-# file (GLOB SOURCES
-#    *.cpp
-#    ${SVF_IMPLEM}/**/*.cpp
-#    ${SVF_LLVM_IMPLEM}/*.cpp
-# )
 
 
 llvm_map_components_to_libnames(llvm_libs bitwriter core ipo irreader instcombine instrumentation target linker analysis scalaropts support)
@@ -152,9 +139,6 @@ llvm_map_components_to_libnames(llvm_libs bitwriter core ipo irreader instcombin
 
 find_package(pybind11 REQUIRED)
 
-
-# set(SVF_PYTHON_MODULES "./src/svfpy/Module")
-# include_directories(${SVF_PYTHON_MODULES})
 
 pybind11_add_module(svfModule_pybind pybind_module.cpp ${svfModule_DIR}/svfModule.cpp)
 

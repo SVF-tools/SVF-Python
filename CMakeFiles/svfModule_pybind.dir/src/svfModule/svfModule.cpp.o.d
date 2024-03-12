@@ -1,11 +1,11 @@
 CMakeFiles/svfModule_pybind.dir/src/svfModule/svfModule.cpp.o: \
   /Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/src/svfModule/svfModule.cpp \
-  /Users/jiaweideng/Documents/SVF/SVF/svf-llvm/include/SVF-LLVM/LLVMUtil.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/SVFUtil.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/FastCluster/fastcluster.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/SVFIR/SVFValue.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/SVFIR/SVFType.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/SparseBitVector.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf-llvm/include/SVF-LLVM/LLVMUtil.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/SVFUtil.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/FastCluster/fastcluster.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/SVFIR/SVFValue.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/SVFIR/SVFType.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/SparseBitVector.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/ostream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__config \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__config_site \
@@ -418,7 +418,7 @@ CMakeFiles/svfModule_pybind.dir/src/svfModule/svfModule.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/_types/_nl_item.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__bsd_locale_defaults.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/list \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/GeneralType.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/GeneralType.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/deque \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__split_buffer \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/iostream \
@@ -437,26 +437,26 @@ CMakeFiles/svfModule_pybind.dir/src/svfModule/svfModule.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/math.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/unordered_set \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/vector \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/GraphPrinter.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/GraphWriter.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/GraphTraits.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/iterator_range.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/DOTGraphTraits.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/GraphPrinter.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/GraphWriter.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/GraphTraits.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/iterator_range.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/DOTGraphTraits.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/fstream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/filesystem \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/iomanip \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/sstream \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/Casting.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/SVFIR/SVFModule.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/NodeIDAllocator.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/PointsTo.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/BitVector.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/CoreBitVector.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/ThreadAPI.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/ExtAPI.h \
-  /Users/jiaweideng/Documents/SVF/SVF/Release-build/include/Util/config.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf-llvm/include/SVF-LLVM/BasicTypes.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf-llvm/include/SVF-LLVM/GEPTypeBridgeIterator.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/Casting.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/SVFIR/SVFModule.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/NodeIDAllocator.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/PointsTo.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/BitVector.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/CoreBitVector.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/ThreadAPI.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/ExtAPI.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/Release-build/include/Util/config.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf-llvm/include/SVF-LLVM/BasicTypes.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf-llvm/include/SVF-LLVM/GEPTypeBridgeIterator.h \
   /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/include/llvm/IR/DerivedTypes.h \
   /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/include/llvm/ADT/ArrayRef.h \
   /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/include/llvm/ADT/Hashing.h \
@@ -650,36 +650,36 @@ CMakeFiles/svfModule_pybind.dir/src/svfModule/svfModule.cpp.o: \
   /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/include/llvm/BinaryFormat/Dwarf.def \
   /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/include/llvm/Analysis/LoopInfo.h \
   /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/include/llvm/Demangle/Demangle.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/SVFG.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/VFG.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/SVFIR/SVFIR.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/IRGraph.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/SVFIR/SVFStatements.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/GenericGraph.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/iterator.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/AccessPath.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/SVFIR/SVFVariables.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/SVFIR/SymbolTableInfo.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/ICFG.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/ICFGNode.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/ICFGEdge.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/WorkList.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/SVFLoop.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/PTACallGraph.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/VFGNode.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/SVFGEdge.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MSSA/MemSSA.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MSSA/MemRegion.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/SCC.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MSSA/MSSAMuChi.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/VFGEdge.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/SVFGNode.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/WPA/Andersen.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/PointerAnalysisImpl.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/ConsG.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/ConsGEdge.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/ConsGNode.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/PointerAnalysis.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/SVFG.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/VFG.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/SVFIR/SVFIR.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/IRGraph.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/SVFIR/SVFStatements.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/GenericGraph.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/iterator.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/AccessPath.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/SVFIR/SVFVariables.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/SVFIR/SymbolTableInfo.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/ICFG.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/ICFGNode.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/ICFGEdge.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/WorkList.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/SVFLoop.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/PTACallGraph.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/VFGNode.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/SVFGEdge.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MSSA/MemSSA.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MSSA/MemRegion.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/SCC.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MSSA/MSSAMuChi.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/VFGEdge.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/SVFGNode.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/WPA/Andersen.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/PointerAnalysisImpl.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/ConsG.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/ConsGEdge.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/ConsGNode.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/PointerAnalysis.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/sys/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/sys/_types/_posix_vdisable.h \
@@ -689,28 +689,28 @@ CMakeFiles/svfModule_pybind.dir/src/svfModule/svfModule.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/sys/_types/_uuid_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/gethostuuid.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/signal.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/CHG.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/AbstractPointsToDS.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/ConditionalPT.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/MutablePointsToDS.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/PersistentPointsToDS.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MemoryModel/PersistentPointsToCache.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/WPA/WPAStat.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/PTAStat.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/SVFStat.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/WPA/FlowSensitive.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Graphs/SVFGOPT.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/MSSA/SVFGBuilder.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/WPA/WPAFSSolver.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/WPA/WPASolver.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/WPA/VersionedFlowSensitive.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/Options.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/Util/CommandLine.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf/include/WPA/WPAPass.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf-llvm/include/SVF-LLVM/SVFIRBuilder.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf-llvm/include/SVF-LLVM/ICFGBuilder.h \
-  /Users/jiaweideng/Documents/SVF/SVF/svf-llvm/include/SVF-LLVM/LLVMModule.h \
-  /Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/src/svfModule/svfModule.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/CHG.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/AbstractPointsToDS.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/ConditionalPT.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/MutablePointsToDS.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/PersistentPointsToDS.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MemoryModel/PersistentPointsToCache.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/WPA/WPAStat.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/PTAStat.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/SVFStat.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/WPA/FlowSensitive.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Graphs/SVFGOPT.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/MSSA/SVFGBuilder.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/WPA/WPAFSSolver.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/WPA/WPASolver.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/WPA/VersionedFlowSensitive.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/Options.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/Util/CommandLine.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf/include/WPA/WPAPass.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf-llvm/include/SVF-LLVM/SVFIRBuilder.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf-llvm/include/SVF-LLVM/ICFGBuilder.h \
+  /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/svf-llvm/include/SVF-LLVM/LLVMModule.h \
+  /Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/./src/svfModule/svfModule.h \
   /usr/local/include/pybind11/pybind11.h \
   /usr/local/include/pybind11/detail/class.h \
   /usr/local/include/pybind11/detail/../attr.h \

@@ -329,7 +329,7 @@ ZLIB_LIBRARY_RELEASE:FILEPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX12.
 pybind11_DIR:PATH=/usr/local/share/cmake/pybind11
 
 //Dependencies for the target
-svfModule_pybind_LIB_DEPENDS:STATIC=general;/Users/jiaweideng/Documents/SVF/SVF/Release-build/lib/libSvfLLVM.a;general;/Users/jiaweideng/Documents/SVF/SVF/Release-build/lib/libSvfCore.a;general;LLVMBitWriter;general;LLVMCore;general;LLVMipo;general;LLVMIRReader;general;LLVMInstCombine;general;LLVMInstrumentation;general;LLVMTarget;general;LLVMLinker;general;LLVMAnalysis;general;LLVMScalarOpts;general;LLVMSupport;general;/Users/jiaweideng/Documents/SVF/node_modules/z3.obj/bin/libz3.a;
+svfModule_pybind_LIB_DEPENDS:STATIC=general;/Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/Release-build/lib/libSvfLLVM.a;general;/Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/Release-build/lib/libSvfCore.a;general;LLVMBitWriter;general;LLVMCore;general;LLVMipo;general;LLVMIRReader;general;LLVMInstCombine;general;LLVMInstrumentation;general;LLVMTarget;general;LLVMLinker;general;LLVMAnalysis;general;LLVMScalarOpts;general;LLVMSupport;general;/Users/jiaweideng/Documents/SVF/node_modules/z3.obj/bin/libz3.a;
 
 //Path to a file.
 zstd_INCLUDE_DIR:PATH=/usr/local/include

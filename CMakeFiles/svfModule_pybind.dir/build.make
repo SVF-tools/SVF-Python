@@ -108,8 +108,8 @@ svfModule_pybind_EXTERNAL_OBJECTS =
 svfModule_pybind.cpython-312-darwin.so: CMakeFiles/svfModule_pybind.dir/pybind_module.cpp.o
 svfModule_pybind.cpython-312-darwin.so: CMakeFiles/svfModule_pybind.dir/src/svfModule/svfModule.cpp.o
 svfModule_pybind.cpython-312-darwin.so: CMakeFiles/svfModule_pybind.dir/build.make
-svfModule_pybind.cpython-312-darwin.so: /Users/jiaweideng/Documents/SVF/SVF/Release-build/lib/libSvfLLVM.a
-svfModule_pybind.cpython-312-darwin.so: /Users/jiaweideng/Documents/SVF/SVF/Release-build/lib/libSvfCore.a
+svfModule_pybind.cpython-312-darwin.so: /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/Release-build/lib/libSvfLLVM.a
+svfModule_pybind.cpython-312-darwin.so: /Users/jiaweideng/Documents/SVF/node_modules/SVF/svf-tools/Release-build/lib/libSvfCore.a
 svfModule_pybind.cpython-312-darwin.so: /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/lib/libLLVMBitWriter.a
 svfModule_pybind.cpython-312-darwin.so: /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/lib/libLLVMCore.a
 svfModule_pybind.cpython-312-darwin.so: /Users/jiaweideng/Documents/SVF/node_modules/llvm-16.0.0.obj/lib/libLLVMipo.a
