@@ -1,7 +1,0 @@
-/Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/CMakeFiles/intrinsics_gen.dir
-/Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/CMakeFiles/omp_gen.dir
-/Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/CMakeFiles/acc_gen.dir
-/Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/CMakeFiles/RISCVTargetParserTableGen.dir
-/Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/CMakeFiles/svfModule_pybind.dir
-/Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/CMakeFiles/edit_cache.dir
-/Users/jiaweideng/Documents/SVF/SVF-pybind11-master/SVF-Python/CMakeFiles/rebuild_cache.dir
