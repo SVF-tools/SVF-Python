@@ -9,45 +9,6 @@ using namespace llvm;
 using namespace std;
 using namespace SVF;
 
-// extern "C" {
-//     static llvm::cl::opt<std::string> InputFilename(cl::Positional,
-//         llvm::cl::desc("<input bitcode>"), llvm::cl::init("-"));
-// //
-//     char **arg_value = NULL;
-//     int arg_num = 0;
-//     int moduleNameVecLen = 0;
-// //
-//     std::vector<std::string> moduleNameVec;
-//     SVFModule* svfModule;
-//     SVFIRBuilder *builder;
-//     SVFIR* pag;
-//     Andersen* ander;
-//     PTACallGraph* callgraph;
-//     ICFG* icfg;
-//     VFG* vfg;
-//     SVFGBuilder* svfBuilder;
-//     SVFG* svfg;
-//     void processArguments(int argc, char **argv);
-//     int getModuleNameVecLen();
-//     const char* getModuleNameVecItem(int index, char* result);
-//     void ParseCommandLineOptions();
-//     void buildSVFModule();
-//     void setModuleNameVec(char* name);
-//     void buildSymbolTableInfo();
-//     void build();
-//     void createAndersenWaveDiff();
-//     void getPTACallGraph();
-//     void getICFG();
-//     void newInstances();
-//     void buildFullSVFG();
-//     void deleteSvfg();
-//     void deleteVfg();
-//     void releaseAndersenWaveDiff();
-//     void releaseSVFIR();
-//     void dumpModulesToFile(const char *s);
-//     void releaseLLVMModuleSet();
-//     void llvm_shutdown();
-// }
 
 static llvm::cl::opt<std::string> InputFilename(cl::Positional,
     llvm::cl::desc("<input bitcode>"), llvm::cl::init("-"));
