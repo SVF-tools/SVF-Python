@@ -14,7 +14,8 @@ namespace py = pybind11;
 // static llvm::cl::opt<std::string> InputFilename(cl::Positional,
 //     llvm::cl::desc("<input bitcode>"), llvm::cl::init("-"));
 
-
+// Old Work.......................
+// --------------------------------------------------------------------------------------------------------------
 
 /*
 input1: argc: the number of given argument
@@ -65,3 +66,24 @@ void releaseLLVMModuleSet();
 void llvm_shutdown();
 
 // }
+// --------------------------------------------------------------------------------------------------------------
+
+
+// New work.......................
+// --------------------------------------------------------------------------------------------------------------
+// ae.cpp.....
+void updateCallGraph();
+
+void getICFGUpdateCallGraph();
+
+
+bool boolICFGMergeAdjacentNodes();
+void mergeAdjacentNodes();
+
+bool boolBufferOverflowCheck();
+
+void bufOverflowCheckerRunOnModule();
+
+void abstractExecutionRunOnModule();
+
+// --------------------------------------------------------------------------------------------------------------

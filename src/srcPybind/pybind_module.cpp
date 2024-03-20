@@ -4,6 +4,9 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(svfModule_pybind, m) {
+    // Old work.......................
+    // --------------------------------------------------------------------------------
+
     m.def("processArguments", &processArguments, "Func 1");
 
     // --------------------------------------------------------------------------------
@@ -37,4 +40,23 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("releaseLLVMModuleSet", &releaseLLVMModuleSet, "Func 19");
     m.def("llvm_shutdown", &llvm_shutdown, "Func 20");
     // // --------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------
+
+    // New work.......................
+    // --------------------------------------------------------------------------------
+
+    m.def("updateCallGraph", &updateCallGraph, "Func 21");
+    m.def("getICFGUpdateCallGraph", &getICFGUpdateCallGraph, "Func 22");
+    m.def("boolICFGMergeAdjacentNodes", &boolICFGMergeAdjacentNodes, "Func 23");
+    m.def("mergeAdjacentNodes", &mergeAdjacentNodes, "Func 24");
+    m.def("boolBufferOverflowCheck", &boolBufferOverflowCheck, "Func 25");
+    m.def("bufOverflowCheckerRunOnModule", &bufOverflowCheckerRunOnModule, "Func 26");
+    m.def("abstractExecutionRunOnModule", &abstractExecutionRunOnModule, "Func 27");
+
+
+    // --------------------------------------------------------------------------------
+
+
+
+
 }

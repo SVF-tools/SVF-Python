@@ -13,6 +13,7 @@ from src.srcPythonModule.SVFIR import SVFIR
 from src.srcPythonModule.VFG import VFG
 from src.srcPythonModule.SVFGBuilder import SVFGBuilder
 from src.srcPythonModule.SVFUtil import SVFUtil
+import svfModule_pybind
 
 
 def main(arg_value):
@@ -35,19 +36,22 @@ def main(arg_value):
     callgraph = ander.getPTACallGraph()
     pag.getICFG()
 
-    VFG.newInstances(callgraph)
+    # svfModule_pybind.updateCallGraph()
+    # svfModule_pybind.getICFGUpdateCallGraph()
+    # if (svfModule_pybind.boolICFGMergeAdjacentNodes()):
+    #     svfModule_pybind.mergeAdjacentNodes()
+    
+
+    # if (svfModule_pybind.boolBufferOverflowCheck()):
+    #     svfModule_pybind.bufOverflowCheckerRunOnModule()
+    # else:
+    #     svfModule_pybind.abstractExecutionRunOnModule()
 
 
-    # Memory SSA Statistics; SVFG Statistics
-    SVFGBuilder.buildFullSVFG(ander)
-
-
-    VFG.delete()
-    SVFG.delete()
-    AndersenWaveDiff.releaseAndersenWaveDiff()
-    SVFIR.releaseSVFIR()
-    LLVMModuleSet.dumpModulesToFile('.svf.bc')
-    LLVMModuleSet.releaseLLVMModuleSet()
+    # AndersenWaveDiff.releaseAndersenWaveDiff()
+    # SVFIR.releaseSVFIR()
+    # LLVMModuleSet.dumpModulesToFile('.svf.bc')
+    # LLVMModuleSet.releaseLLVMModuleSet()
 
 
 if __name__ == "__main__":

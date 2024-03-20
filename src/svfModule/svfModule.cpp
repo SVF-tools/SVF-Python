@@ -3,6 +3,18 @@
 #include "WPA/Andersen.h" // SVF/svf/include/WPA/Andersen.h                         -> SVF/svf/lib/WPA/Andersen.cpp
 #include "SVF-LLVM/SVFIRBuilder.h" // SVF/svf-llvm/include/SVF-LLVM/SVFIRBuilder.h  -> SVF/svf-llvm/lib/SVFIRBuilder.cpp
 #include "Util/Options.h" // SVF/svf/include/Util/Options.h                         -> SVF/svf/lib/Util/Options.cpp
+
+
+#include "WPA/WPAPass.h"
+#include "Util/CommandLine.h"
+#include "AE/Svfexe/ICFGSimplification.h"
+
+#include "AE/Svfexe/BufOverflowChecker.h"
+#include "AE/Core/RelExeState.h"
+#include "AE/Core/RelationSolver.h"
+
+
+
 #include "svfModule.h"
 
 using namespace llvm;
@@ -21,25 +33,22 @@ std::vector<std::string> moduleNameVec;
 SVFModule* svfModule;
 SVFIRBuilder *builder;
 SVFIR* pag;
-Andersen* ander;
+// Andersen* ander;
+AndersenWaveDiff* ander;
 PTACallGraph* callgraph;
 ICFG* icfg;
 VFG* vfg;
 SVFGBuilder* svfBuilder;
 SVFG* svfg;
 
+
+// Old work.......................
+// --------------------------------------------------------------------------------------------------------------
 // /*
 // input1: argc: the number of given argument
 // input2: _argv: the content of given argument
 // output:
 // */
-// void processArguments(int argc, char **_argv){
-//     // TODD: delete free
-//     arg_value = new char*[argc];
-//     // init the arg_num and arg_value and moduleNameVec
-//     LLVMUtil::processArguments(argc, _argv, arg_num, arg_value, moduleNameVec);
-//     Convert Python list to C++ vector of strings
-// }
 
 void processArguments(int argc, py::list argv) {
     // Convert Python list to C++ vector of strings
@@ -79,7 +88,6 @@ const char* getModuleNameVecItem(int index, char* result){
         snprintf(result, strlen(moduleNameVec[index].c_str()) + 1, "%s", moduleNameVec[index].c_str());
     }
     return result;
-    // return "return";
 }
 
 void ParseCommandLineOptions(){
@@ -158,3 +166,46 @@ void releaseLLVMModuleSet(){
 void llvm_shutdown(){
     llvm::llvm_shutdown();
 }
+
+
+// --------------------------------------------------------------------------------------------------------------
+
+
+
+// New work.......................
+// --------------------------------------------------------------------------------------------------------------
+// ae.cpp.....
+void updateCallGraph(){
+    builder->updateCallGraph(callgraph);
+}
+
+void getICFGUpdateCallGraph(){
+    pag->getICFG()->updateCallGraph(callgraph);
+}
+
+
+bool boolICFGMergeAdjacentNodes(){
+    return Options::ICFGMergeAdjacentNodes();
+}
+
+void mergeAdjacentNodes(){
+    ICFGSimplification::mergeAdjacentNodes(pag->getICFG());
+}
+
+bool boolBufferOverflowCheck(){
+    return Options::BufferOverflowCheck();
+}
+
+void bufOverflowCheckerRunOnModule(){
+    BufOverflowChecker ae;
+    ae.runOnModule(pag->getICFG());
+}
+
+void abstractExecutionRunOnModule(){
+    AbstractExecution ae;
+    ae.runOnModule(pag->getICFG());
+}
+
+
+
+// --------------------------------------------------------------------------------------------------------------
