@@ -13,6 +13,12 @@
 #include "AE/Core/RelExeState.h"
 #include "AE/Core/RelationSolver.h"
 
+#include "SVF-LLVM/SVFIRBuilder.h"
+#include "WPA/WPAPass.h"
+#include "Util/CommandLine.h"
+#include "Util/Options.h"
+#include "SVFIR/SVFFileSystem.h"
+
 
 
 #include "svfModule.h"
@@ -28,7 +34,7 @@ static llvm::cl::opt<std::string> InputFilename(cl::Positional,
 char **arg_value = NULL;
 int arg_num = 0;
 int moduleNameVecLen = 0;
-//
+
 std::vector<std::string> moduleNameVec;
 SVFModule* svfModule;
 SVFIRBuilder* builder;
@@ -96,7 +102,11 @@ void ParseCommandLineOptions(){
         printf("arg_value[%d]:%s\n", i, arg_value[i]);
     }
     // fill in the values of all of the command line option variables once argc and argv are available.
-    cl::ParseCommandLineOptions(arg_num, arg_value, "Whole Program Points-to Analysis\n");
+    // cl::ParseCommandLineOptions(arg_num, arg_value, "Whole Program Points-to Analysis\n");
+
+    moduleNameVec = OptionBase::parseOptions(arg_num, arg_value, "Whole Program Points-to Analysis",
+                                 "[options] <input-bitcode...>");
+
     printf("---------- Parse Successful ----------\n");
 }
 
@@ -208,6 +218,29 @@ void abstractExecutionRunOnModule(){
     ae.runOnModule(pag->getICFG());
 }
 
+
+// --------------------------------------------------------------------------------------------------------------
+// wpa.cpp........
+bool boolReadJson(){
+    return Options::ReadJson();
+}
+
+void SVFIRReaderRead(){
+    pag = SVFIRReader::read(moduleNameVec.front());
+}
+
+std::string optionsWriteAnder(){
+    return Options::WriteAnder();
+}
+
+void preProcessBCs(){
+    LLVMModuleSet::preProcessBCs(moduleNameVec);
+}
+
+void WPAPassRunOnModule(){
+    WPAPass wpa;
+    wpa.runOnModule(pag);
+}
 
 
 // --------------------------------------------------------------------------------------------------------------

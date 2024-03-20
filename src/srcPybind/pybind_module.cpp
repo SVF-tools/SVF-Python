@@ -44,6 +44,7 @@ PYBIND11_MODULE(svfModule_pybind, m) {
 
     // New work.......................
     // --------------------------------------------------------------------------------
+    // ae.cpp
 
     m.def("updateCallGraph", &updateCallGraph, "Func 21");
     m.def("getICFGUpdateCallGraph", &getICFGUpdateCallGraph, "Func 22");
@@ -53,6 +54,14 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("bufOverflowCheckerRunOnModule", &bufOverflowCheckerRunOnModule, "Func 26");
     m.def("abstractExecutionRunOnModule", &abstractExecutionRunOnModule, "Func 27");
 
+
+    // --------------------------------------------------------------------------------
+    // wpa.cpp
+    m.def("boolReadJson", &boolReadJson, "Func 28");
+    m.def("SVFIRReaderRead", &SVFIRReaderRead, "Func 29");
+    m.def("optionsWriteAnder", &optionsWriteAnder, "Func 30");
+    m.def("preProcessBCs", &preProcessBCs, "Func 31");
+    m.def("WPAPassRunOnModule", &WPAPassRunOnModule, "Func 32");
 
     // --------------------------------------------------------------------------------
 
