@@ -66,6 +66,19 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     // --------------------------------------------------------------------------------
 
 
+    // --------------------------------------------------------------------------------
+    // sapper.cpp
+    // m.def("LEAKCHECKER", &LEAKCHECKER, "Func 33");
+    // m.def("FILECHECKER", &FILECHECKER, "Func 34");
+    // m.def("DFREECHECKER", &DFREECHECKER, "Func 35");
+    // m.def("saberMakeUniqueLeakChecker", &saberMakeUniqueLeakChecker, "Func 36");
+    // m.def("saberMakeUniqueFileChecker", &saberMakeUniqueFileChecker, "Func 37");
+    // m.def("saberMakeUniqueDoubleFreeChecker", &saberMakeUniqueDoubleFreeChecker, "Func 38");
+    m.def("saberCheckerAllInOne", &saberCheckerAllInOne, "Func 33");
+    m.def("saberRunOnModule", &saberRunOnModule, "Func 34");
+    // --------------------------------------------------------------------------------
+
+
 
 
 }

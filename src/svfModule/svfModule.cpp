@@ -13,11 +13,17 @@
 #include "AE/Core/RelExeState.h"
 #include "AE/Core/RelationSolver.h"
 
-#include "SVF-LLVM/SVFIRBuilder.h"
+
 #include "WPA/WPAPass.h"
-#include "Util/CommandLine.h"
 #include "Util/Options.h"
 #include "SVFIR/SVFFileSystem.h"
+
+
+
+#include "SABER/LeakChecker.h"
+#include "SABER/FileChecker.h"
+#include "SABER/DoubleFreeChecker.h"
+#include "Util/Z3Expr.h"
 
 
 
@@ -39,13 +45,14 @@ std::vector<std::string> moduleNameVec;
 SVFModule* svfModule;
 SVFIRBuilder* builder;
 SVFIR* pag;
-// Andersen* ander;
 AndersenWaveDiff* ander;
 PTACallGraph* callgraph;
 ICFG* icfg;
 VFG* vfg;
 SVFGBuilder* svfBuilder;
 SVFG* svfg;
+
+std::unique_ptr<LeakChecker> saber;
 
 
 // Old work.......................
@@ -242,5 +249,53 @@ void WPAPassRunOnModule(){
     wpa.runOnModule(pag);
 }
 
+// --------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------
+// saber.cpp........
+static Option<bool> LEAKCHECKER(
+    "leak",
+    "Memory Leak Detection",
+    false
+);
+
+static Option<bool> FILECHECKER(
+    "fileck",
+    "File Open/Close Detection",
+    false
+);
+
+static Option<bool> DFREECHECKER(
+    "dfree",
+    "Double Free Detection",
+    false
+);
+
+void saberCheckerAllInOne(){
+    if(LEAKCHECKER())
+        saber = std::make_unique<LeakChecker>();
+    else if(FILECHECKER())
+        saber = std::make_unique<FileChecker>();
+    else if(DFREECHECKER())
+        saber = std::make_unique<DoubleFreeChecker>();
+    else
+        saber = std::make_unique<LeakChecker>();
+}
+
+// void saberMakeUniqueLeakChecker(){
+//     saber = std::make_unique<LeakChecker>();
+// }
+
+// void saberMakeUniqueFileChecker(){
+//     saber = std::make_unique<FileChecker>();
+// }
+
+// void saberMakeUniqueDoubleFreeChecker(){
+//     saber = std::make_unique<DoubleFreeChecker>();
+// }
+
+void saberRunOnModule(){
+    saber->runOnModule(pag);
+}
 
 // --------------------------------------------------------------------------------------------------------------

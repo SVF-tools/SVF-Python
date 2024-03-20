@@ -2,7 +2,7 @@
 // #include "Graphs/SVFG.h" // SVF/svf/include/Graphs/SVFG.h
 // #include "WPA/Andersen.h" // SVF/svf/include/WPA/Andersen.h
 // #include "SVF-LLVM/SVFIRBuilder.h" // SVF/svf-llvm/include/SVF-LLVM/SVFIRBuilder.h
-// #include "Util/Options.h" // SVF/svf/include/Util/Options.h
+#include "Util/Options.h" // SVF/svf/include/Util/Options.h
 
 #include <pybind11/pybind11.h>
 
@@ -102,4 +102,22 @@ void preProcessBCs();
 void WPAPassRunOnModule();
 
 
+// --------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------
+// saper.cpp
+// Option<bool> LEAKCHECKER();
+
+// Option<bool> FILECHECKER();
+
+// Option<bool> DFREECHECKER();
+
+// void saberMakeUniqueLeakChecker();
+
+// void saberMakeUniqueFileChecker();
+
+// void saberMakeUniqueDoubleFreeChecker();
+void saberCheckerAllInOne();
+
+void saberRunOnModule();
 // --------------------------------------------------------------------------------------------------------------
