@@ -48,11 +48,11 @@ void createAndersenWaveDiff();
 
 void getPTACallGraph();
 
-void getICFG();
+// void getICFG();
 
-void newInstances();
+// void newInstances();
 
-void buildFullSVFG();
+// void buildFullSVFG();
 
 void deleteVfg();
 void deleteSvfg();

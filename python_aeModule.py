@@ -23,35 +23,32 @@ def main(arg_value):
     print(moduleNameVec)
     CL.ParseCommandLineOptions()
 
-    LLVMModuleSet.buildSVFModule(moduleNameVec)
+    svfModule_pybind.buildSVFModule()
 
-    # # svfModule.buildSymbolTableInfo()
+    # # # svfModule.buildSymbolTableInfo()
 
-    pag = SVFIRBuilder.build()
+    svfModule_pybind.build()
 
     # General Stats; CallGraph Stats (Andersen analysis); 
     # Andersen Pointer Analysis Stats; Persistent Points-To Cache Statistics: Andersen's analysis bitvector
-    ander = AndersenWaveDiff.createAndersenWaveDiff(pag) 
+    svfModule_pybind.createAndersenWaveDiff() 
 
-    callgraph = ander.getPTACallGraph()
-    pag.getICFG()
+    svfModule_pybind.getPTACallGraph()
+    # svfModule_pybind.getICFG()
 
-    # svfModule_pybind.updateCallGraph()
-    # svfModule_pybind.getICFGUpdateCallGraph()
-    # if (svfModule_pybind.boolICFGMergeAdjacentNodes()):
-    #     svfModule_pybind.mergeAdjacentNodes()
+    svfModule_pybind.updateCallGraph()
+    svfModule_pybind.getICFGUpdateCallGraph()
+    if (svfModule_pybind.boolICFGMergeAdjacentNodes()):
+        svfModule_pybind.mergeAdjacentNodes()
     
 
-    # if (svfModule_pybind.boolBufferOverflowCheck()):
-    #     svfModule_pybind.bufOverflowCheckerRunOnModule()
-    # else:
-    #     svfModule_pybind.abstractExecutionRunOnModule()
+    if (svfModule_pybind.boolBufferOverflowCheck()):
+        svfModule_pybind.bufOverflowCheckerRunOnModule()
+    else:
+        svfModule_pybind.abstractExecutionRunOnModule()
 
 
-    # AndersenWaveDiff.releaseAndersenWaveDiff()
-    # SVFIR.releaseSVFIR()
-    # LLVMModuleSet.dumpModulesToFile('.svf.bc')
-    # LLVMModuleSet.releaseLLVMModuleSet()
+    svfModule_pybind.releaseLLVMModuleSet()
 
 
 if __name__ == "__main__":

@@ -24,12 +24,12 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("build", &build, "Func 8");
     m.def("createAndersenWaveDiff", &createAndersenWaveDiff, "Func 9");
     m.def("getPTACallGraph", &getPTACallGraph, "Func 10");
-    m.def("getICFG", &getICFG, "Func 11");
+    // m.def("getICFG", &getICFG, "Func 11");
 
-    m.def("newInstances", &newInstances, "Func 12");
+    // m.def("newInstances", &newInstances, "Func 12");
 
-    // functioning part?
-    m.def("buildFullSVFG", &buildFullSVFG, "Func 13");
+    // // functioning part?
+    // m.def("buildFullSVFG", &buildFullSVFG, "Func 13");
     m.def("deleteSvfg", &deleteSvfg, "Func 14");
     m.def("deleteVfg", &deleteVfg, "Func 15");
     // 

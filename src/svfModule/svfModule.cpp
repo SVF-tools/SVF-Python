@@ -31,7 +31,7 @@ int moduleNameVecLen = 0;
 //
 std::vector<std::string> moduleNameVec;
 SVFModule* svfModule;
-SVFIRBuilder *builder;
+SVFIRBuilder* builder;
 SVFIR* pag;
 // Andersen* ander;
 AndersenWaveDiff* ander;
@@ -118,6 +118,7 @@ void setModuleNameVec(char* name){
 // build the
 void build(){
     SVFIRBuilder _builder(svfModule);
+    builder = &_builder;
     pag = _builder.build();
 }
 void createAndersenWaveDiff(){
@@ -138,6 +139,7 @@ void newInstances(){
 
 void buildFullSVFG(){
     SVFGBuilder _svfBuilder;
+    svfBuilder = &_svfBuilder;
     _svfBuilder.buildFullSVFG(ander);
 }
 
