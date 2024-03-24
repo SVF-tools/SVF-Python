@@ -1,0 +1,7 @@
+/Users/den184/Documents/UNSW/SVF/SVF-Python/CMakeFiles/intrinsics_gen.dir
+/Users/den184/Documents/UNSW/SVF/SVF-Python/CMakeFiles/omp_gen.dir
+/Users/den184/Documents/UNSW/SVF/SVF-Python/CMakeFiles/acc_gen.dir
+/Users/den184/Documents/UNSW/SVF/SVF-Python/CMakeFiles/RISCVTargetParserTableGen.dir
+/Users/den184/Documents/UNSW/SVF/SVF-Python/CMakeFiles/svfModule_pybind.dir
+/Users/den184/Documents/UNSW/SVF/SVF-Python/CMakeFiles/edit_cache.dir
+/Users/den184/Documents/UNSW/SVF/SVF-Python/CMakeFiles/rebuild_cache.dir

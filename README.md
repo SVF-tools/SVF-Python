@@ -5,7 +5,7 @@ sudo apt-get install zlib1g-dev unzip cmake gcc g++ nodejs libtinfo5 python3 npm
 ```
 ### Install on MacOS
 ```
-brew install zlib1g-dev unzip cmake gcc g++ nodejs libtinfo5 python3 npm pybind11
+brew install zlib-ng unzip cmake gcc nodejs python3 npm pybind11
 ```
 
 ## 1. Install SVF and its dependence (LLVM pre-built binary) via npm
@@ -19,7 +19,7 @@ npm i --silent svf-tools --prefix /Users/ABB/Documents/SVF/
 
 ## 2. Build SVF
 ```
-cd {desired_download_path}/node_modules/svf-tools
+cd {desired_download_path}/node_modules/SVF
 source ./build.sh
 ```
 

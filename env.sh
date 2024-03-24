@@ -8,7 +8,7 @@ install_path=`npm root`
 export LLVM_DIR=$install_path/$LLVMHome
 export Z3_DIR=$install_path/$Z3Home
 export svfModule_DIR="./src/svfModule"
-export SVF_DIR=$install_path/SVF/svf-tools
+export SVF_DIR=$install_path/SVF
 
 echo "LLVM_DIR="$LLVM_DIR
 echo "SVF_DIR="$SVF_DIR
