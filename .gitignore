@@ -1,0 +1,9 @@
+vscode/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+__pycache__/
+CMakeFiles/
+example.svf.bc
+example.ll
+svfModule_pybind.cpython-312-darwin.so
