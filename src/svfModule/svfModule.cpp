@@ -12,19 +12,16 @@
 #include "AE/Svfexe/BufOverflowChecker.h"
 #include "AE/Core/RelExeState.h"
 #include "AE/Core/RelationSolver.h"
-
-
-#include "WPA/WPAPass.h"
-#include "Util/Options.h"
 #include "SVFIR/SVFFileSystem.h"
-
-
-
 #include "SABER/LeakChecker.h"
 #include "SABER/FileChecker.h"
 #include "SABER/DoubleFreeChecker.h"
 #include "Util/Z3Expr.h"
 
+#include "CFL/CFLAlias.h"
+#include "CFL/CFLVF.h"
+
+#include "DDA/DDAPass.h"
 
 
 #include "svfModule.h"
@@ -34,6 +31,8 @@ using namespace std;
 using namespace SVF;
 
 
+// Old work.......................
+// --------------------------------------------------------------------------------------------------------------
 static llvm::cl::opt<std::string> InputFilename(cl::Positional,
     llvm::cl::desc("<input bitcode>"), llvm::cl::init("-"));
 //
@@ -53,6 +52,17 @@ SVFGBuilder* svfBuilder;
 SVFG* svfg;
 
 std::unique_ptr<LeakChecker> saber;
+// --------------------------------------------------------------------------------------------------------------
+
+// New work.......................
+// --------------------------------------------------------------------------------------------------------------
+// cfl.cpp.....
+SVFIR* svfir;
+std::unique_ptr<CFLBase> cfl;
+
+
+
+// --------------------------------------------------------------------------------------------------------------
 
 
 // Old work.......................
@@ -133,7 +143,7 @@ void setModuleNameVec(char* name){
 //    svfModule->buildSymbolTableInfo();
 //}
 // build the
-void build(){
+void pagBuild(){
     SVFIRBuilder _builder(svfModule);
     builder = &_builder;
     pag = _builder.build();
@@ -282,20 +292,53 @@ void saberCheckerAllInOne(){
         saber = std::make_unique<LeakChecker>();
 }
 
-// void saberMakeUniqueLeakChecker(){
-//     saber = std::make_unique<LeakChecker>();
-// }
-
-// void saberMakeUniqueFileChecker(){
-//     saber = std::make_unique<FileChecker>();
-// }
-
-// void saberMakeUniqueDoubleFreeChecker(){
-//     saber = std::make_unique<DoubleFreeChecker>();
-// }
 
 void saberRunOnModule(){
     saber->runOnModule(pag);
 }
 
+// --------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------
+// cfl.cpp........
+bool boolCFLGraphEmpty(){
+    return Options::CFLGraph().empty();
+}
+
+void svfirBuild(){
+    SVFIRBuilder _builder(svfModule);
+    builder = &_builder;
+    svfir = _builder.build();
+}
+
+void cflCheckerAllInOne(){
+    if (Options::CFLSVFG())
+        cfl = std::make_unique<CFLVF>(svfir);
+    else if (Options::POCRHybrid())
+        cfl = std::make_unique<POCRHybrid>(svfir);
+    else if (Options::POCRAlias())
+        cfl = std::make_unique<POCRAlias>(svfir);
+    else
+        cfl = std::make_unique<CFLAlias>(svfir);
+}
+
+void cflAnalyze(){
+    cfl->analyze();
+}
+
+// --------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------
+// dda.cpp........
+static Option<bool> DAA(
+    "daa",
+    "Demand-Driven Alias Analysis Pass",
+    false
+);
+
+void ddaPassRunOnModule(){
+    DDAPass dda;
+    dda.runOnModule(pag);
+}
 // --------------------------------------------------------------------------------------------------------------

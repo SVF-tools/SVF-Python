@@ -21,7 +21,7 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     
     // // m.def("buildSymbolTableInfo", &buildSymbolTableInfo, "Func 7"); // Not Defined in cpp
     
-    m.def("build", &build, "Func 8");
+    m.def("pagBuild", &pagBuild, "Func 8");
     m.def("createAndersenWaveDiff", &createAndersenWaveDiff, "Func 9");
     m.def("getPTACallGraph", &getPTACallGraph, "Func 10");
     // m.def("getICFG", &getICFG, "Func 11");
@@ -78,7 +78,18 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("saberRunOnModule", &saberRunOnModule, "Func 34");
     // --------------------------------------------------------------------------------
 
+    // --------------------------------------------------------------------------------
+    // cfl.cpp
+    m.def("boolCFLGraphEmpty", &boolCFLGraphEmpty, "Func 34");
+    m.def("svfirBuild", &svfirBuild, "Func 35");
+    m.def("cflCheckerAllInOne", &cflCheckerAllInOne, "Func 36");
+    m.def("cflAnalyze", &cflAnalyze, "Func 37");
+    // --------------------------------------------------------------------------------
 
+    // --------------------------------------------------------------------------------
+    // dda.cpp
+    m.def("ddaPassRunOnModule", &ddaPassRunOnModule, "Func 38");
+    // --------------------------------------------------------------------------------
 
 
 }

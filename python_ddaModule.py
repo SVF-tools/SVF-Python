@@ -8,7 +8,6 @@ from src.srcPythonModule.svfLLVMUtil import LLVMUtil
 
 import svfModule_pybind
 
-# from svfModule_pybind import *
 
 
 def main(arg_value):
@@ -18,18 +17,16 @@ def main(arg_value):
     print(moduleNameVec)
     svfModule_pybind.ParseCommandLineOptions()
 
-    if (svfModule_pybind.boolReadJson()):
-        pag = svfModule_pybind.SVFIRReaderRead()
 
-    else:
-        if (svfModule_pybind.optionsWriteAnder == "ir_annotator"):
-            svfModule_pybind.preProcessBCs()
+    if (svfModule_pybind.optionsWriteAnder == "ir_annotator"):
+        svfModule_pybind.preProcessBCs()
 
-        svfModule_pybind.buildSVFModule()
+    svfModule_pybind.buildSVFModule()
 
-        svfModule_pybind.pagBuild()
+    svfModule_pybind.pagBuild()
 
-    svfModule_pybind.WPAPassRunOnModule()
+    svfModule_pybind.ddaPassRunOnModule()
+
     svfModule_pybind.releaseLLVMModuleSet()
 
     

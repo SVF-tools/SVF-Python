@@ -20,7 +20,7 @@ def main(arg_value):
 
     # # # svfModule.buildSymbolTableInfo()
 
-    svfModule_pybind.build()
+    svfModule_pybind.pagBuild()
 
     # General Stats; CallGraph Stats (Andersen analysis); 
     # Andersen Pointer Analysis Stats; Persistent Points-To Cache Statistics: Andersen's analysis bitvector
