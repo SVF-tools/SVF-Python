@@ -60,11 +60,12 @@ set(SVF_HEADER "${SVF_DIR}/svf/include")
 message(${SVF_HEADER})
 set(S)
 set(SVF_LLVM_HEADER "${SVF_DIR}/svf-llvm/include")
+set(SVF_LLVM_TOOLS_HEADER "${SVF_DIR}/svf-llvm/tools")
 
 set(SVF_LIB "${SVF_BIN}/lib/libSvfLLVM.a" "${SVF_BIN}/lib/libSvfCore.a")
 set(SVF_BIN_HEADER "${SVF_BIN}/include")
 
-include_directories(${SVF_HEADER} ${SVF_LLVM_HEADER} ${SVF_BIN_HEADER})
+include_directories(${SVF_HEADER} ${SVF_LLVM_HEADER} ${SVF_BIN_HEADER} ${SVF_LLVM_TOOLS_HEADER})
 # -------------------------------------------------------------------------------
 
 # Set Z3 Path 

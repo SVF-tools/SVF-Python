@@ -23,6 +23,12 @@
 
 #include "DDA/DDAPass.h"
 
+#include "SVFIR/SVFFileSystem.h"
+
+#include "MTA/MTA.h"
+#include "MTA/MTAResultValidator.h"
+#include "MTA/LockResultValidator.h"
+
 
 #include "svfModule.h"
 
@@ -369,5 +375,11 @@ void writeJsonToPath(std::string jsonPath){
 void outSVFIRJsonPath(std::string jsonPath){
     SVFUtil::outs() << "SVF IR is written to '" << jsonPath << "'\n";
 }
+
+// --------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------
+// mta.cpp........
+
 
 // --------------------------------------------------------------------------------------------------------------
