@@ -342,3 +342,32 @@ void ddaPassRunOnModule(){
     dda.runOnModule(pag);
 }
 // --------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------
+// llvm2svf.cpp........
+static std::string replaceExtension(const std::string& path)
+{
+    size_t pos = path.rfind('.');
+    if (pos == std::string::npos ||
+            (path.substr(pos) != ".bc" && path.substr(pos) != ".ll"))
+    {
+        SVFUtil::errs() << "Error: expect file with extension .bc or .ll\n";
+        exit(EXIT_FAILURE);
+    }
+    return path.substr(0, pos) + ".svf.json";
+}
+
+std::string moduleNameVecReplaceExtension(){
+    return replaceExtension(moduleNameVec.front());
+}
+
+void writeJsonToPath(std::string jsonPath){
+    SVFIRWriter::writeJsonToPath(pag, jsonPath);
+}
+
+void outSVFIRJsonPath(std::string jsonPath){
+    SVFUtil::outs() << "SVF IR is written to '" << jsonPath << "'\n";
+}
+
+// --------------------------------------------------------------------------------------------------------------

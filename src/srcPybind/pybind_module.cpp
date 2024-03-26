@@ -91,5 +91,12 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("ddaPassRunOnModule", &ddaPassRunOnModule, "Func 38");
     // --------------------------------------------------------------------------------
 
+    // --------------------------------------------------------------------------------------------------------------
+    // llvm2svf.cpp........
+    m.def("moduleNameVecReplaceExtension", &moduleNameVecReplaceExtension, "Func 39");
+    m.def("writeJsonToPath", &writeJsonToPath, "Func 40");
+    m.def("outSVFIRJsonPath", &outSVFIRJsonPath, "Func 41");
+    // --------------------------------------------------------------------------------------------------------------
+
 
 }
