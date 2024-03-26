@@ -5,8 +5,8 @@ sysOS=`uname -s`
 LLVMHome="llvm-16.0.0.obj"
 Z3Home="z3.obj"
 install_path=`npm root`
-export LLVM_DIR=$install_path/$LLVMHome
-export Z3_DIR=$install_path/$Z3Home
+export LLVM_DIR=$install_path/SVF/$LLVMHome
+export Z3_DIR=$install_pat/SVF/$Z3Home
 export svfModule_DIR="./src/svfModule"
 export SVF_DIR=$install_path/SVF
 
