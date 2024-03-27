@@ -3,12 +3,12 @@
 
 
 import sys
+import system
 from src.srcPythonModule.CL import CL
 from src.srcPythonModule.svfLLVMUtil import LLVMUtil
 
 import svfModule_pybind
 
-# from svfModule_pybind import *
 
 
 def main(arg_value):
@@ -23,13 +23,13 @@ def main(arg_value):
         svfModule_pybind.preProcessBCs()
 
     svfModule_pybind.buildSVFModule()
+
     svfModule_pybind.pagBuild()
 
+    svfModule_pybind.saberCheckerAllInOne()
+    
+    svfModule_pybind.saberRunOnModule()
 
-
-    svfModule_pybind.MTARunOnModule()
-    svfModule_pybind.MTAValidator()
-    svfModule_pybind.lockValidator()
     svfModule_pybind.releaseLLVMModuleSet()
 
     

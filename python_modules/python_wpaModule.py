@@ -3,11 +3,13 @@
 
 
 import sys
+import system
 from src.srcPythonModule.CL import CL
 from src.srcPythonModule.svfLLVMUtil import LLVMUtil
 
 import svfModule_pybind
 
+# from svfModule_pybind import *
 
 
 def main(arg_value):
@@ -17,18 +19,18 @@ def main(arg_value):
     print(moduleNameVec)
     svfModule_pybind.ParseCommandLineOptions()
 
+    if (svfModule_pybind.boolReadJson()):
+        pag = svfModule_pybind.SVFIRReaderRead()
 
-    if (svfModule_pybind.optionsWriteAnder == "ir_annotator"):
-        svfModule_pybind.preProcessBCs()
+    else:
+        if (svfModule_pybind.optionsWriteAnder == "ir_annotator"):
+            svfModule_pybind.preProcessBCs()
 
-    svfModule_pybind.buildSVFModule()
+        svfModule_pybind.buildSVFModule()
 
-    svfModule_pybind.pagBuild()
+        svfModule_pybind.pagBuild()
 
-    svfModule_pybind.saberCheckerAllInOne()
-    
-    svfModule_pybind.saberRunOnModule()
-
+    svfModule_pybind.WPAPassRunOnModule()
     svfModule_pybind.releaseLLVMModuleSet()
 
     

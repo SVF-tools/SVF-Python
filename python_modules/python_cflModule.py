@@ -3,11 +3,13 @@
 
 
 import sys
+import system
 from src.srcPythonModule.CL import CL
 from src.srcPythonModule.svfLLVMUtil import LLVMUtil
 
 import svfModule_pybind
 
+# from svfModule_pybind import *
 
 
 def main(arg_value):
@@ -21,12 +23,16 @@ def main(arg_value):
     if (svfModule_pybind.optionsWriteAnder == "ir_annotator"):
         svfModule_pybind.preProcessBCs()
 
-    svfModule_pybind.buildSVFModule()
 
-    svfModule_pybind.pagBuild()
+    if (svfModule_pybind.boolCFLGraphEmpty):
+        svfModule_pybind.buildSVFModule()
+        svfModule_pybind.svfirBuild()
 
-    svfModule_pybind.ddaPassRunOnModule()
+    svfModule_pybind.cflCheckerAllInOne()
 
+    svfModule_pybind.cflAnalyze();
+
+    svfModule_pybind.releaseSVFIR()
     svfModule_pybind.releaseLLVMModuleSet()
 
     

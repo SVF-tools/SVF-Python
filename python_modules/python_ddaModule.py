@@ -3,12 +3,12 @@
 
 
 import sys
+import system
 from src.srcPythonModule.CL import CL
 from src.srcPythonModule.svfLLVMUtil import LLVMUtil
 
 import svfModule_pybind
 
-# from svfModule_pybind import *
 
 
 def main(arg_value):
@@ -23,11 +23,11 @@ def main(arg_value):
         svfModule_pybind.preProcessBCs()
 
     svfModule_pybind.buildSVFModule()
-    jsonPath = svfModule_pybind.moduleNameVecReplaceExtension()
+
     svfModule_pybind.pagBuild()
 
-    svfModule_pybind.writeJsonToPath(jsonPath)
-    svfModule_pybind.outSVFIRJsonPath(jsonPath)
+    svfModule_pybind.ddaPassRunOnModule()
+
     svfModule_pybind.releaseLLVMModuleSet()
 
     

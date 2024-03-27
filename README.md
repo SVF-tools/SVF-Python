@@ -7,7 +7,7 @@ sudo apt-get install zlib1g-dev unzip cmake gcc g++ nodejs libtinfo5 python3 npm
 ```
 brew install zlib-ng unzip cmake gcc nodejs npm pybind11
 ```
-or
+### Install on Conda Environment
 ```
 conda install zlib-ng unzip cmake nodejs pybind11
 ```
