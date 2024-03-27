@@ -5,7 +5,11 @@ sudo apt-get install zlib1g-dev unzip cmake gcc g++ nodejs libtinfo5 python3 npm
 ```
 ### Install on MacOS
 ```
-brew install zlib-ng unzip cmake gcc nodejs python3 npm pybind11
+brew install zlib-ng unzip cmake gcc nodejs npm pybind11
+```
+or
+```
+conda install zlib-ng unzip cmake nodejs pybind11
 ```
 
 ## 1. Install SVF and its dependence (LLVM pre-built binary) via npm

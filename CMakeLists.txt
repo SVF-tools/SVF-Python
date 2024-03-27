@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4.3)
 project(SVF-TOOL) 
 
-find_package(Python COMPONENTS Interpreter Development)
+find_package(Python3 3.9 COMPONENTS Interpreter Development)
 
 # Set LLVM Path
 # -------------------------------------------------------------------------------
