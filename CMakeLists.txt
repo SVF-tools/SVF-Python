@@ -133,7 +133,9 @@ find_package(pybind11 REQUIRED)
 
 set(PYBIND_SRC "./src/srcPybind/")
 
-pybind11_add_module(svfModule_pybind ${PYBIND_SRC}/pybind_module.cpp ${svfModule_DIR}/svfModule.cpp)
+file(GLOB MTA_SRC_FILES "${SVF_LLVM_TOOLS_HEADER}/MTA/*.cpp")
+
+pybind11_add_module(svfModule_pybind ${PYBIND_SRC}/pybind_module.cpp ${svfModule_DIR}/svfModule.cpp ${MTA_SRC_FILES})
 
 target_link_libraries(svfModule_pybind PRIVATE ${SVF_LIB} ${llvm_libs})
 target_link_libraries(svfModule_pybind PRIVATE ${Z3_LIBRARIES})

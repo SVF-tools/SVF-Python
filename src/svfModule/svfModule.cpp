@@ -66,6 +66,9 @@ std::unique_ptr<LeakChecker> saber;
 SVFIR* svfir;
 std::unique_ptr<CFLBase> cfl;
 
+// mta.cpp.....
+MTA* mta;
+
 
 
 // --------------------------------------------------------------------------------------------------------------
@@ -380,6 +383,19 @@ void outSVFIRJsonPath(std::string jsonPath){
 
 // --------------------------------------------------------------------------------------------------------------
 // mta.cpp........
+void MTARunOnModule(){
+    MTA _mta;
+    _mta.runOnModule(pag);
+    mta = &_mta;
+}
 
+void MTAValidator(){
+    MTAResultValidator MTAValidator(mta->getMHP());
+    MTAValidator.analyze();
+}
 
+void lockValidator(){
+    LockResultValidator lockvalidator(mta->getLockAnalysis());
+    lockvalidator.analyze();
+}
 // --------------------------------------------------------------------------------------------------------------
