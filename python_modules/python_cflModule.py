@@ -4,7 +4,6 @@
 
 import sys
 import system
-from src.srcPythonModule.CL import CL
 from src.srcPythonModule.svfLLVMUtil import LLVMUtil
 
 import svfModule_pybind

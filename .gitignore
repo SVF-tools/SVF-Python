@@ -7,3 +7,4 @@ CMakeFiles/
 example.svf.bc
 example.ll
 svfModule_pybind.cpython-312-darwin.so
+svfModule_pybind.cpython-39-darwin.so
