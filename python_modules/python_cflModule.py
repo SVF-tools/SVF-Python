@@ -29,7 +29,7 @@ def main(arg_value):
 
     svfModule_pybind.cflCheckerAllInOne()
 
-    svfModule_pybind.cflAnalyze();
+    svfModule_pybind.cflAnalyze()
 
     svfModule_pybind.releaseSVFIR()
     svfModule_pybind.releaseLLVMModuleSet()
