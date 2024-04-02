@@ -9,5 +9,12 @@ class Options(object):
     def boolBufferOverflowCheck(self):
         self.Options.boolBufferOverflowCheck()
 
+    def boolReadJson(self):
+        self.Options.boolReadJson()
+
+    def optionsWriteAnder(self):
+        self.Options.optionsWriteAnder()
+
+
 
 Options = Options()

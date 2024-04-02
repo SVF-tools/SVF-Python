@@ -13,5 +13,8 @@ class LLVMModuleSet(object):
     def releaseLLVMModuleSet(self):
         self.LLVMModuleSet.releaseLLVMModuleSet()
 
+    def preProcessBCs(self):
+        self.LLVMModuleSet.preProcessBCs()
+
 
 LLVMModuleSet = LLVMModuleSet()

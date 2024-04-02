@@ -18,5 +18,8 @@ class SVFIR(object):
     def getICFGUpdateCallGraph(self):
         self.svfIR.getICFGUpdateCallGraph()
 
+    def SVFIRReaderRead(self):
+        self.svfIR.SVFIRReaderRead()
+
 
 SVFIR = SVFIR()

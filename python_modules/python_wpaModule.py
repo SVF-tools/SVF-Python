@@ -4,7 +4,12 @@
 
 import sys
 import system
-from src.srcPythonModule.svfLLVMUtil import LLVMUtil
+from src.srcPythonModule.svfLLVMUtil import svfLLVMUtil
+from src.srcPythonModule.LLVMModuleSet import LLVMModuleSet
+from src.srcPythonModule.CL import CL
+from src.srcPythonModule.WPA import WPA
+from src.srcPythonModule.SVFIR import SVFIR
+from src.srcPythonModule.Options import Options
 
 import svfModule_pybind
 
@@ -14,23 +19,23 @@ import svfModule_pybind
 def main(arg_value):
     moduleNameVec = []
     print(arg_value)
-    LLVMUtil.processArguments(arg_value, moduleNameVec)
+    svfLLVMUtil.processArguments(arg_value, moduleNameVec)
     print(moduleNameVec)
-    svfModule_pybind.ParseCommandLineOptions()
+    CL.ParseCommandLineOptions()
 
-    if (svfModule_pybind.boolReadJson()):
-        pag = svfModule_pybind.SVFIRReaderRead()
+    if (Options.boolReadJson()):
+        SVFIR.SVFIRReaderRead()
 
     else:
-        if (svfModule_pybind.optionsWriteAnder == "ir_annotator"):
-            svfModule_pybind.preProcessBCs()
+        if (Options.optionsWriteAnder == "ir_annotator"):
+            LLVMModuleSet.preProcessBCs()
 
-        svfModule_pybind.buildSVFModule()
+        LLVMModuleSet.buildSVFModule()
 
-        svfModule_pybind.pagBuild()
+        SVFIR.pagBuild()
 
-    svfModule_pybind.WPAPassRunOnModule()
-    svfModule_pybind.releaseLLVMModuleSet()
+    WPA.WPAPassRunOnModule()
+    LLVMModuleSet.releaseLLVMModuleSet()
 
     
 
