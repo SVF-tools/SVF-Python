@@ -10,7 +10,7 @@ from src.srcPythonModule.CL import CL
 from src.srcPythonModule.LLVM2SVF import LLVM2SVF
 from src.srcPythonModule.SVFIR import SVFIR
 from src.srcPythonModule.Options import Options
-import svfModule_pybind
+
 
 # from svfModule_pybind import *
 

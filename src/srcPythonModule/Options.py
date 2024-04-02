@@ -4,19 +4,19 @@ class Options(object):
     Options = svfModule_pybind
 
     def boolICFGMergeAdjacentNodes(self):
-        self.Options.boolICFGMergeAdjacentNodes()
+        return self.Options.boolICFGMergeAdjacentNodes()
 
     def boolBufferOverflowCheck(self):
-        self.Options.boolBufferOverflowCheck()
+        return self.Options.boolBufferOverflowCheck()
 
     def boolReadJson(self):
-        self.Options.boolReadJson()
+        return self.Options.boolReadJson()
 
     def optionsWriteAnder(self):
-        self.Options.optionsWriteAnder()
+        return self.Options.optionsWriteAnder()
 
     def boolCFLGraphEmpty(self):
-        self.Options.boolCFLGraphEmpty()
+        return self.Options.boolCFLGraphEmpty()
 
 
 
