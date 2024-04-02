@@ -44,9 +44,10 @@ jobs:
       # build current repo
       - name: build-svf
         run: |
-         source $GITHUB_WORKSPACE/env.sh
-         cmake .
-         make 
-         clang -S -c -g -fno-discard-value-names -emit-llvm example.c -o example.ll
-         python3 python_modules/python_svfModule.py example.ll
+          cd $GITHUB_WORKSPACE
+          source $GITHUB_WORKSPACE/env.sh
+          cmake .
+          make 
+          clang -S -c -g -fno-discard-value-names -emit-llvm example.c -o example.ll
+          python3 python_modules/python_svfModule.py example.ll
 
