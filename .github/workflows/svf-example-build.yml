@@ -46,7 +46,4 @@ jobs:
           source $GITHUB_WORKSPACE/env.sh
           cmake .
           make 
-          clang -S -c -g -fno-discard-value-names -emit-llvm example.c -o example.ll
-          sudo apt-get install python3.11
-          python3.11 python_modules/python_aeModule.py example.ll
 
