@@ -15,6 +15,9 @@ class Options(object):
     def optionsWriteAnder(self):
         self.Options.optionsWriteAnder()
 
+    def boolCFLGraphEmpty(self):
+        self.Options.boolCFLGraphEmpty()
+
 
 
 Options = Options()

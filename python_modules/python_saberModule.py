@@ -11,7 +11,6 @@ from src.srcPythonModule.SABER import SABER
 from src.srcPythonModule.SVFIR import SVFIR
 from src.srcPythonModule.Options import Options
 
-import svfModule_pybind
 
 
 

@@ -4,9 +4,12 @@
 
 import sys
 import system
-from src.srcPythonModule.svfLLVMUtil import LLVMUtil
-
-import svfModule_pybind
+from src.srcPythonModule.svfLLVMUtil import svfLLVMUtil
+from src.srcPythonModule.LLVMModuleSet import LLVMModuleSet
+from src.srcPythonModule.CL import CL
+from src.srcPythonModule.CFL import CFL
+from src.srcPythonModule.SVFIR import SVFIR
+from src.srcPythonModule.Options import Options
 
 # from svfModule_pybind import *
 
@@ -14,25 +17,25 @@ import svfModule_pybind
 def main(arg_value):
     moduleNameVec = []
     print(arg_value)
-    LLVMUtil.processArguments(arg_value, moduleNameVec)
+    svfLLVMUtil.processArguments(arg_value, moduleNameVec)
     print(moduleNameVec)
-    svfModule_pybind.ParseCommandLineOptions()
+    CL.ParseCommandLineOptions()
 
 
-    if (svfModule_pybind.optionsWriteAnder == "ir_annotator"):
-        svfModule_pybind.preProcessBCs()
+    if (Options.optionsWriteAnder == "ir_annotator"):
+        LLVMModuleSet.preProcessBCs()
 
 
-    if (svfModule_pybind.boolCFLGraphEmpty):
-        svfModule_pybind.buildSVFModule()
-        svfModule_pybind.svfirBuild()
+    if (Options.boolCFLGraphEmpty):
+        LLVMModuleSet.buildSVFModule()
+        SVFIR.svfirBuild()
 
-    svfModule_pybind.cflCheckerAllInOne()
+    CFL.cflCheckerAllInOne()
 
-    svfModule_pybind.cflAnalyze()
+    CFL.cflAnalyze()
 
-    svfModule_pybind.releaseSVFIR()
-    svfModule_pybind.releaseLLVMModuleSet()
+    SVFIR.releaseSVFIR()
+    LLVMModuleSet.releaseLLVMModuleSet()
 
     
 

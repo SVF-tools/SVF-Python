@@ -11,7 +11,6 @@ from src.srcPythonModule.WPA import WPA
 from src.srcPythonModule.SVFIR import SVFIR
 from src.srcPythonModule.Options import Options
 
-import svfModule_pybind
 
 # from svfModule_pybind import *
 

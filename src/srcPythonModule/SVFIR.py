@@ -13,13 +13,16 @@ class SVFIR(object):
         self.svfIR.getICFG()
 
     def releaseSVFIR(self):
-        self.svfIR.getICFG()
+        self.svfIR.releaseSVFIR()
 
     def getICFGUpdateCallGraph(self):
         self.svfIR.getICFGUpdateCallGraph()
 
     def SVFIRReaderRead(self):
         self.svfIR.SVFIRReaderRead()
+
+    def svfirBuild(self):
+        self.svfIR.svfirBuild()
 
 
 SVFIR = SVFIR()
