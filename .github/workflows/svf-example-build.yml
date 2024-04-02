@@ -42,7 +42,7 @@ jobs:
       # build current repo
       - name: build-svf
         run: |
-          cd ../../
+          cd $GITHUB_WORKSPACE
           source $GITHUB_WORKSPACE/env.sh
           cmake .
           make 
