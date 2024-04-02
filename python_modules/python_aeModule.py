@@ -4,44 +4,47 @@
 
 import sys
 import system
-from src.srcPythonModule.svfLLVMUtil import LLVMUtil
-
-import svfModule_pybind
+from src.srcPythonModule.svfLLVMUtil import svfLLVMUtil
+from src.srcPythonModule.LLVMModuleSet import LLVMModuleSet
+from src.srcPythonModule.CL import CL
+from src.srcPythonModule.AE import AE
+from src.srcPythonModule.AndersenWaveDiff import AndersenWaveDiff
+from src.srcPythonModule.SVFIR import SVFIR
+from src.srcPythonModule.Options import Options
+from src.srcPythonModule.PTACallGraph import PTACallGraph
 
 
 def main(arg_value):
     moduleNameVec = []
     print(arg_value)
-    LLVMUtil.processArguments(arg_value, moduleNameVec)
+    svfLLVMUtil.processArguments(arg_value, moduleNameVec)
     print(moduleNameVec)
-    svfModule_pybind.ParseCommandLineOptions()
+    CL.ParseCommandLineOptions()
 
-    svfModule_pybind.buildSVFModule()
+    LLVMModuleSet.buildSVFModule()
 
-    # # # svfModule.buildSymbolTableInfo()
-
-    svfModule_pybind.pagBuild()
+    SVFIR.pagBuild()
 
     # General Stats; CallGraph Stats (Andersen analysis); 
     # Andersen Pointer Analysis Stats; Persistent Points-To Cache Statistics: Andersen's analysis bitvector
-    svfModule_pybind.createAndersenWaveDiff() 
+    AndersenWaveDiff.createAndersenWaveDiff() 
 
-    svfModule_pybind.getPTACallGraph()
-    # svfModule_pybind.getICFG()
+    PTACallGraph.getPTACallGraph()
 
-    svfModule_pybind.updateCallGraph()
-    svfModule_pybind.getICFGUpdateCallGraph()
-    if (svfModule_pybind.boolICFGMergeAdjacentNodes()):
-        svfModule_pybind.mergeAdjacentNodes()
+    PTACallGraph.updateCallGraph()
+
+    SVFIR.getICFGUpdateCallGraph()
+    if (Options.boolICFGMergeAdjacentNodes()):
+        AE.mergeAdjacentNodes()
     
 
-    if (svfModule_pybind.boolBufferOverflowCheck()):
-        svfModule_pybind.bufOverflowCheckerRunOnModule()
+    if (Options.boolBufferOverflowCheck()):
+        AE.bufOverflowCheckerRunOnModule()
     else:
-        svfModule_pybind.abstractExecutionRunOnModule()
+        AE.abstractExecutionRunOnModule()
 
 
-    svfModule_pybind.releaseLLVMModuleSet()
+    LLVMModuleSet.releaseLLVMModuleSet()
 
 
 if __name__ == "__main__":

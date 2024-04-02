@@ -3,23 +3,24 @@
 import svfModule_pybind
 
 
-class LLVMUtil(object):
-    LLVMUtil = svfModule_pybind
+class svfLLVMUtil(object):
+    svfLLVMUtil = svfModule_pybind
 
     def processArguments(self, argv, moduleNameVec):
 
         select = [0] * len(argv)
         for key, item in enumerate(argv):
             select[key] = item
-        svfModule_pybind.processArguments(len(argv), select)
-        num = svfModule_pybind.getModuleNameVecLen()
+        self.svfLLVMUtil.processArguments(len(argv), select)
+        num = self.svfLLVMUtil.getModuleNameVecLen()
         i = 0
         while i < num:
             result = str()
-            result = svfModule_pybind.getModuleNameVecItem(i, result)
+            result = self.svfLLVMUtil.getModuleNameVecItem(i, result)
             moduleNameVec.append(result)
             i = i + 1
+            
 
 
 
-LLVMUtil = LLVMUtil()
+svfLLVMUtil = svfLLVMUtil()
