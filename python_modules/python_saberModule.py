@@ -4,7 +4,12 @@
 
 import sys
 import system
-from src.srcPythonModule.svfLLVMUtil import LLVMUtil
+from src.srcPythonModule.svfLLVMUtil import svfLLVMUtil
+from src.srcPythonModule.LLVMModuleSet import LLVMModuleSet
+from src.srcPythonModule.CL import CL
+from src.srcPythonModule.SABER import SABER
+from src.srcPythonModule.SVFIR import SVFIR
+from src.srcPythonModule.Options import Options
 
 import svfModule_pybind
 
@@ -13,23 +18,23 @@ import svfModule_pybind
 def main(arg_value):
     moduleNameVec = []
     print(arg_value)
-    LLVMUtil.processArguments(arg_value, moduleNameVec)
+    svfLLVMUtil.processArguments(arg_value, moduleNameVec)
     print(moduleNameVec)
-    svfModule_pybind.ParseCommandLineOptions()
+    CL.ParseCommandLineOptions()
 
 
-    if (svfModule_pybind.optionsWriteAnder == "ir_annotator"):
-        svfModule_pybind.preProcessBCs()
+    if (Options.optionsWriteAnder == "ir_annotator"):
+        LLVMModuleSet.preProcessBCs()
 
-    svfModule_pybind.buildSVFModule()
+    LLVMModuleSet.buildSVFModule()
 
-    svfModule_pybind.pagBuild()
+    SVFIR.pagBuild()
 
-    svfModule_pybind.saberCheckerAllInOne()
+    SABER.saberCheckerAllInOne()
     
-    svfModule_pybind.saberRunOnModule()
+    SABER.saberRunOnModule()
 
-    svfModule_pybind.releaseLLVMModuleSet()
+    LLVMModuleSet.releaseLLVMModuleSet()
 
     
 
