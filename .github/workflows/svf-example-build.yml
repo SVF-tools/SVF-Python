@@ -24,13 +24,14 @@ jobs:
           xcode-version: 12.5.1
       - name: mac-setup-workaround
         if: runner.os == 'macOS'
-        run: ln -sfn /Applications/Xcode_12.5.1.app /Applications/Xcode.app
+        run: |
+          ln -sfn /Applications/Xcode_12.5.1.app /Applications/Xcode.app
       - name: ubuntu-setup
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
+          sudo apt-get upgrate
           sudo apt-get install zlib1g-dev unzip cmake gcc g++ nodejs libtinfo5 python3 npm pybind11
           
       # install llvm and svf
