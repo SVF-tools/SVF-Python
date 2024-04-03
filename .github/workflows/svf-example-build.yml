@@ -26,6 +26,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           ln -sfn /Applications/Xcode_12.5.1.app /Applications/Xcode.app
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install zlib-ng unzip cmake gcc nodejs npm pybind11
       - name: ubuntu-setup
         if: runner.os == 'Linux'
         run: |
