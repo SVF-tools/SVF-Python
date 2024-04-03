@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-20.04]
     steps:
       # checkout the repo
       - uses: actions/checkout@v2
@@ -16,18 +16,18 @@ jobs:
         with:
           node-version: 12
           
-      # setup the environment 
-      - name: mac-setup
-        if: runner.os == 'macOS'
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: 12.5.1
-      - name: mac-setup-workaround
-        if: runner.os == 'macOS'
-        run: |
-          ln -sfn /Applications/Xcode_12.5.1.app /Applications/Xcode.app
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install zlib-ng unzip cmake gcc nodejs npm pybind11
+      # # setup the environment 
+      # - name: mac-setup
+      #   if: runner.os == 'macOS'
+      #   uses: maxim-lobanov/setup-xcode@v1
+      #   with:
+      #     xcode-version: 12.5.1
+      # - name: mac-setup-workaround
+        # if: runner.os == 'macOS'
+      #   run: |
+      #     ln -sfn /Applications/Xcode_12.5.1.app /Applications/Xcode.app
+      #     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      #     brew install zlib-ng unzip cmake gcc nodejs npm pybind11
       - name: ubuntu-setup
         if: runner.os == 'Linux'
         run: |
