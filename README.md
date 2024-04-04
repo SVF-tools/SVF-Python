@@ -38,8 +38,36 @@ cd SVF-Python
 source ./env.sh
 cmake . && make
 ```
-## 5. Analyze a bc file using python_svfModule.py
+## 5. Analyse a LLVM IR file using binded SVF python modules
 ```
 clang -S -c -g -fno-discard-value-names -emit-llvm example.c -o example.ll
+```
+### AE:
+```
 python3 python_modules/python_aeModule.py example.ll
 ```
+### CFL:
+```
+python3 python_modules/python_cflModule.py example.ll
+```
+### DDA:
+```
+python3 python_modules/python_ddaModule.py example.ll
+```
+### LLVM2SVF:
+```
+python3 python_modules/python_llvm2svfModule.py example.ll
+```
+### MTA:
+```
+python3 python_modules/python_mtaModule.py example.ll
+```
+### SABER:
+```
+python3 python_modules/python_saberModule.py example.ll
+```
+### WPA:
+```
+python3 python_modules/python_wpaModule.py -ander -svfg example.ll
+```
+#### Flags can be customised accordingly for WPA
