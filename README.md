@@ -1,4 +1,4 @@
-## 0. Install npm, zlib, unzip, cmake, gcc, nodejs... (if you machine does not have these libs)
+## 0. Install prerequisite libs
 ### Install on Linux
 ```
 sudo apt-get install zlib1g-dev unzip cmake gcc g++ nodejs libtinfo5 python3 npm python3-pybind11
