@@ -402,6 +402,12 @@ void lockValidator(){
 
 
 // --------------------------------------------------------------------------------------------------------------
-// Andersen.h........
+// Andersen.h........ Binding by FUNCTION.... TRYING
 
+// AndersenBase
+void AndersenBaseAnalyze() {
+    AndersenBase* ab = new AndersenBase(pag);
+    ab->analyze();
+}
 // --------------------------------------------------------------------------------------------------------------
+

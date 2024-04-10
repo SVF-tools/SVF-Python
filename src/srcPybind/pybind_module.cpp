@@ -107,9 +107,7 @@ PYBIND11_MODULE(svfModule_pybind, m) {
 
     // --------------------------------------------------------------------------------------------------------------
     // Andersen.h........
-    bind_AndersenBase(m);
-    bind_Anderson(m);
-    bind_AndersenWaveDiff(m);
+    m.def("AndersenBaseAnalyze", &lockValidator, "Func 45");
     // --------------------------------------------------------------------------------------------------------------
 
 
