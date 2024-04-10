@@ -4,9 +4,14 @@
 // #include "SVF-LLVM/SVFIRBuilder.h" // SVF/svf-llvm/include/SVF-LLVM/SVFIRBuilder.h
 #include "Util/Options.h" // SVF/svf/include/Util/Options.h
 
+#include "WPA/Andersen.h"
+
+
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
+using namespace std;
+using namespace SVF;
 
 
 // namespace SVF_Header {
@@ -155,3 +160,60 @@ void MTAValidator();
 void lockValidator();
 // --------------------------------------------------------------------------------------------------------------
 
+
+// --------------------------------------------------------------------------------------------------------------
+// Andersen.h........
+
+
+inline void bind_AndersenBase(py::module& m) {
+    py::class_<AndersenBase>(m, "AndersenBase")
+        .def("analyze", &AndersenBase::analyze)
+        .def("solveAndwritePtsToFile", &AndersenBase::solveAndwritePtsToFile)
+        .def("readPtsFromFile", &AndersenBase::readPtsFromFile)
+
+
+        // .def("classof", &AndersenBase::classof);
+
+        .def("solveConstraints", &AndersenBase::solveConstraints)
+        .def("initialize", &AndersenBase::initialize)
+        .def("finalize", &AndersenBase::finalize)
+
+        .def("updateCallGraph", &AndersenBase::updateCallGraph)
+
+
+        // .def("classof", &AndersenBase::classof)
+
+        .def("getConstraintGraph", &AndersenBase::getConstraintGraph)
+
+
+        .def("printStat", &AndersenBase::printStat)
+        .def("normalizePointsTo", &AndersenBase::normalizePointsTo)
+
+        .def("cleanConsCG", &AndersenBase::cleanConsCG);
+}
+
+
+
+// void bind_Anderson(py::module& m) {
+//     py::class_<Andersen>(m, "Andersen")
+//         .def("initialize", &Andersen::initialize)
+//         .def("finalize", &Andersen::finalize)
+//         .def("resetData", &Andersen::resetData)
+
+
+//         // .def("classof", &Andersen::classof);
+
+//         .def("sccRepNode", &Andersen::sccRepNode)
+//         .def("sccSubNodes", &Andersen::sccSubNodes)
+
+//         .def("getPts", &Andersen::getPts)
+//         .def("unionPts", (bool (Andersen::*)(NodeID, const PointsTo&)) &Andersen::unionPts)
+//         .def("unionPts", (bool (Andersen::*)(NodeID, NodeID)) &Andersen::unionPts)
+
+
+//         .def("dumpTopLevelPtsTo", &AndersenBase::dumpTopLevelPtsTo)
+//         .def("setDetectPWC", &AndersenBase::setDetectPWC);
+//     // Other function bindings...
+// }
+
+// --------------------------------------------------------------------------------------------------------------
