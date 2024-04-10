@@ -409,5 +409,41 @@ void AndersenBaseAnalyze() {
     AndersenBase* ab = new AndersenBase(pag);
     ab->analyze();
 }
+
+void AndersenBaseSolveAndwritePtsToFile(const std::string& filename) {
+    AndersenBase* ab = new AndersenBase(pag);
+    ab->solveAndwritePtsToFile(filename);
+}
+
+void AndersenBaseReadPtsFromFile(const std::string& filename) {
+    AndersenBase* ab = new AndersenBase(pag);
+    ab->readPtsFromFile(filename);
+}
+
+void AndersenBaseSolveConstraints() {
+    AndersenBase* ab = new AndersenBase(pag);
+    ab->solveConstraints();
+}
+
+void AndersenBaseInitialize() {
+    AndersenBase* ab = new AndersenBase(pag);
+    ab->initialize();
+}
+
+void AndersenBaseFinalize() {
+    AndersenBase* ab = new AndersenBase(pag);
+    ab->finalize();
+}
+
+void AndersenBaseNormalizePointsTo() {
+    AndersenBase* ab = new AndersenBase(pag);
+    ab->normalizePointsTo();
+}
+
+void AndersenBaseCleanConsCG(NodeID id) {
+    AndersenBase* ab = new AndersenBase(pag);
+    ab->cleanConsCG(id);
+}
+
 // --------------------------------------------------------------------------------------------------------------
 
