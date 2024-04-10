@@ -169,71 +169,88 @@ void lockValidator();
 // --------------------------------------------------------------------------------------------------------------
 
 
-// --------------------------------------------------------------------------------------------------------------
-// Andersen.h........
+// // --------------------------------------------------------------------------------------------------------------
+// // Andersen.h........ Binding by CLASS.... AIN'T WORKING
 
 
-inline void bind_AndersenBase(py::module& m) {
-    py::class_<AndersenBase>(m, "AndersenBase")
-        .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::Andersen_WPA, py::arg("alias_check") = true)
-        .def("analyze", &AndersenBase::analyze)
-        .def("solveAndwritePtsToFile", &AndersenBase::solveAndwritePtsToFile)
-        .def("readPtsFromFile", &AndersenBase::readPtsFromFile)
+// inline void bind_AndersenBase(py::module& m) {
+//     // Register the PTATY enum with pybind11
+//     py::enum_<PointerAnalysis::PTATY>(m, "PTATY1")
+//         .value("Andersen_BASE", PointerAnalysis::PTATY::Andersen_BASE)
+//         // Add other values of the enum here if needed
+//         .export_values();
+    
+//     py::class_<AndersenBase>(m, "AndersenBase")
+//         .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::Andersen_BASE, py::arg("alias_check") = true)
+//         .def("analyze", &AndersenBase::analyze)
+//         .def("solveAndwritePtsToFile", &AndersenBase::solveAndwritePtsToFile)
+//         .def("readPtsFromFile", &AndersenBase::readPtsFromFile)
 
-        .def("solveConstraints", &AndersenBase::solveConstraints)
-        .def("initialize", &AndersenBase::initialize)
-        .def("finalize", &AndersenBase::finalize)
+//         .def("solveConstraints", &AndersenBase::solveConstraints)
+//         .def("initialize", &AndersenBase::initialize)
+//         .def("finalize", &AndersenBase::finalize)
 
-        .def("updateCallGraph", &AndersenBase::updateCallGraph)
+//         .def("updateCallGraph", &AndersenBase::updateCallGraph)
 
-        .def_static("classof", [](const AndersenBase*) { return Andersen::classof((const AndersenBase*) nullptr); })
-        .def_static("classof", [](const PointerAnalysis *pta) { return Andersen::classof(pta); })
-
-
-        .def("getConstraintGraph", &AndersenBase::getConstraintGraph)
-
-
-        .def("printStat", &AndersenBase::printStat)
-        .def("normalizePointsTo", &AndersenBase::normalizePointsTo)
-
-        .def("cleanConsCG", &AndersenBase::cleanConsCG);
-}
+//         .def_static("classof", [](const AndersenBase*) { return Andersen::classof((const AndersenBase*) nullptr); })
+//         .def_static("classof", [](const PointerAnalysis *pta) { return Andersen::classof(pta); })
 
 
-
-inline void bind_Anderson(py::module& m) {
-    py::class_<Andersen>(m, "Andersen")
-        .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::Andersen_WPA, py::arg("alias_check") = true)
-        .def("initialize", &Andersen::initialize)
-        .def("finalize", &Andersen::finalize)
-        .def("resetData", &Andersen::resetData)
+//         .def("getConstraintGraph", &AndersenBase::getConstraintGraph)
 
 
-        .def_static("classof", [](const Andersen*) { return Andersen::classof((const Andersen*) nullptr); })
-        .def_static("classof", [](const PointerAnalysis *pta) { return Andersen::classof(pta); })
+//         .def("printStat", &AndersenBase::printStat)
+//         .def("normalizePointsTo", &AndersenBase::normalizePointsTo)
 
-        .def("sccRepNode", &Andersen::sccRepNode)
-        .def("sccSubNodes", &Andersen::sccSubNodes)
-
-        .def("getPts", &Andersen::getPts)
-        .def("unionPts", (bool (Andersen::*)(NodeID, const PointsTo&)) &Andersen::unionPts)
-        .def("unionPts", (bool (Andersen::*)(NodeID, NodeID)) &Andersen::unionPts)
+//         .def("cleanConsCG", &AndersenBase::cleanConsCG);
+// }
 
 
-        .def("dumpTopLevelPtsTo", &Andersen::dumpTopLevelPtsTo)
-        .def("setDetectPWC", &Andersen::setDetectPWC);
-}
 
-inline void bind_AndersenWaveDiff(py::module& m) {
-    py::class_<AndersenWaveDiff, Andersen>(m, "AndersenWaveDiff")
-        .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::AndersenWaveDiff_WPA, py::arg("alias_check") = true)
-        .def_static("createAndersenWaveDiff", &AndersenWaveDiff::createAndersenWaveDiff)
-        .def_static("releaseAndersenWaveDiff", &AndersenWaveDiff::releaseAndersenWaveDiff)
-        .def("initialize", &AndersenWaveDiff::initialize)
-        .def("solveWorklist", &AndersenWaveDiff::solveWorklist)
-        .def("processNode", &AndersenWaveDiff::processNode)
-        .def("postProcessNode", &AndersenWaveDiff::postProcessNode)
-        .def("handleLoad", &AndersenWaveDiff::handleLoad)
-        .def("handleStore", &AndersenWaveDiff::handleStore);
-}
-// --------------------------------------------------------------------------------------------------------------
+// inline void bind_Anderson(py::module& m) {
+//     // Register the PTATY enum with pybind11
+//     py::enum_<PointerAnalysis::PTATY>(m, "PTATY2")
+//         .value("Andersen_WPA", PointerAnalysis::PTATY::Andersen_WPA)
+//         // Add other values of the enum here if needed
+//         .export_values();
+
+//     py::class_<Andersen>(m, "Andersen")
+//         .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::Andersen_WPA, py::arg("alias_check") = true)
+//         .def("initialize", &Andersen::initialize)
+//         .def("finalize", &Andersen::finalize)
+//         .def("resetData", &Andersen::resetData)
+
+
+//         .def_static("classof", [](const Andersen*) { return Andersen::classof((const Andersen*) nullptr); })
+//         .def_static("classof", [](const PointerAnalysis *pta) { return Andersen::classof(pta); })
+
+//         .def("sccRepNode", &Andersen::sccRepNode)
+//         .def("sccSubNodes", &Andersen::sccSubNodes)
+
+//         .def("getPts", &Andersen::getPts)
+//         .def("unionPts", (bool (Andersen::*)(NodeID, const PointsTo&)) &Andersen::unionPts)
+//         .def("unionPts", (bool (Andersen::*)(NodeID, NodeID)) &Andersen::unionPts)
+
+
+//         .def("dumpTopLevelPtsTo", &Andersen::dumpTopLevelPtsTo)
+//         .def("setDetectPWC", &Andersen::setDetectPWC);
+// }
+
+// inline void bind_AndersenWaveDiff(py::module& m) {
+//     // Register the PTATY enum with pybind11
+//     py::enum_<PointerAnalysis::PTATY>(m, "PTATY3")
+//         .value("AndersenWaveDiff_WPA", PointerAnalysis::PTATY::AndersenWaveDiff_WPA)
+//         // Add other values of the enum here if needed
+//         .export_values();
+//     py::class_<AndersenWaveDiff, Andersen>(m, "AndersenWaveDiff")
+//         .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::AndersenWaveDiff_WPA, py::arg("alias_check") = true)
+//         .def_static("createAndersenWaveDiff", &AndersenWaveDiff::createAndersenWaveDiff)
+//         .def_static("releaseAndersenWaveDiff", &AndersenWaveDiff::releaseAndersenWaveDiff)
+//         .def("initialize", &AndersenWaveDiff::initialize)
+//         .def("solveWorklist", &AndersenWaveDiff::solveWorklist)
+//         .def("processNode", &AndersenWaveDiff::processNode)
+//         .def("postProcessNode", &AndersenWaveDiff::postProcessNode)
+//         .def("handleLoad", &AndersenWaveDiff::handleLoad)
+//         .def("handleStore", &AndersenWaveDiff::handleStore);
+// }
+// // --------------------------------------------------------------------------------------------------------------
