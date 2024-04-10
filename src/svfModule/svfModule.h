@@ -7,6 +7,14 @@
 #include "WPA/Andersen.h"
 
 
+#include "MemoryModel/PointerAnalysisImpl.h"
+#include "WPA/WPAStat.h"
+#include "WPA/WPASolver.h"
+#include "SVFIR/SVFIR.h"
+#include "Graphs/ConsG.h"
+#include "Util/Options.h"
+
+
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
@@ -167,12 +175,10 @@ void lockValidator();
 
 inline void bind_AndersenBase(py::module& m) {
     py::class_<AndersenBase>(m, "AndersenBase")
+        .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::Andersen_WPA, py::arg("alias_check") = true)
         .def("analyze", &AndersenBase::analyze)
         .def("solveAndwritePtsToFile", &AndersenBase::solveAndwritePtsToFile)
         .def("readPtsFromFile", &AndersenBase::readPtsFromFile)
-
-
-        // .def("classof", &AndersenBase::classof);
 
         .def("solveConstraints", &AndersenBase::solveConstraints)
         .def("initialize", &AndersenBase::initialize)
@@ -180,8 +186,9 @@ inline void bind_AndersenBase(py::module& m) {
 
         .def("updateCallGraph", &AndersenBase::updateCallGraph)
 
+        .def_static("classof", [](const AndersenBase*) { return Andersen::classof((const AndersenBase*) nullptr); })
+        .def_static("classof", [](const PointerAnalysis *pta) { return Andersen::classof(pta); })
 
-        // .def("classof", &AndersenBase::classof)
 
         .def("getConstraintGraph", &AndersenBase::getConstraintGraph)
 
@@ -194,26 +201,39 @@ inline void bind_AndersenBase(py::module& m) {
 
 
 
-// void bind_Anderson(py::module& m) {
-//     py::class_<Andersen>(m, "Andersen")
-//         .def("initialize", &Andersen::initialize)
-//         .def("finalize", &Andersen::finalize)
-//         .def("resetData", &Andersen::resetData)
+inline void bind_Anderson(py::module& m) {
+    py::class_<Andersen>(m, "Andersen")
+        .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::Andersen_WPA, py::arg("alias_check") = true)
+        .def("initialize", &Andersen::initialize)
+        .def("finalize", &Andersen::finalize)
+        .def("resetData", &Andersen::resetData)
 
 
-//         // .def("classof", &Andersen::classof);
+        .def_static("classof", [](const Andersen*) { return Andersen::classof((const Andersen*) nullptr); })
+        .def_static("classof", [](const PointerAnalysis *pta) { return Andersen::classof(pta); })
 
-//         .def("sccRepNode", &Andersen::sccRepNode)
-//         .def("sccSubNodes", &Andersen::sccSubNodes)
+        .def("sccRepNode", &Andersen::sccRepNode)
+        .def("sccSubNodes", &Andersen::sccSubNodes)
 
-//         .def("getPts", &Andersen::getPts)
-//         .def("unionPts", (bool (Andersen::*)(NodeID, const PointsTo&)) &Andersen::unionPts)
-//         .def("unionPts", (bool (Andersen::*)(NodeID, NodeID)) &Andersen::unionPts)
+        .def("getPts", &Andersen::getPts)
+        .def("unionPts", (bool (Andersen::*)(NodeID, const PointsTo&)) &Andersen::unionPts)
+        .def("unionPts", (bool (Andersen::*)(NodeID, NodeID)) &Andersen::unionPts)
 
 
-//         .def("dumpTopLevelPtsTo", &AndersenBase::dumpTopLevelPtsTo)
-//         .def("setDetectPWC", &AndersenBase::setDetectPWC);
-//     // Other function bindings...
-// }
+        .def("dumpTopLevelPtsTo", &Andersen::dumpTopLevelPtsTo)
+        .def("setDetectPWC", &Andersen::setDetectPWC);
+}
 
+inline void bind_AndersenWaveDiff(py::module& m) {
+    py::class_<AndersenWaveDiff, Andersen>(m, "AndersenWaveDiff")
+        .def(py::init<SVFIR*, PointerAnalysis::PTATY, bool>(), py::arg("_pag"), py::arg("type") = PointerAnalysis::PTATY::AndersenWaveDiff_WPA, py::arg("alias_check") = true)
+        .def_static("createAndersenWaveDiff", &AndersenWaveDiff::createAndersenWaveDiff)
+        .def_static("releaseAndersenWaveDiff", &AndersenWaveDiff::releaseAndersenWaveDiff)
+        .def("initialize", &AndersenWaveDiff::initialize)
+        .def("solveWorklist", &AndersenWaveDiff::solveWorklist)
+        .def("processNode", &AndersenWaveDiff::processNode)
+        .def("postProcessNode", &AndersenWaveDiff::postProcessNode)
+        .def("handleLoad", &AndersenWaveDiff::handleLoad)
+        .def("handleStore", &AndersenWaveDiff::handleStore);
+}
 // --------------------------------------------------------------------------------------------------------------
