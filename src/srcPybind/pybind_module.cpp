@@ -107,7 +107,17 @@ PYBIND11_MODULE(svfModule_pybind, m) {
 
     // --------------------------------------------------------------------------------------------------------------
     // Andersen.h........
-    m.def("AndersenBaseAnalyze", &lockValidator, "Func 45");
+    m.def("AndersenBaseAnalyze", &AndersenBaseAnalyze, "Func 45");
+
+    m.def("AndersenBaseSolveAndwritePtsToFile", &AndersenBaseSolveAndwritePtsToFile, "Func 45");
+    m.def("AndersenBaseReadPtsFromFile", &AndersenBaseReadPtsFromFile, "Func 45");
+    m.def("AndersenBaseSolveConstraints", &AndersenBaseSolveConstraints, "Func 45");
+
+    m.def("AndersenBaseInitialize", &AndersenBaseInitialize, "Func 45");
+    m.def("AndersenBaseFinalize", &AndersenBaseFinalize, "Func 45");
+    m.def("AndersenBaseNormalizePointsTo", &AndersenBaseNormalizePointsTo, "Func 45");
+
+    m.def("AndersenBaseCleanConsCG", &AndersenBaseCleanConsCG, "Func 45");
     // --------------------------------------------------------------------------------------------------------------
 
 

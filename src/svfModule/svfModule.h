@@ -262,5 +262,18 @@ void lockValidator();
 // AndersenBase
 
 void AndersenBaseAnalyze();
+
+void AndersenBaseSolveAndwritePtsToFile(const std::string& filename);
+
+void AndersenBaseReadPtsFromFile(const std::string& filename);
+
+void AndersenBaseSolveConstraints();
+void AndersenBaseInitialize();
+
+void AndersenBaseFinalize();
+
+void AndersenBaseNormalizePointsTo();
+
+void AndersenBaseCleanConsCG(NodeID id);
 // --------------------------------------------------------------------------------------------------------------
 
