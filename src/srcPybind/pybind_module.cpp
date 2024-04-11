@@ -107,6 +107,7 @@ PYBIND11_MODULE(svfModule_pybind, m) {
 
     // --------------------------------------------------------------------------------------------------------------
     // Andersen.h........
+    // AndersenBase
     m.def("AndersenBaseAnalyze", &AndersenBaseAnalyze, "Func 45");
 
     m.def("AndersenBaseSolveAndwritePtsToFile", &AndersenBaseSolveAndwritePtsToFile, "Func 45");
@@ -118,6 +119,38 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("AndersenBaseNormalizePointsTo", &AndersenBaseNormalizePointsTo, "Func 45");
 
     m.def("AndersenBaseCleanConsCG", &AndersenBaseCleanConsCG, "Func 45");
+
+
+
+
+    // Andersen
+    m.def("AndersenInitialize", &AndersenInitialize, "Func 45");
+
+    m.def("AndersenFinalize", &AndersenFinalize, "Func 45");
+    m.def("AndersenResetData", &AndersenResetData, "Func 45");
+    m.def("AndersenSccRepNode", &AndersenSccRepNode, "Func 45");
+
+    m.def("AndersenSccSubNodes", &AndersenSccSubNodes, "Func 45");
+    m.def("AndersenGetPts", &AndersenGetPts, "Func 45");
+
+
+    m.def("AndersenUnionPts", (bool (*)(NodeID, const PointsTo&)) &AndersenUnionPts, "Func 45");
+    m.def("AndersenUnionPts", (bool (*)(NodeID, NodeID)) &AndersenUnionPts, "Func 45");
+
+    m.def("AndersenDumpTopLevelPtsTo", &AndersenDumpTopLevelPtsTo, "Func 45");
+
+    m.def("AndersenSetDetectPWC", &AndersenSetDetectPWC, "Func 45");
+
+
+    // AndersenWaveDiff
+    m.def("AndersenWaveDiffInitialize", &AndersenWaveDiffInitialize, "Func 45");
+
+    m.def("AndersenWaveDiffSolveWorklist", &AndersenWaveDiffSolveWorklist, "Func 45");
+    m.def("AndersenWaveDiffProcessNode", &AndersenWaveDiffProcessNode, "Func 45");
+    m.def("AndersenWaveDiffPostProcessNode", &AndersenWaveDiffPostProcessNode, "Func 45");
+
+    m.def("AndersenWaveDiffHandleLoad", &AndersenWaveDiffHandleLoad, "Func 45");
+    m.def("AndersenWaveDiffHandleStore", &AndersenWaveDiffHandleStore, "Func 45");
     // --------------------------------------------------------------------------------------------------------------
 
 

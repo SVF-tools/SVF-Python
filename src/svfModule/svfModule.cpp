@@ -445,5 +445,115 @@ void AndersenBaseCleanConsCG(NodeID id) {
     ab->cleanConsCG(id);
 }
 
+// Andersen
+
+/// Initialize analysis
+void AndersenInitialize() {
+    Andersen* ander = new Andersen(pag);
+    ander->initialize();
+}
+
+/// Finalize analysis
+void AndersenFinalize() {
+    Andersen* ander = new Andersen(pag);
+    ander->finalize();
+}
+
+/// Reset data
+void AndersenResetData() {
+    Andersen* ander = new Andersen(pag);
+    ander->resetData();
+}
+
+
+NodeID AndersenSccRepNode(NodeID id) {
+    Andersen* ander = new Andersen(pag);
+    return ander->sccRepNode(id);
+}
+NodeBS& AndersenSccSubNodes(NodeID repId) {
+    Andersen* ander = new Andersen(pag);
+    return ander->sccSubNodes(repId);
+}
+//@}
+
+/// Operation of points-to set
+const PointsTo& AndersenGetPts(NodeID id) {
+    Andersen* ander = new Andersen(pag);
+    return ander->getPts(id);
+}
+
+bool AndersenUnionPts(NodeID id, const PointsTo& target)
+{
+    Andersen* ander = new Andersen(pag);
+    return ander->unionPts(id, target);
+}
+bool AndersenUnionPts(NodeID id, NodeID ptd)
+{
+    Andersen* ander = new Andersen(pag);
+    return ander->unionPts(id, ptd);
+}
+
+
+void AndersenDumpTopLevelPtsTo() {
+    Andersen* ander = new Andersen(pag);
+    ander->dumpTopLevelPtsTo();
+}
+
+void AndersenSetDetectPWC(bool flag)
+{
+    Andersen* ander = new Andersen(pag);
+    ander->setDetectPWC(flag);
+}
+
+
+// AndersenWaveDiff
+
+/// Create an singleton instance directly instead of invoking llvm pass manager
+
+// Created already.....
+// static AndersenWaveDiff* createAndersenWaveDiff(SVFIR* _pag)
+// {
+//     if(diffWave==nullptr)
+//     {
+//         diffWave = new AndersenWaveDiff(_pag, AndersenWaveDiff_WPA, false);
+//         diffWave->analyze();
+//         return diffWave;
+//     }
+//     return diffWave;
+// }
+
+// static void releaseAndersenWaveDiff()
+// {
+//     if (diffWave)
+//         delete diffWave;
+//     diffWave = nullptr;
+// }
+// Created already.....
+
+void AndersenWaveDiffInitialize() {
+    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
+    diffWave->initialize();
+}
+void AndersenWaveDiffSolveWorklist() {
+    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
+    diffWave->solveWorklist();
+}
+void AndersenWaveDiffProcessNode(NodeID nodeId) {
+    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
+    diffWave->processNode(nodeId);
+}
+void AndersenWaveDiffPostProcessNode(NodeID nodeId){
+    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
+    diffWave->postProcessNode(nodeId);
+}
+bool AndersenWaveDiffHandleLoad(NodeID id, const ConstraintEdge* load) {
+    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
+    return diffWave->handleLoad(id, load);
+}
+bool AndersenWaveDiffHandleStore(NodeID id, const ConstraintEdge* store) {
+    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
+    return diffWave->handleStore(id, store);
+}
+
 // --------------------------------------------------------------------------------------------------------------
 

@@ -1,36 +1,39 @@
 import svfModule_pybind
 
-class Andersen(object):
-    Andersen = svfModule_pybind
+class AndersenBase(object):
+    AndersenBase = svfModule_pybind
 
     def AndersenBaseAnalyze(self):
-        self.Andersen.AndersenBaseAnalyze()
+        self.AndersenBase.AndersenBaseAnalyze()
 
     def AndersenBaseSolveAndwritePtsToFile(self, filename):
-        self.Andersen.AndersenBaseSolveAndwritePtsToFile(filename)
+        self.AndersenBase.AndersenBaseSolveAndwritePtsToFile(filename)
 
 
     def AndersenBaseReadPtsFromFile(self, filename):
-        self.Andersen.AndersenBaseReadPtsFromFile(filename)
+        self.AndersenBase.AndersenBaseReadPtsFromFile(filename)
 
     def AndersenBaseSolveAndwritePtsToFile(self, filename):
-        self.Andersen.AndersenBaseSolveAndwritePtsToFile(filename)
+        self.AndersenBase.AndersenBaseSolveAndwritePtsToFile(filename)
 
     def AndersenBaseSolveConstraints(self):
-        self.Andersen.AndersenBaseSolveConstraints()
+        self.AndersenBase.AndersenBaseSolveConstraints()
 
     def AndersenBaseInitialize(self):
-        self.Andersen.AndersenBaseInitialize()
+        self.AndersenBase.AndersenBaseInitialize()
 
     
     def AndersenBaseFinalize(self):
-        self.Andersen.AndersenBaseFinalize()
+        self.AndersenBase.AndersenBaseFinalize()
 
     def AndersenBaseNormalizePointsTo(self):
-        self.Andersen.AndersenBaseNormalizePointsTo()
+        self.AndersenBase.AndersenBaseNormalizePointsTo()
 
     def AndersenBaseCleanConsCG(self, id):
-        self.Andersen.AndersenBaseInitialize(id)
+        self.AndersenBase.AndersenBaseInitialize(id)
 
 
-Andersen = Andersen()
+AndersenBase = AndersenBase()
+
+
+class Andersen(object):

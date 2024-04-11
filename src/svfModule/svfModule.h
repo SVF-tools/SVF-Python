@@ -15,6 +15,7 @@
 #include "Util/Options.h"
 
 
+
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
@@ -275,5 +276,45 @@ void AndersenBaseFinalize();
 void AndersenBaseNormalizePointsTo();
 
 void AndersenBaseCleanConsCG(NodeID id);
+// --------------------------------------------------------------------------------------------------------------
+
+// Andersen
+
+/// Initialize analysis
+void AndersenInitialize();
+
+/// Finalize analysis
+void AndersenFinalize();
+
+/// Reset data
+void AndersenResetData();
+
+
+NodeID AndersenSccRepNode(NodeID id);
+NodeBS& AndersenSccSubNodes(NodeID repId);
+//@}
+
+/// Operation of points-to set
+const PointsTo& AndersenGetPts(NodeID id);
+
+bool AndersenUnionPts(NodeID id, const PointsTo& target);
+bool AndersenUnionPts(NodeID id, NodeID ptd);
+
+
+void AndersenDumpTopLevelPtsTo();
+
+void AndersenSetDetectPWC(bool flag);
+
+
+// AndersenWaveDiff
+
+
+void AndersenWaveDiffInitialize();
+void AndersenWaveDiffSolveWorklist();
+void AndersenWaveDiffProcessNode(NodeID nodeId);
+void AndersenWaveDiffPostProcessNode(NodeID nodeId);
+bool AndersenWaveDiffHandleLoad(NodeID id, const ConstraintEdge* load);
+bool AndersenWaveDiffHandleStore(NodeID id, const ConstraintEdge* store);
+
 // --------------------------------------------------------------------------------------------------------------
 
