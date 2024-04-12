@@ -29,6 +29,12 @@
 #include "MTA/MTAResultValidator.h"
 #include "MTA/LockResultValidator.h"
 
+#include "SVFIR/SVFIR.h"
+#include "SVF-LLVM/BasicTypes.h"
+#include "SVF-LLVM/ICFGBuilder.h"
+#include "SVF-LLVM/LLVMModule.h"
+#include "SVF-LLVM/LLVMUtil.h"
+
 
 #include "svfModule.h"
 
@@ -557,3 +563,188 @@ bool AndersenWaveDiffHandleStore(NodeID id, const ConstraintEdge* store) {
 
 // --------------------------------------------------------------------------------------------------------------
 
+
+// --------------------------------------------------------------------------------------------------------------
+// SVF-LLVM/SVFIRBuilder.h"
+SVFIR* SVFIRPAGBuild() {
+    SVFIRBuilder _builder(svfModule);
+    builder = &_builder;
+    pag = _builder.build();
+    return pag;
+}   
+
+SVFIR* SVFIRGetPAG() {
+    return builder->getPAG();
+}
+
+void SVFIRInitialiseNodes() {
+    builder->initialiseNodes();
+}
+
+void SVFIRAddEdge(NodeID src, NodeID dst, SVFStmt::PEDGEK kind,
+                 APOffset offset = 0, Instruction* cs = nullptr) {
+    builder->addEdge(src, dst, kind, offset, cs);
+}
+
+void SVFIRSanityCheck() {
+    builder->sanityCheck();
+}
+
+NodeID SVFIRGetValueNode(const Value* V)
+{
+    return builder->getValueNode(V);
+}
+
+
+NodeID SVFIRGetObjectNode(const Value* V)
+{
+    return builder->getObjectNode(V);
+}
+
+NodeID SVFIRGetReturnNode(const SVFFunction *func)
+{
+    return builder->getReturnNode(func);
+}
+
+NodeID SVFIRGetVarargNode(const SVFFunction *func)
+{
+    return builder->getVarargNode(func);
+}
+
+void SVFIRVisitAllocaInst(AllocaInst &AI) {
+    builder->visitAllocaInst(AI);
+}
+
+void SVFIRVisitPHINode(PHINode &I) {
+    builder->visitPHINode(I);
+}
+
+void SVFIRVisitStoreInst(StoreInst &I) {
+    builder->visitStoreInst(I);
+}
+
+void SVFIRVisitLoadInst(LoadInst &I) {
+    builder->visitLoadInst(I);
+}
+
+void SVFIRVisitGetElementPtrInst(GetElementPtrInst &I) {
+    builder->visitGetElementPtrInst(I);
+}
+
+
+void SVFIRVisitCallInst(CallInst &I) {
+    builder->visitCallInst(I);
+}
+
+void SVFIRVisitInvokeInst(InvokeInst &II) {
+    builder->visitInvokeInst(II);
+}
+
+
+void SVFIRVisitCallBrInst(CallBrInst &I) {
+    builder->visitCallBrInst(I);
+
+}
+
+void SVFIRVisitCallSite(CallBase* cs) {
+    builder->visitCallSite(cs);
+
+}
+
+void SVFIRVisitReturnInst(ReturnInst &I) {
+    builder->visitReturnInst(I);
+
+}
+void SVFIRVisitCastInst(CastInst &I) {
+    builder->visitCastInst(I);
+}
+
+void SVFIRVisitSelectInst(SelectInst &I) {
+    builder->visitSelectInst(I);
+}
+
+void SVFIRVisitExtractValueInst(ExtractValueInst &EVI) {
+    builder->visitExtractValueInst(EVI);
+}
+
+void SVFIRVisitBranchInst(BranchInst &I) {
+    builder->visitBranchInst(I);
+}
+void SVFIRVisitSwitchInst(SwitchInst &I) {
+    builder->visitSwitchInst(I);
+}
+
+void SVFIRVisitInsertValueInst(InsertValueInst &I) {
+    builder->visitInsertValueInst(I);
+}
+
+void SVFIRVisitBinaryOperator(BinaryOperator &I) {
+    builder->visitBinaryOperator(I);
+}
+
+void SVFIRVisitUnaryOperator(UnaryOperator &I) {
+    builder->visitUnaryOperator(I);
+}
+void SVFIRVisitCmpInst(CmpInst &I) {
+    builder->visitCmpInst(I);
+}
+
+void SVFIRVisitVAArgInst(VAArgInst&) {
+    builder->visitVAArgInst();
+}
+void SVFIRVisitVACopyInst(VACopyInst&) {
+    builder->visitVACopyInst();
+}
+void SVFIRVisitVAEndInst(VAEndInst&) {
+    builder->visitVAEndInst();
+}
+void SVFIRVisitVAStartInst(VAStartInst&) {
+    builder->visitVAStartInst();
+}
+
+void SVFIRVisitFreezeInst(FreezeInst& I) {
+    builder->visitFreezeInst(I);
+}
+
+void SVFIRVisitExtractElementInst(ExtractElementInst &I) {
+    builder->visitExtractElementInst(I);
+}
+
+void SVFIRVisitInsertElementInst(InsertElementInst &I)
+{
+    builder->visitInsertElementInst(I);
+}
+void SVFIRVisitShuffleVectorInst(ShuffleVectorInst &I)
+{
+    builder->visitShuffleVectorInst(I);
+}
+void SVFIRVisitLandingPadInst(LandingPadInst &I)
+{
+    builder->visitLandingPadInst(I);
+}
+
+void SVFIRVisitResumeInst(ResumeInst&) {
+    builder->visitResumeInst();
+}
+void SVFIRVisitUnreachableInst(UnreachableInst&) {
+    builder->visitUnreachableInst();
+}
+
+void SVFIRVisitFenceInst(FenceInst &I){
+    builder->visitFenceInst(I);
+}
+void SVFIRVisitAtomicCmpXchgInst(AtomicCmpXchgInst &I) {
+    builder->visitAtomicCmpXchgInst(I);
+}
+void SVFIRVisitAtomicRMWInst(AtomicRMWInst &I) {
+    builder->visitAtomicRMWInst(I);
+}
+
+/// Provide base case for our instruction visit.
+void SVFIRVisitInstruction(Instruction&) {
+    builder->visitInstruction();
+}
+void SVFIRUpdateCallGraph(PTACallGraph* callgraph) {
+    builder->updateCallGraph(callgraph);
+}
+// --------------------------------------------------------------------------------------------------------------
