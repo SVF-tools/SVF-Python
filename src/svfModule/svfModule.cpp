@@ -246,7 +246,7 @@ void bufOverflowCheckerRunOnModule(){
 }
 
 void abstractExecutionRunOnModule(){
-    AbstractExecution ae;
+    AbstractInterpretation ae;
     ae.runOnModule(pag->getICFG());
 }
 
