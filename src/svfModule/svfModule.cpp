@@ -582,7 +582,7 @@ void SVFIRInitialiseNodes() {
 }
 
 void SVFIRAddEdge(NodeID src, NodeID dst, SVFStmt::PEDGEK kind,
-                 APOffset offset = 0, Instruction* cs = nullptr) {
+                 APOffset offset, Instruction* cs) {
     builder->addEdge(src, dst, kind, offset, cs);
 }
 
@@ -689,17 +689,17 @@ void SVFIRVisitCmpInst(CmpInst &I) {
     builder->visitCmpInst(I);
 }
 
-void SVFIRVisitVAArgInst(VAArgInst&) {
-    builder->visitVAArgInst();
+void SVFIRVisitVAArgInst(VAArgInst& inst) {
+    builder->visitVAArgInst(inst);
 }
-void SVFIRVisitVACopyInst(VACopyInst&) {
-    builder->visitVACopyInst();
+void SVFIRVisitVACopyInst(VACopyInst& inst) {
+    builder->visitVACopyInst(inst);
 }
-void SVFIRVisitVAEndInst(VAEndInst&) {
-    builder->visitVAEndInst();
+void SVFIRVisitVAEndInst(VAEndInst& inst) {
+    builder->visitVAEndInst(inst);
 }
-void SVFIRVisitVAStartInst(VAStartInst&) {
-    builder->visitVAStartInst();
+void SVFIRVisitVAStartInst(VAStartInst& inst) {
+    builder->visitVAStartInst(inst);
 }
 
 void SVFIRVisitFreezeInst(FreezeInst& I) {
@@ -723,11 +723,11 @@ void SVFIRVisitLandingPadInst(LandingPadInst &I)
     builder->visitLandingPadInst(I);
 }
 
-void SVFIRVisitResumeInst(ResumeInst&) {
-    builder->visitResumeInst();
+void SVFIRVisitResumeInst(ResumeInst& inst) {
+    builder->visitResumeInst(inst);
 }
-void SVFIRVisitUnreachableInst(UnreachableInst&) {
-    builder->visitUnreachableInst();
+void SVFIRVisitUnreachableInst(UnreachableInst& inst) {
+    builder->visitUnreachableInst(inst);
 }
 
 void SVFIRVisitFenceInst(FenceInst &I){
@@ -741,8 +741,8 @@ void SVFIRVisitAtomicRMWInst(AtomicRMWInst &I) {
 }
 
 /// Provide base case for our instruction visit.
-void SVFIRVisitInstruction(Instruction&) {
-    builder->visitInstruction();
+void SVFIRVisitInstruction(Instruction& inst) {
+    builder->visitInstruction(inst);
 }
 void SVFIRUpdateCallGraph(PTACallGraph* callgraph) {
     builder->updateCallGraph(callgraph);
@@ -765,30 +765,30 @@ bool LLVMUtilIsCallSite(const Value* val)
 }
 
 /// Get the definition of a function across multiple modules
-Function* LLVMUtilGetDefFunForMultipleModule(const Function* fun) {
+const Function* LLVMUtilGetDefFunForMultipleModule(const Function* fun) {
     return LLVMUtil::getDefFunForMultipleModule(fun);
 };
 
 /// Return LLVM callsite given a value
-CallBase* LLVMUtilGetLLVMCallSite(const Value* value)
+const CallBase* LLVMUtilGetLLVMCallSite(const Value* value)
 {
     return LLVMUtil::getLLVMCallSite(value);
 }
 
-Function* LLVMUtilGetCallee(const CallBase* cs)
+const Function* LLVMUtilGetCallee(const CallBase* cs)
 {
     return LLVMUtil::getCallee(cs);
 }
 
 /// Return LLVM function if this value is
-Function* LLVMUtilGetLLVMFunction(const Value* val)
+const Function* LLVMUtilGetLLVMFunction(const Value* val)
 {
 
     return LLVMUtil::getLLVMFunction(val);
 }
 
 /// Get program entry function from module.
-Function* LLVMUtilGetProgFunction(const std::string& funName) {
+const Function* LLVMUtilGetProgFunction(const std::string& funName) {
     return LLVMUtil::getProgFunction(funName);
 }
 
@@ -839,7 +839,7 @@ bool LLVMUtilIsUncalledFunction(const Function* fun) {
 /// whether this is an argument in dead function
 bool LLVMUtilArgInDeadFunction(const Value* val)
 {
-    return LLVMUtil::ArgInDeadFunction(val)
+    return LLVMUtil::ArgInDeadFunction(val);
 }
 //@}
 
@@ -890,64 +890,64 @@ void LLVMUtilGetFunReachableBBs(const Function* svfFun,
 }
 
 /// Strip off the constant casts
-Value* LLVMUtilStripConstantCasts(const Value* val) {
+const Value* LLVMUtilStripConstantCasts(const Value* val) {
     return LLVMUtil::stripConstantCasts(val);
 }
 
 /// Strip off the all casts
-Value* LLVMUtilStripAllCasts(const Value* val) {
+const Value* LLVMUtilStripAllCasts(const Value* val) {
     return LLVMUtil::stripAllCasts(val);
 }
 
 /// Return the bitcast instruction right next to val, otherwise
 /// return nullptr
-Value* LLVMUtilGetFirstUseViaCastInst(const Value* val) {
+const Value* LLVMUtilGetFirstUseViaCastInst(const Value* val) {
     return LLVMUtil::getFirstUseViaCastInst(val);
 }
 
 /// Return corresponding constant expression, otherwise return nullptr
 //@{
-ConstantExpr* LLVMUtilIsGepConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsGepConstantExpr(const Value* val)
 {
     return LLVMUtil::isGepConstantExpr(val);
 }
 
-ConstantExpr* LLVMUtilIsInt2PtrConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsInt2PtrConstantExpr(const Value* val)
 {
     return LLVMUtil::isInt2PtrConstantExpr(val);
 }
 
-ConstantExpr* LLVMUtilIsPtr2IntConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsPtr2IntConstantExpr(const Value* val)
 {
     return LLVMUtil::isPtr2IntConstantExpr(val);
 }
 
-ConstantExpr* LLVMUtilIsCastConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsCastConstantExpr(const Value* val)
 {
     return LLVMUtil::isCastConstantExpr(val);
 }
 
-ConstantExpr* LLVMUtilIsSelectConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsSelectConstantExpr(const Value* val)
 {
     return LLVMUtil::isSelectConstantExpr(val);
 }
 
-ConstantExpr* LLVMUtilIsTruncConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsTruncConstantExpr(const Value* val)
 {
     return LLVMUtil::isTruncConstantExpr(val);
 }
 
-ConstantExpr* LLVMUtilIsCmpConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsCmpConstantExpr(const Value* val)
 {
     return LLVMUtil::isCmpConstantExpr(val);
 }
 
-ConstantExpr* LLVMUtilIsBinaryConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsBinaryConstantExpr(const Value* val)
 {
     return LLVMUtil::isBinaryConstantExpr(val);
 }
 
-ConstantExpr* LLVMUtilIsUnaryConstantExpr(const Value* val)
+const ConstantExpr* LLVMUtilIsUnaryConstantExpr(const Value* val)
 {
     return LLVMUtil::isUnaryConstantExpr(val);
 }
@@ -1043,7 +1043,7 @@ void LLVMUtilRemoveUnusedFuncsAndAnnotationsAndGlobalVariables(Set<Function*> re
 }
 
 /// Get the corresponding Function based on its name
-SVFFunction* LLVMUtilGetFunction(const std::string& name) {
+const SVFFunction* LLVMUtilGetFunction(const std::string& name) {
     return LLVMUtil::getFunction(name);
 }
 
@@ -1054,7 +1054,7 @@ bool LLVMUtilIsConstDataOrAggData(const Value* val)
 }
 
 /// find the unique defined global across multiple modules
-Value* LLVMUtilGetGlobalRep(const Value* val) {
+const Value* LLVMUtilGetGlobalRep(const Value* val) {
     return LLVMUtil::getGlobalRep(val);
 }
 

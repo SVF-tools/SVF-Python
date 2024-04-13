@@ -20,6 +20,10 @@
 #include "SVF-LLVM/LLVMModule.h"
 #include "SVF-LLVM/LLVMUtil.h"
 
+#include "Util/SVFUtil.h"
+#include "SVF-LLVM/BasicTypes.h"
+#include "SVFIR/SVFValue.h"
+#include "Util/ThreadAPI.h"
 
 
 #include <pybind11/pybind11.h>
@@ -314,154 +318,6 @@ bool AndersenWaveDiffHandleStore(NodeID id, const ConstraintEdge* store);
 
 // --------------------------------------------------------------------------------------------------------------
 
-
-// --------------------------------------------------------------------------------------------------------------
-// SVF-LLVM/SVFIRBuilder.h"
-
-/// Start building SVFIR here
-virtual SVFIR* build();
-
-/// Return SVFIR
-SVFIR* getPAG() const
-{
-    return pag;
-}
-
-/// Initialize nodes and edges
-//@{
-void initialiseNodes();
-void addEdge(NodeID src, NodeID dst, SVFStmt::PEDGEK kind,
-                APOffset offset = 0, Instruction* cs = nullptr);
-// @}
-
-/// Sanity check for SVFIR
-void sanityCheck();
-
-/// Get different kinds of node
-//@{
-// GetValNode - Return the value node according to a LLVM Value.
-NodeID getValueNode(const Value* V)
-{
-    // first handle gep edge if val if a constant expression
-    processCE(V);
-
-    // strip off the constant cast and return the value node
-    SVFValue* svfVal = LLVMModuleSet::getLLVMModuleSet()->getSVFValue(V);
-    return pag->getValueNode(svfVal);
-}
-
-/// GetObject - Return the object node (stack/global/heap/function) according to a LLVM Value
-inline NodeID getObjectNode(const Value* V)
-{
-    SVFValue* svfVal = LLVMModuleSet::getLLVMModuleSet()->getSVFValue(V);
-    return pag->getObjectNode(svfVal);
-}
-
-/// getReturnNode - Return the node representing the unique return value of a function.
-inline NodeID getReturnNode(const SVFFunction *func)
-{
-    return pag->getReturnNode(func);
-}
-
-/// getVarargNode - Return the node representing the unique variadic argument of a function.
-inline NodeID getVarargNode(const SVFFunction *func)
-{
-    return pag->getVarargNode(func);
-}
-//@}
-
-
-/// Our visit overrides.
-//@{
-// Instructions that cannot be folded away.
-virtual void visitAllocaInst(AllocaInst &AI);
-void visitPHINode(PHINode &I);
-void visitStoreInst(StoreInst &I);
-void visitLoadInst(LoadInst &I);
-void visitGetElementPtrInst(GetElementPtrInst &I);
-void visitCallInst(CallInst &I);
-void visitInvokeInst(InvokeInst &II);
-void visitCallBrInst(CallBrInst &I);
-void visitCallSite(CallBase* cs);
-void visitReturnInst(ReturnInst &I);
-void visitCastInst(CastInst &I);
-void visitSelectInst(SelectInst &I);
-void visitExtractValueInst(ExtractValueInst  &EVI);
-void visitBranchInst(BranchInst &I);
-void visitSwitchInst(SwitchInst &I);
-void visitInsertValueInst(InsertValueInst &I)
-{
-    addBlackHoleAddrEdge(getValueNode(&I));
-}
-// TerminatorInst and UnwindInst have been removed since llvm-8.0.0
-// void visitTerminatorInst(TerminatorInst &TI) {}
-// void visitUnwindInst(UnwindInst &I) { /*returns void*/}
-
-void visitBinaryOperator(BinaryOperator &I);
-void visitUnaryOperator(UnaryOperator &I);
-void visitCmpInst(CmpInst &I);
-
-/// TODO: var arguments need to be handled.
-/// https://llvm.org/docs/LangRef.html#id1911
-void visitVAArgInst(VAArgInst&);
-void visitVACopyInst(VACopyInst&) {}
-void visitVAEndInst(VAEndInst&) {}
-void visitVAStartInst(VAStartInst&) {}
-
-/// <result> = freeze ty <val>
-/// If <val> is undef or poison, ‘freeze’ returns an arbitrary, but fixed value of type `ty`
-/// Otherwise, this instruction is a no-op and returns the input <val>
-void visitFreezeInst(FreezeInst& I);
-
-void visitExtractElementInst(ExtractElementInst &I);
-
-void visitInsertElementInst(InsertElementInst &I)
-{
-    addBlackHoleAddrEdge(getValueNode(&I));
-}
-void visitShuffleVectorInst(ShuffleVectorInst &I)
-{
-    addBlackHoleAddrEdge(getValueNode(&I));
-}
-void visitLandingPadInst(LandingPadInst &I)
-{
-    addBlackHoleAddrEdge(getValueNode(&I));
-}
-
-/// Instruction not that often
-void visitResumeInst(ResumeInst&)   /*returns void*/
-{
-}
-void visitUnreachableInst(UnreachableInst&)   /*returns void*/
-{
-}
-void visitFenceInst(FenceInst &I)   /*returns void*/
-{
-    addBlackHoleAddrEdge(getValueNode(&I));
-}
-void visitAtomicCmpXchgInst(AtomicCmpXchgInst &I)
-{
-    addBlackHoleAddrEdge(getValueNode(&I));
-}
-void visitAtomicRMWInst(AtomicRMWInst &I)
-{
-    addBlackHoleAddrEdge(getValueNode(&I));
-}
-
-/// Provide base case for our instruction visit.
-inline void visitInstruction(Instruction&)
-{
-    // If a new instruction is added to LLVM that we don't handle.
-    // TODO: ignore here:
-}
-//}@
-
-/// connect PAG edges based on callgraph
-void updateCallGraph(PTACallGraph* callgraph);
-
-
-// --------------------------------------------------------------------------------------------------------------
-
 // --------------------------------------------------------------------------------------------------------------
 // SVF-LLVM/SVFIRBuilder.h"
 SVFIR* SVFIRPAGBuild();
@@ -471,7 +327,7 @@ SVFIR* SVFIRGetPAG();
 void SVFIRInitialiseNodes();
 
 void SVFIRAddEdge(NodeID src, NodeID dst, SVFStmt::PEDGEK kind,
-                 APOffset offset = 0, Instruction* cs = nullptr);
+                 APOffset offset, Instruction* cs);
 
 void SVFIRSanityCheck();
 
@@ -550,91 +406,49 @@ bool LLVMUtilIsCallSite(const Instruction* inst);
 bool LLVMUtilIsCallSite(const Value* val);
 
 /// Get the definition of a function across multiple modules
-Function* LLVMUtilGetDefFunForMultipleModule(const Function* fun);
+const Function* LLVMUtilGetDefFunForMultipleModule(const Function* fun);
 
 /// Return LLVM callsite given a value
-CallBase* LLVMUtilGetLLVMCallSite(const Value* value)
-{
-    return LLVMUtil::getLLVMCallSite(value);
-}
+const CallBase* LLVMUtilGetLLVMCallSite(const Value* value);
 
-Function* LLVMUtilGetCallee(const CallBase* cs)
-{
-    return LLVMUtil::getCallee(cs);
-}
+const Function* LLVMUtilGetCallee(const CallBase* cs);
 
 /// Return LLVM function if this value is
-Function* LLVMUtilGetLLVMFunction(const Value* val)
-{
-
-    return LLVMUtil::getLLVMFunction(val);
-}
+const Function* LLVMUtilGetLLVMFunction(const Value* val);
 
 /// Get program entry function from module.
-Function* LLVMUtilGetProgFunction(const std::string& funName) {
-    return LLVMUtil::getProgFunction(funName);
-}
+const Function* LLVMUtilGetProgFunction(const std::string& funName);
 
 /// Check whether a function is an entry function (i.e., main)
-bool LLVMUtilIsProgEntryFunction(const Function* fun)
-{
-    return LLVMUtil::isProgEntryFunction(fun);
-}
+bool LLVMUtilIsProgEntryFunction(const Function* fun);
+/// Check whether this value is a black hole
+bool LLVMUtilIsBlackholeSym(const Value* val);
 
 /// Check whether this value is a black hole
-bool LLVMUtilIsBlackholeSym(const Value* val)
-{
-    return LLVMUtil::isBlackholeSym(val);
-}
-
-/// Check whether this value is a black hole
-bool LLVMUtilIsNullPtrSym(const Value* val)
-{
-    return LLVMUtil::isNullPtrSym(val);
-}
-
-static Type* LLVMUtilGetPtrElementType(const PointerType* pty)
-{
-    return LLVMUtil::getPtrElementType(pty);
-}
+bool LLVMUtilIsNullPtrSym(const Value* val);
+static Type* LLVMUtilGetPtrElementType(const PointerType* pty);
 
 /// Return size of this object based on LLVM value
-u32_t LLVMUtilGetNumOfElements(const Type* ety) {
-    return LLVMUtil::getNumOfElements(ety);
-
-}
+u32_t LLVMUtilGetNumOfElements(const Type* ety);
 
 
 /// Return true if this value refers to a object
-bool LLVMUtilIsObject(const Value* ref) {
-    return LLVMUtil::isObject(ref);
-}
+bool LLVMUtilIsObject(const Value* ref);
 
 /// Method for dead function, which does not have any possible caller
 /// function address is not taken and never be used in call or invoke instruction
 //@{
 /// whether this is a function without any possible caller?
-bool LLVMUtilIsUncalledFunction(const Function* fun) {
-    return LLVMUtil::isUncalledFunction(fun);
-
-}
+bool LLVMUtilIsUncalledFunction(const Function* fun);
 
 /// whether this is an argument in dead function
-bool LLVMUtilArgInDeadFunction(const Value* val)
-{
-    return LLVMUtil::ArgInDeadFunction(val)
-}
+bool LLVMUtilArgInDeadFunction(const Value* val);
 //@}
 
 /// Return true if this is an argument of a program entry function (e.g. main)
-bool LLVMUtilArgInProgEntryFunction(const Value* val)
-{
-    return LLVMUtil::ArgInProgEntryFunction(val);
-}
+bool LLVMUtilArgInProgEntryFunction(const Value* val);
 /// Return true if this is value in a dead function (function without any caller)
-bool LLVMUtilIsPtrInUncalledFunction(const Value* value) {
-    return LLVMUtil::isPtrInUncalledFunction(value);
-}
+bool LLVMUtilIsPtrInUncalledFunction(const Value* value);
 //@}
 
 //@}
@@ -642,245 +456,116 @@ bool LLVMUtilIsPtrInUncalledFunction(const Value* value) {
 /// Function does not have any possible caller in the call graph
 //@{
 /// Return true if the function does not have a caller (either it is a main function or a dead function)
-bool LLVMUtilIsNoCallerFunction(const Function* fun)
-{
-    return LLVMUtil::isNoCallerFunction(fun);
-}
+bool LLVMUtilIsNoCallerFunction(const Function* fun);
 
 /// Return true if the argument in a function does not have a caller
-bool LLVMUtilIsArgOfUncalledFunction (const Value*  val)
-{
-    return LLVMUtil::isArgOfUncalledFunction(val);
-}
-//@}
+bool LLVMUtilIsArgOfUncalledFunction (const Value*  val);
 
 /// Return true if the function has a return instruction
-bool LLVMUtilBasicBlockHasRetInst(const BasicBlock* bb) {
-    return LLVMUtil::basicBlockHasRetInst(bb);
-}
+bool LLVMUtilBasicBlockHasRetInst(const BasicBlock* bb);
 
 /// Return true if the function has a return instruction reachable from function
 /// entry
-bool LLVMUtilFunctionDoesNotRet(const Function* fun) {
-    return LLVMUtil::functionDoesNotRet(fun);
-
-}
+bool LLVMUtilFunctionDoesNotRet(const Function* fun);
 
 /// Get reachable basic block from function entry
 void LLVMUtilGetFunReachableBBs(const Function* svfFun,
-                        std::vector<const SVFBasicBlock*>& bbs) {
-    return LLVMUtil::getFunReachableBBs(svfFun, bbs);
-}
+                        std::vector<const SVFBasicBlock*>& bbs);
 
 /// Strip off the constant casts
-Value* LLVMUtilStripConstantCasts(const Value* val) {
-    return LLVMUtil::stripConstantCasts(val);
-}
-
+const Value* LLVMUtilStripConstantCasts(const Value* val);
 /// Strip off the all casts
-Value* LLVMUtilStripAllCasts(const Value* val) {
-    return LLVMUtil::stripAllCasts(val);
-}
+const Value* LLVMUtilStripAllCasts(const Value* val);
 
 /// Return the bitcast instruction right next to val, otherwise
 /// return nullptr
-Value* LLVMUtilGetFirstUseViaCastInst(const Value* val) {
-    return LLVMUtil::getFirstUseViaCastInst(val);
-}
-
+const Value* LLVMUtilGetFirstUseViaCastInst(const Value* val);
 /// Return corresponding constant expression, otherwise return nullptr
 //@{
-ConstantExpr* LLVMUtilIsGepConstantExpr(const Value* val)
-{
-    return LLVMUtil::isGepConstantExpr(val);
-}
+const ConstantExpr* LLVMUtilIsGepConstantExpr(const Value* val);
 
-ConstantExpr* LLVMUtilIsInt2PtrConstantExpr(const Value* val)
-{
-    return LLVMUtil::isInt2PtrConstantExpr(val);
-}
+const ConstantExpr* LLVMUtilIsInt2PtrConstantExpr(const Value* val);
 
-ConstantExpr* LLVMUtilIsPtr2IntConstantExpr(const Value* val)
-{
-    return LLVMUtil::isPtr2IntConstantExpr(val);
-}
+const ConstantExpr* LLVMUtilIsPtr2IntConstantExpr(const Value* val);
 
-ConstantExpr* LLVMUtilIsCastConstantExpr(const Value* val)
-{
-    return LLVMUtil::isCastConstantExpr(val);
-}
+const ConstantExpr* LLVMUtilIsCastConstantExpr(const Value* val);
 
-ConstantExpr* LLVMUtilIsSelectConstantExpr(const Value* val)
-{
-    return LLVMUtil::isSelectConstantExpr(val);
-}
+const ConstantExpr* LLVMUtilIsSelectConstantExpr(const Value* val);
 
-ConstantExpr* LLVMUtilIsTruncConstantExpr(const Value* val)
-{
-    return LLVMUtil::isTruncConstantExpr(val);
-}
-
-ConstantExpr* LLVMUtilIsCmpConstantExpr(const Value* val)
-{
-    return LLVMUtil::isCmpConstantExpr(val);
-}
-
-ConstantExpr* LLVMUtilIsBinaryConstantExpr(const Value* val)
-{
-    return LLVMUtil::isBinaryConstantExpr(val);
-}
-
-ConstantExpr* LLVMUtilIsUnaryConstantExpr(const Value* val)
-{
-    return LLVMUtil::isUnaryConstantExpr(val);
-}
-//@}
-
-DataLayout* LLVMUtilGetDataLayout(Module* mod)
-{
-    return LLVMUtil::getDataLayout(mod);
-}
+const ConstantExpr* LLVMUtilIsTruncConstantExpr(const Value* val);
+const ConstantExpr* LLVMUtilIsCmpConstantExpr(const Value* val);
+const ConstantExpr* LLVMUtilIsBinaryConstantExpr(const Value* val);
+const ConstantExpr* LLVMUtilIsUnaryConstantExpr(const Value* val);
+DataLayout* LLVMUtilGetDataLayout(Module* mod);
 
 /// Get the next instructions following control flow
 void LLVMUtilGetNextInsts(const Instruction* curInst,
-                  std::vector<const SVFInstruction*>& instList) {
-    return LLVMUtil::getNextInsts(curInst, instList);
-}
+                  std::vector<const SVFInstruction*>& instList);
 
 /// Get the previous instructions following control flow
 void LLVMUtilGetPrevInsts(const Instruction* curInst,
-                  std::vector<const SVFInstruction*>& instList) {
-    return LLVMUtil::getPrevInsts(curInst, instList);
-}
+                  std::vector<const SVFInstruction*>& instList);
 
 /// Get the next instructions following control flow
 void LLVMUtilGetNextInsts(const Instruction* curInst,
-                  std::vector<const Instruction*>& instList) {
-    return LLVMUtil::getNextInsts(curInst, instList);
-}
+                  std::vector<const Instruction*>& instList);
 
 /// Get the previous instructions following control flow
 void LLVMUtilGetPrevInsts(const Instruction* curInst,
-                  std::vector<const Instruction*>& instList) {
-    return LLVMUtil::getPrevInsts(curInst, instList);
-}
+                  std::vector<const Instruction*>& instList);
 
 /// Get num of BB's predecessors
-u32_t LLVMUtilGetBBPredecessorNum(const BasicBlock* BB) {
-    return LLVMUtil::getBBPredecessorNum(BB);
-}
+u32_t LLVMUtilGetBBPredecessorNum(const BasicBlock* BB);
 
 /// Check whether a file is an LLVM IR file
-bool LLVMUtilIsIRFile(const std::string& filename) {
-    return LLVMUtil::isIRFile(filename);
-
-}
+bool LLVMUtilIsIRFile(const std::string& filename);
 
 /// Parse argument for multi-module analysis
 void LLVMUtilProcessArguments(int argc, char** argv, int& arg_num, char** arg_value,
-                      std::vector<std::string>& moduleNameVec) {
-    return LLVMUtil::processArguments(argc, argv, arg_num, arg_value, moduleNameVec);
-}
+                      std::vector<std::string>& moduleNameVec);
 
 /// Helper method to get the size of the type from target data layout
 //@{
-u32_t LLVMUtilGetTypeSizeInBytes(const Type* type) {
-    return LLVMUtil::getTypeSizeInBytes(type);
-}
-u32_t LLVMUtilGetTypeSizeInBytes(const StructType* sty, u32_t field_index) {
-    return LLVMUtil::getTypeSizeInBytes(sty, field_index);
-}
-//@}
+u32_t LLVMUtilGetTypeSizeInBytes(const Type* type);
+u32_t LLVMUtilGetTypeSizeInBytes(const StructType* sty, u32_t field_index);
 
-const std::string LLVMUtilGetSourceLoc(const Value* val) {
-    return LLVMUtil::getSourceLoc(val);
-}
-const std::string LLVMUtilGetSourceLocOfFunction(const Function* F) {
-    return LLVMUtil::getSourceLocOfFunction(F);
-}
-
-bool LLVMUtilIsIntrinsicInst(const Instruction* inst) {
-    return LLVMUtil::isIntrinsicInst(inst);
-
-}
-bool LLVMUtilIsIntrinsicFun(const Function* func) {
-    return LLVMUtil::isIntrinsicFun(func);
-}
+const std::string LLVMUtilGetSourceLoc(const Value* val);
+const std::string LLVMUtilGetSourceLocOfFunction(const Function* F);
+bool LLVMUtilIsIntrinsicInst(const Instruction* inst);
+bool LLVMUtilIsIntrinsicFun(const Function* func);
 
 /// Get all called funcions in a parent function
-std::vector<const Function *> LLVMUtilGetCalledFunctions(const Function *F) {
-    return LLVMUtil::getCalledFunctions(F);
-}
-void LLVMUtilRemoveFunAnnotations(Set<Function*>& removedFuncList) {
-    return LLVMUtil::removeFunAnnotations(removedFuncList);
-}
-bool LLVMUtilIsUnusedGlobalVariable(const GlobalVariable& global) {
-    return LLVMUtil::isUnusedGlobalVariable(global);
-}
-void LLVMUtilRemoveUnusedGlobalVariables(Module* module) {
-    return LLVMUtil::removeUnusedGlobalVariables(module);
-}
+std::vector<const Function *> LLVMUtilGetCalledFunctions(const Function *F);
+void LLVMUtilRemoveFunAnnotations(Set<Function*>& removedFuncList);
+bool LLVMUtilIsUnusedGlobalVariable(const GlobalVariable& global);
+void LLVMUtilRemoveUnusedGlobalVariables(Module* module);
 /// Delete unused functions, annotations and global variables in extapi.bc
-void LLVMUtilRemoveUnusedFuncsAndAnnotationsAndGlobalVariables(Set<Function*> removedFuncList) {
-    return LLVMUtil::removeUnusedFuncsAndAnnotationsAndGlobalVariables(removedFuncList);
-}
+void LLVMUtilRemoveUnusedFuncsAndAnnotationsAndGlobalVariables(Set<Function*> removedFuncList);
 
 /// Get the corresponding Function based on its name
-SVFFunction* LLVMUtilGetFunction(const std::string& name) {
-    return LLVMUtil::getFunction(name);
-}
+const SVFFunction* LLVMUtilGetFunction(const std::string& name);
 
 /// Return true if the value refers to constant data, e.g., i32 0
-bool LLVMUtilIsConstDataOrAggData(const Value* val)
-{
-    return LLVMUtil::isConstDataOrAggData(val);
-}
+bool LLVMUtilIsConstDataOrAggData(const Value* val);
 
 /// find the unique defined global across multiple modules
-Value* LLVMUtilGetGlobalRep(const Value* val) {
-    return LLVMUtil::getGlobalRep(val);
-}
+const Value* LLVMUtilGetGlobalRep(const Value* val);
 
 /// Check whether this value points-to a constant object
-bool LLVMUtilIsConstantObjSym(const SVFValue* val) {
-    return LLVMUtil::isConstantObjSym(val);
-}
+bool LLVMUtilIsConstantObjSym(const SVFValue* val);
 
 /// Check whether this value points-to a constant object
-bool LLVMUtilIsConstantObjSym(const Value* val) {
-    return LLVMUtil::isConstantObjSym(val);
-}
-
+bool LLVMUtilIsConstantObjSym(const Value* val);
 // Dump Control Flow Graph of llvm function, with instructions
-void LLVMUtilViewCFG(const Function* fun) {
-    return LLVMUtil::viewCFG(fun);
-}
+void LLVMUtilViewCFG(const Function* fun);
 
 // Dump Control Flow Graph of llvm function, without instructions
-void LLVMUtilViewCFGOnly(const Function* fun) {
-    return LLVMUtil::viewCFGOnly(fun);
+void LLVMUtilViewCFGOnly(const Function* fun);
 
-}
+std::string LLVMUtilDumpValue(const Value* val);
+std::string LLVMUtilDumpType(const Type* type);
 
-std::string LLVMUtilDumpValue(const Value* val) {
-    return LLVMUtil::dumpValue(val);
-}
-
-std::string LLVMUtilDumpType(const Type* type) {
-    return LLVMUtil::dumpType(type);
-}
-
-std::string LLVMUtilDumpValueAndDbgInfo(const Value* val) {
-    return LLVMUtil::dumpValueAndDbgInfo(val);
-}
-
-void LLVMUtilGetSuccBBandCondValPairVec(const SwitchInst &switchInst, SuccBBAndCondValPairVec &vec) {
-    return LLVMUtil::getSuccBBandCondValPairVec(switchInst, vec);
-}
-
-/**
- * Note: default case value is nullptr
- */
-s64_t LLVMUtilGetCaseValue(const SwitchInst &switchInst, SuccBBAndCondValPair &succBB2CondVal) {
-    return LLVMUtil::getCaseValue(switchInst, succBB2CondVal);
-}
+std::string LLVMUtilDumpValueAndDbgInfo(const Value* val);
+void LLVMUtilGetSuccBBandCondValPairVec(const SwitchInst &switchInst, SuccBBAndCondValPairVec &vec);
+s64_t LLVMUtilGetCaseValue(const SwitchInst &switchInst, SuccBBAndCondValPair &succBB2CondVal);
+// --------------------------------------------------------------------------------------------------------------
