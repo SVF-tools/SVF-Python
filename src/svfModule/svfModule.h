@@ -326,8 +326,8 @@ SVFIR* SVFIRGetPAG();
 
 void SVFIRInitialiseNodes();
 
-void SVFIRAddEdge(NodeID src, NodeID dst, SVFStmt::PEDGEK kind,
-                 APOffset offset, Instruction* cs);
+// void SVFIRAddEdge(NodeID src, NodeID dst, SVFStmt::PEDGEK kind,
+//                  APOffset offset, Instruction* cs);
 
 void SVFIRSanityCheck();
 

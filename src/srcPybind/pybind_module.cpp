@@ -157,7 +157,7 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("SVFIRGetPAG", &SVFIRGetPAG, "Func 70");
     m.def("SVFIRInitialiseNodes", &SVFIRInitialiseNodes, "Func 71");
 
-    m.def("SVFIRAddEdge", &SVFIRAddEdge, "Func 72");
+    // m.def("SVFIRAddEdge", &SVFIRAddEdge, "Func 72");
     m.def("SVFIRSanityCheck", &SVFIRSanityCheck, "Func 73");
     m.def("SVFIRGetValueNode", &SVFIRGetValueNode, "Func 74");
 

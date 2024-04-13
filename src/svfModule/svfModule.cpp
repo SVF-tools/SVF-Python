@@ -581,10 +581,10 @@ void SVFIRInitialiseNodes() {
     builder->initialiseNodes();
 }
 
-void SVFIRAddEdge(NodeID src, NodeID dst, SVFStmt::PEDGEK kind,
-                 APOffset offset, Instruction* cs) {
-    builder->addEdge(src, dst, kind, offset, cs);
-}
+// void SVFIRAddEdge(NodeID src, NodeID dst, SVFStmt::PEDGEK kind,
+//                  APOffset offset, Instruction* cs) {
+//     builder->addEdge(src, dst, kind, offset, cs);
+// }
 
 void SVFIRSanityCheck() {
     builder->sanityCheck();
