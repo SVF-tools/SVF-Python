@@ -110,43 +110,252 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     // AndersenBase
     m.def("AndersenBaseAnalyze", &AndersenBaseAnalyze, "Func 45");
 
-    m.def("AndersenBaseSolveAndwritePtsToFile", &AndersenBaseSolveAndwritePtsToFile, "Func 45");
-    m.def("AndersenBaseReadPtsFromFile", &AndersenBaseReadPtsFromFile, "Func 45");
-    m.def("AndersenBaseSolveConstraints", &AndersenBaseSolveConstraints, "Func 45");
+    m.def("AndersenBaseSolveAndwritePtsToFile", &AndersenBaseSolveAndwritePtsToFile, "Func 46");
+    m.def("AndersenBaseReadPtsFromFile", &AndersenBaseReadPtsFromFile, "Func 47");
+    m.def("AndersenBaseSolveConstraints", &AndersenBaseSolveConstraints, "Func 48");
 
-    m.def("AndersenBaseInitialize", &AndersenBaseInitialize, "Func 45");
-    m.def("AndersenBaseFinalize", &AndersenBaseFinalize, "Func 45");
-    m.def("AndersenBaseNormalizePointsTo", &AndersenBaseNormalizePointsTo, "Func 45");
+    m.def("AndersenBaseInitialize", &AndersenBaseInitialize, "Func 49");
+    m.def("AndersenBaseFinalize", &AndersenBaseFinalize, "Func 50");
+    m.def("AndersenBaseNormalizePointsTo", &AndersenBaseNormalizePointsTo, "Func 51");
 
-    m.def("AndersenBaseCleanConsCG", &AndersenBaseCleanConsCG, "Func 45");
+    m.def("AndersenBaseCleanConsCG", &AndersenBaseCleanConsCG, "Func 52");
 
     // Andersen
-    m.def("AndersenInitialize", &AndersenInitialize, "Func 45");
+    m.def("AndersenInitialize", &AndersenInitialize, "Func 53");
 
-    m.def("AndersenFinalize", &AndersenFinalize, "Func 45");
-    m.def("AndersenResetData", &AndersenResetData, "Func 45");
-    m.def("AndersenSccRepNode", &AndersenSccRepNode, "Func 45");
+    m.def("AndersenFinalize", &AndersenFinalize, "Func 54");
+    m.def("AndersenResetData", &AndersenResetData, "Func 55");
+    m.def("AndersenSccRepNode", &AndersenSccRepNode, "Func 56");
 
-    m.def("AndersenSccSubNodes", &AndersenSccSubNodes, "Func 45");
-    m.def("AndersenGetPts", &AndersenGetPts, "Func 45");
+    m.def("AndersenSccSubNodes", &AndersenSccSubNodes, "Func 57");
+    m.def("AndersenGetPts", &AndersenGetPts, "Func 58");
 
 
-    m.def("AndersenUnionPts", (bool (*)(NodeID, const PointsTo&)) &AndersenUnionPts, "Func 45");
-    m.def("AndersenUnionPts", (bool (*)(NodeID, NodeID)) &AndersenUnionPts, "Func 45");
+    m.def("AndersenUnionPts", (bool (*)(NodeID, const PointsTo&)) &AndersenUnionPts, "Func 59");
+    m.def("AndersenUnionPts", (bool (*)(NodeID, NodeID)) &AndersenUnionPts, "Func 60");
 
-    m.def("AndersenDumpTopLevelPtsTo", &AndersenDumpTopLevelPtsTo, "Func 45");
+    m.def("AndersenDumpTopLevelPtsTo", &AndersenDumpTopLevelPtsTo, "Func 61");
 
-    m.def("AndersenSetDetectPWC", &AndersenSetDetectPWC, "Func 45");
+    m.def("AndersenSetDetectPWC", &AndersenSetDetectPWC, "Func 62");
 
     // AndersenWaveDiff
-    m.def("AndersenWaveDiffInitialize", &AndersenWaveDiffInitialize, "Func 45");
+    m.def("AndersenWaveDiffInitialize", &AndersenWaveDiffInitialize, "Func 63");
 
-    m.def("AndersenWaveDiffSolveWorklist", &AndersenWaveDiffSolveWorklist, "Func 45");
-    m.def("AndersenWaveDiffProcessNode", &AndersenWaveDiffProcessNode, "Func 45");
-    m.def("AndersenWaveDiffPostProcessNode", &AndersenWaveDiffPostProcessNode, "Func 45");
+    m.def("AndersenWaveDiffSolveWorklist", &AndersenWaveDiffSolveWorklist, "Func 64");
+    m.def("AndersenWaveDiffProcessNode", &AndersenWaveDiffProcessNode, "Func 65");
+    m.def("AndersenWaveDiffPostProcessNode", &AndersenWaveDiffPostProcessNode, "Func 66");
 
-    m.def("AndersenWaveDiffHandleLoad", &AndersenWaveDiffHandleLoad, "Func 45");
-    m.def("AndersenWaveDiffHandleStore", &AndersenWaveDiffHandleStore, "Func 45");
+    m.def("AndersenWaveDiffHandleLoad", &AndersenWaveDiffHandleLoad, "Func 67");
+    m.def("AndersenWaveDiffHandleStore", &AndersenWaveDiffHandleStore, "Func 68");
+    // --------------------------------------------------------------------------------------------------------------
+
+
+    // --------------------------------------------------------------------------------------------------------------
+    // SVF-LLVM/SVFIRBuilder.h"
+    m.def("SVFIRPAGBuild", &SVFIRPAGBuild, "Func 69");
+
+    m.def("SVFIRGetPAG", &SVFIRGetPAG, "Func 70");
+    m.def("SVFIRInitialiseNodes", &SVFIRInitialiseNodes, "Func 71");
+
+    m.def("SVFIRAddEdge", &SVFIRAddEdge, "Func 72");
+    m.def("SVFIRSanityCheck", &SVFIRSanityCheck, "Func 73");
+    m.def("SVFIRGetValueNode", &SVFIRGetValueNode, "Func 74");
+
+    m.def("SVFIRGetObjectNode", &SVFIRGetObjectNode, "Func 75");
+    m.def("SVFIRGetReturnNode", &SVFIRGetReturnNode, "Func 76");
+
+    m.def("SVFIRGetVarargNode", &SVFIRGetVarargNode, "Func 77");
+    m.def("SVFIRVisitAllocaInst", &SVFIRVisitAllocaInst, "Func 78");
+
+    m.def("SVFIRVisitPHINode", &SVFIRVisitPHINode, "Func 79");
+    m.def("SVFIRVisitStoreInst", &SVFIRVisitStoreInst, "Func 80");
+
+    m.def("SVFIRVisitLoadInst", &SVFIRVisitLoadInst, "Func 81");
+    m.def("SVFIRVisitGetElementPtrInst", &SVFIRVisitGetElementPtrInst, "Func 82");
+    m.def("SVFIRVisitCallInst", &SVFIRVisitCallInst, "Func 83");
+    m.def("SVFIRVisitInvokeInst", &SVFIRVisitInvokeInst, "Func 84");
+    m.def("SVFIRVisitCallBrInst", &SVFIRVisitCallBrInst, "Func 85");
+    m.def("SVFIRVisitCallSite", &SVFIRVisitCallSite, "Func 86");
+    m.def("SVFIRVisitReturnInst", &SVFIRVisitReturnInst, "Func 87");
+    m.def("SVFIRVisitCastInst", &SVFIRVisitCastInst, "Func 88");
+    m.def("SVFIRVisitSelectInst", &SVFIRVisitSelectInst, "Func 89");
+    m.def("SVFIRVisitExtractValueInst", &SVFIRVisitExtractValueInst, "Func 90");
+    m.def("SVFIRVisitBranchInst", &SVFIRVisitBranchInst, "Func 91");
+
+    m.def("SVFIRVisitSwitchInst", &SVFIRVisitSwitchInst, "Func 92");
+
+    m.def("SVFIRVisitInsertValueInst", &SVFIRVisitInsertValueInst, "Func 93");
+    m.def("SVFIRVisitBinaryOperator", &SVFIRVisitBinaryOperator, "Func 94");
+    
+    m.def("SVFIRVisitUnaryOperator", &SVFIRVisitUnaryOperator, "Func 95");
+    m.def("SVFIRVisitCmpInst", &SVFIRVisitCmpInst, "Func 96");
+    m.def("SVFIRVisitVAArgInst", &SVFIRVisitVAArgInst, "Func 97");
+
+    m.def("SVFIRVisitVACopyInst", &SVFIRVisitVACopyInst, "Func 98");
+    m.def("SVFIRVisitVAEndInst", &SVFIRVisitVAEndInst, "Func 99");
+
+    m.def("SVFIRVisitVAStartInst", &SVFIRVisitVAStartInst, "Func 100");
+    m.def("SVFIRVisitFreezeInst", &SVFIRVisitFreezeInst, "Func 101");
+
+    m.def("SVFIRVisitExtractElementInst", &SVFIRVisitExtractElementInst, "Func 102");
+    m.def("SVFIRVisitInsertElementInst", &SVFIRVisitInsertElementInst, "Func 103");
+
+    m.def("SVFIRVisitInsertElementInst", &SVFIRVisitInsertElementInst, "Func 104");
+
+    m.def("SVFIRVisitShuffleVectorInst", &SVFIRVisitShuffleVectorInst, "Func 105");
+    m.def("SVFIRVisitLandingPadInst", &SVFIRVisitLandingPadInst, "Func 106");
+    
+    m.def("SVFIRVisitResumeInst", &SVFIRVisitResumeInst, "Func 107");
+    m.def("SVFIRVisitUnreachableInst", &SVFIRVisitUnreachableInst, "Func 108");
+    m.def("SVFIRVisitFenceInst", &SVFIRVisitFenceInst, "Func 109");
+
+    m.def("SVFIRVisitAtomicCmpXchgInst", &SVFIRVisitAtomicCmpXchgInst, "Func 110");
+    m.def("SVFIRVisitAtomicRMWInst", &SVFIRVisitAtomicRMWInst, "Func 111");
+
+    m.def("SVFIRVisitInstruction", &SVFIRVisitInstruction, "Func 112");
+    m.def("SVFIRUpdateCallGraph", &SVFIRUpdateCallGraph, "Func 113");
+
+    // --------------------------------------------------------------------------------------------------------------
+
+
+    // --------------------------------------------------------------------------------------------------------------
+    // SVF-LLVM/LLVMUtil.h"
+
+    m.def("LLVMUtilIsCallSiteInst", (bool (*)(const Instruction*)) &LLVMUtilIsCallSite, "Func 69");
+    m.def("LLVMUtilIsCallSiteVal", (bool (*)(const Value*)) &LLVMUtilIsCallSite, "Func 70");
+    m.def("LLVMUtilGetDefFunForMultipleModule", &LLVMUtilGetDefFunForMultipleModule, "Func 71");
+
+    m.def("LLVMUtilGetLLVMCallSite", &LLVMUtilGetLLVMCallSite, "Func 72");
+    m.def("LLVMUtilGetCallee", &LLVMUtilGetCallee, "Func 73");
+    m.def("LLVMUtilGetLLVMFunction", &LLVMUtilGetLLVMFunction, "Func 74");
+
+    m.def("LLVMUtilGetProgFunction", &LLVMUtilGetProgFunction, "Func 75");
+    m.def("LLVMUtilIsProgEntryFunction", &LLVMUtilIsProgEntryFunction, "Func 76");
+
+    m.def("LLVMUtilIsBlackholeSym", &LLVMUtilIsBlackholeSym, "Func 77");
+    m.def("LLVMUtilIsNullPtrSym", &LLVMUtilIsNullPtrSym, "Func 78");
+
+    m.def("LLVMUtilGetPtrElementType", &LLVMUtilGetPtrElementType, "Func 79");
+    m.def("LLVMUtilGetNumOfElements", &LLVMUtilGetNumOfElements, "Func 80");
+
+
+
+
+    m.def("LLVMUtilIsObject", &LLVMUtilIsObject, "Func 69");
+    m.def("LLVMUtilIsUncalledFunction", &LLVMUtilIsUncalledFunction, "Func 70");
+
+    m.def("LLVMUtilArgInDeadFunction", &LLVMUtilArgInDeadFunction, "Func 71");
+
+    m.def("LLVMUtilArgInProgEntryFunction", &LLVMUtilArgInProgEntryFunction, "Func 72");
+    m.def("LLVMUtilIsPtrInUncalledFunction", &LLVMUtilIsPtrInUncalledFunction, "Func 73");
+    m.def("LLVMUtilIsNoCallerFunction", &LLVMUtilIsNoCallerFunction, "Func 74");
+
+    m.def("LLVMUtilIsArgOfUncalledFunction", &LLVMUtilIsArgOfUncalledFunction, "Func 75");
+    m.def("LLVMUtilBasicBlockHasRetInst", &LLVMUtilBasicBlockHasRetInst, "Func 78");
+
+    m.def("LLVMUtilFunctionDoesNotRet", &LLVMUtilFunctionDoesNotRet, "Func 79");
+    m.def("LLVMUtilGetFunReachableBBs", &LLVMUtilGetFunReachableBBs, "Func 80");
+
+
+
+    m.def("LLVMUtilStripConstantCasts", &LLVMUtilStripConstantCasts, "Func 71");
+
+    m.def("LLVMUtilStripAllCasts", &LLVMUtilStripAllCasts, "Func 72");
+    m.def("LLVMUtilGetFirstUseViaCastInst", &LLVMUtilGetFirstUseViaCastInst, "Func 73");
+    m.def("LLVMUtilIsGepConstantExpr", &LLVMUtilIsGepConstantExpr, "Func 74");
+
+    m.def("LLVMUtilIsInt2PtrConstantExpr", &LLVMUtilIsInt2PtrConstantExpr, "Func 75");
+    m.def("LLVMUtilIsPtr2IntConstantExpr", &LLVMUtilIsPtr2IntConstantExpr, "Func 76");
+
+    m.def("LLVMUtilIsCastConstantExpr", &LLVMUtilIsCastConstantExpr, "Func 77");
+    m.def("LLVMUtilIsSelectConstantExpr", &LLVMUtilIsSelectConstantExpr, "Func 78");
+
+    m.def("LLVMUtilIsTruncConstantExpr", &LLVMUtilIsTruncConstantExpr, "Func 79");
+    m.def("LLVMUtilIsCmpConstantExpr", &LLVMUtilIsCmpConstantExpr, "Func 80");
+
+
+    m.def("LLVMUtilIsBinaryConstantExpr", &LLVMUtilIsBinaryConstantExpr, "Func 75");
+    m.def("LLVMUtilIsUnaryConstantExpr", &LLVMUtilIsUnaryConstantExpr, "Func 76");
+
+    m.def("LLVMUtilGetDataLayout", &LLVMUtilGetDataLayout, "Func 77");
+    m.def("LLVMUtilGetNextInstsSVF", (void (*)(const Instruction*, std::vector<const SVFInstruction*>&)) &LLVMUtilGetNextInsts);
+
+    m.def("LLVMUtilGetPrevInstsSVF", (void (*)(const Instruction*, std::vector<const SVFInstruction*>&)) &LLVMUtilGetPrevInsts, "Func 79");
+    m.def("LLVMUtilGetNextInsts", (void (*)(const Instruction*, std::vector<const Instruction*>&)) &LLVMUtilGetNextInsts);
+    m.def("LLVMUtilGetPrevInsts", (void (*)(const Instruction*, std::vector<const Instruction*>&)) &LLVMUtilGetPrevInsts, "Func 77");
+
+
+    m.def("LLVMUtilGetBBPredecessorNum", &LLVMUtilGetBBPredecessorNum, "Func 78");
+
+    m.def("LLVMUtilIsIRFile", &LLVMUtilIsIRFile, "Func 79");
+    // m.def("LLVMUtilProcessArguments", &LLVMUtilProcessArguments, "Func 80");
+
+
+    m.def("LLVMUtilGetTypeSizeInBytes", (u32_t (*)(const Type*)) &LLVMUtilGetTypeSizeInBytes);
+    m.def("LLVMUtilGetTypeSizeInBytesStructType", (u32_t (*)(const StructType*, u32_t)) &LLVMUtilGetTypeSizeInBytes);
+
+
+
+
+    m.def("LLVMUtilGetSourceLoc", &LLVMUtilGetSourceLoc, "Func 77");
+    m.def("LLVMUtilGetSourceLocOfFunction", &LLVMUtilGetSourceLocOfFunction, "Func 78");
+
+    m.def("LLVMUtilIsIntrinsicInst", &LLVMUtilIsIntrinsicInst, "Func 79");
+    m.def("LLVMUtilIsIntrinsicFun", &LLVMUtilIsIntrinsicFun, "Func 80");
+
+
+    m.def("LLVMUtilGetCalledFunctions", &LLVMUtilGetCalledFunctions, "Func 75");
+    m.def("LLVMUtilRemoveFunAnnotations", &LLVMUtilRemoveFunAnnotations, "Func 76");
+
+
+
+    m.def("LLVMUtilIsUnusedGlobalVariable", &LLVMUtilIsUnusedGlobalVariable, "Func 77");
+    m.def("LLVMUtilRemoveUnusedGlobalVariables", &LLVMUtilRemoveUnusedGlobalVariables, "Func 78");
+
+
+    m.def("LLVMUtilRemoveUnusedFuncsAndAnnotationsAndGlobalVariables", &LLVMUtilRemoveUnusedFuncsAndAnnotationsAndGlobalVariables, "Func 79");
+    m.def("LLVMUtilGetFunction", &LLVMUtilGetFunction, "Func 80");
+
+
+    m.def("LLVMUtilIsConstDataOrAggData", &LLVMUtilIsConstDataOrAggData, "Func 75");
+    m.def("LLVMUtilGetGlobalRep", &LLVMUtilGetGlobalRep, "Func 76");
+
+
+
+
+    m.def("LLVMUtilIsConstDataOrAggData", &LLVMUtilIsConstDataOrAggData, "Func 77");
+    m.def("LLVMUtilGetSourceLocOfFunction", &LLVMUtilGetSourceLocOfFunction, "Func 78");
+
+    m.def("LLVMUtilIsIntrinsicInst", &LLVMUtilIsIntrinsicInst, "Func 79");
+    m.def("LLVMUtilIsIntrinsicFun", &LLVMUtilIsIntrinsicFun, "Func 80");
+
+
+    m.def("LLVMUtilGetCalledFunctions", &LLVMUtilGetCalledFunctions, "Func 75");
+    m.def("LLVMUtilRemoveFunAnnotations", &LLVMUtilRemoveFunAnnotations, "Func 76");
+
+
+
+    m.def("LLVMUtilIsUnusedGlobalVariable", &LLVMUtilIsUnusedGlobalVariable, "Func 77");
+    m.def("LLVMUtilRemoveUnusedGlobalVariables", &LLVMUtilRemoveUnusedGlobalVariables, "Func 78");
+
+
+    m.def("LLVMUtilIsConstantObjSymSVF", (bool (*)(const SVFValue*)) &LLVMUtilIsConstantObjSym);
+    m.def("LLVMUtilIsConstantObjSymVal", (bool (*)(const Value*)) &LLVMUtilIsConstantObjSym);
+
+
+
+    m.def("LLVMUtilViewCFG", &LLVMUtilViewCFG, "Func 77");
+    m.def("LLVMUtilViewCFGOnly", &LLVMUtilViewCFGOnly, "Func 78");
+
+    m.def("LLVMUtilDumpValue", &LLVMUtilDumpValue, "Func 79");
+    m.def("LLVMUtilDumpType", &LLVMUtilDumpType, "Func 80");
+
+
+    m.def("LLVMUtilDumpValueAndDbgInfo", &LLVMUtilDumpValueAndDbgInfo, "Func 75");
+    m.def("LLVMUtilGetSuccBBandCondValPairVec", &LLVMUtilGetSuccBBandCondValPairVec, "Func 76");
+
+    // m.def("LLVMUtilGetCaseValue", &LLVMUtilGetCaseValue, "Func 76");
+
     // --------------------------------------------------------------------------------------------------------------
 
 

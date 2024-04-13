@@ -810,7 +810,7 @@ bool LLVMUtilIsNullPtrSym(const Value* val)
     return LLVMUtil::isNullPtrSym(val);
 }
 
-static Type* LLVMUtilGetPtrElementType(const PointerType* pty)
+Type* LLVMUtilGetPtrElementType(const PointerType* pty)
 {
     return LLVMUtil::getPtrElementType(pty);
 }

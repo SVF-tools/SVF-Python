@@ -426,7 +426,7 @@ bool LLVMUtilIsBlackholeSym(const Value* val);
 
 /// Check whether this value is a black hole
 bool LLVMUtilIsNullPtrSym(const Value* val);
-static Type* LLVMUtilGetPtrElementType(const PointerType* pty);
+Type* LLVMUtilGetPtrElementType(const PointerType* pty);
 
 /// Return size of this object based on LLVM value
 u32_t LLVMUtilGetNumOfElements(const Type* ety);
