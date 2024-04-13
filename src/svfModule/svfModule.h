@@ -539,3 +539,348 @@ void SVFIRVisitAtomicRMWInst(AtomicRMWInst &I);
 void SVFIRVisitInstruction(Instruction&);
 void SVFIRUpdateCallGraph(PTACallGraph* callgraph);
 // --------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------
+// SVF-LLVM/LLVMUtil.h"
+
+/// Whether an instruction is a call or invoke instruction
+bool LLVMUtilIsCallSite(const Instruction* inst);
+/// Whether an instruction is a call or invoke instruction
+bool LLVMUtilIsCallSite(const Value* val);
+
+/// Get the definition of a function across multiple modules
+Function* LLVMUtilGetDefFunForMultipleModule(const Function* fun);
+
+/// Return LLVM callsite given a value
+CallBase* LLVMUtilGetLLVMCallSite(const Value* value)
+{
+    return LLVMUtil::getLLVMCallSite(value);
+}
+
+Function* LLVMUtilGetCallee(const CallBase* cs)
+{
+    return LLVMUtil::getCallee(cs);
+}
+
+/// Return LLVM function if this value is
+Function* LLVMUtilGetLLVMFunction(const Value* val)
+{
+
+    return LLVMUtil::getLLVMFunction(val);
+}
+
+/// Get program entry function from module.
+Function* LLVMUtilGetProgFunction(const std::string& funName) {
+    return LLVMUtil::getProgFunction(funName);
+}
+
+/// Check whether a function is an entry function (i.e., main)
+bool LLVMUtilIsProgEntryFunction(const Function* fun)
+{
+    return LLVMUtil::isProgEntryFunction(fun);
+}
+
+/// Check whether this value is a black hole
+bool LLVMUtilIsBlackholeSym(const Value* val)
+{
+    return LLVMUtil::isBlackholeSym(val);
+}
+
+/// Check whether this value is a black hole
+bool LLVMUtilIsNullPtrSym(const Value* val)
+{
+    return LLVMUtil::isNullPtrSym(val);
+}
+
+static Type* LLVMUtilGetPtrElementType(const PointerType* pty)
+{
+    return LLVMUtil::getPtrElementType(pty);
+}
+
+/// Return size of this object based on LLVM value
+u32_t LLVMUtilGetNumOfElements(const Type* ety) {
+    return LLVMUtil::getNumOfElements(ety);
+
+}
+
+
+/// Return true if this value refers to a object
+bool LLVMUtilIsObject(const Value* ref) {
+    return LLVMUtil::isObject(ref);
+}
+
+/// Method for dead function, which does not have any possible caller
+/// function address is not taken and never be used in call or invoke instruction
+//@{
+/// whether this is a function without any possible caller?
+bool LLVMUtilIsUncalledFunction(const Function* fun) {
+    return LLVMUtil::isUncalledFunction(fun);
+
+}
+
+/// whether this is an argument in dead function
+bool LLVMUtilArgInDeadFunction(const Value* val)
+{
+    return LLVMUtil::ArgInDeadFunction(val)
+}
+//@}
+
+/// Return true if this is an argument of a program entry function (e.g. main)
+bool LLVMUtilArgInProgEntryFunction(const Value* val)
+{
+    return LLVMUtil::ArgInProgEntryFunction(val);
+}
+/// Return true if this is value in a dead function (function without any caller)
+bool LLVMUtilIsPtrInUncalledFunction(const Value* value) {
+    return LLVMUtil::isPtrInUncalledFunction(value);
+}
+//@}
+
+//@}
+
+/// Function does not have any possible caller in the call graph
+//@{
+/// Return true if the function does not have a caller (either it is a main function or a dead function)
+bool LLVMUtilIsNoCallerFunction(const Function* fun)
+{
+    return LLVMUtil::isNoCallerFunction(fun);
+}
+
+/// Return true if the argument in a function does not have a caller
+bool LLVMUtilIsArgOfUncalledFunction (const Value*  val)
+{
+    return LLVMUtil::isArgOfUncalledFunction(val);
+}
+//@}
+
+/// Return true if the function has a return instruction
+bool LLVMUtilBasicBlockHasRetInst(const BasicBlock* bb) {
+    return LLVMUtil::basicBlockHasRetInst(bb);
+}
+
+/// Return true if the function has a return instruction reachable from function
+/// entry
+bool LLVMUtilFunctionDoesNotRet(const Function* fun) {
+    return LLVMUtil::functionDoesNotRet(fun);
+
+}
+
+/// Get reachable basic block from function entry
+void LLVMUtilGetFunReachableBBs(const Function* svfFun,
+                        std::vector<const SVFBasicBlock*>& bbs) {
+    return LLVMUtil::getFunReachableBBs(svfFun, bbs);
+}
+
+/// Strip off the constant casts
+Value* LLVMUtilStripConstantCasts(const Value* val) {
+    return LLVMUtil::stripConstantCasts(val);
+}
+
+/// Strip off the all casts
+Value* LLVMUtilStripAllCasts(const Value* val) {
+    return LLVMUtil::stripAllCasts(val);
+}
+
+/// Return the bitcast instruction right next to val, otherwise
+/// return nullptr
+Value* LLVMUtilGetFirstUseViaCastInst(const Value* val) {
+    return LLVMUtil::getFirstUseViaCastInst(val);
+}
+
+/// Return corresponding constant expression, otherwise return nullptr
+//@{
+ConstantExpr* LLVMUtilIsGepConstantExpr(const Value* val)
+{
+    return LLVMUtil::isGepConstantExpr(val);
+}
+
+ConstantExpr* LLVMUtilIsInt2PtrConstantExpr(const Value* val)
+{
+    return LLVMUtil::isInt2PtrConstantExpr(val);
+}
+
+ConstantExpr* LLVMUtilIsPtr2IntConstantExpr(const Value* val)
+{
+    return LLVMUtil::isPtr2IntConstantExpr(val);
+}
+
+ConstantExpr* LLVMUtilIsCastConstantExpr(const Value* val)
+{
+    return LLVMUtil::isCastConstantExpr(val);
+}
+
+ConstantExpr* LLVMUtilIsSelectConstantExpr(const Value* val)
+{
+    return LLVMUtil::isSelectConstantExpr(val);
+}
+
+ConstantExpr* LLVMUtilIsTruncConstantExpr(const Value* val)
+{
+    return LLVMUtil::isTruncConstantExpr(val);
+}
+
+ConstantExpr* LLVMUtilIsCmpConstantExpr(const Value* val)
+{
+    return LLVMUtil::isCmpConstantExpr(val);
+}
+
+ConstantExpr* LLVMUtilIsBinaryConstantExpr(const Value* val)
+{
+    return LLVMUtil::isBinaryConstantExpr(val);
+}
+
+ConstantExpr* LLVMUtilIsUnaryConstantExpr(const Value* val)
+{
+    return LLVMUtil::isUnaryConstantExpr(val);
+}
+//@}
+
+DataLayout* LLVMUtilGetDataLayout(Module* mod)
+{
+    return LLVMUtil::getDataLayout(mod);
+}
+
+/// Get the next instructions following control flow
+void LLVMUtilGetNextInsts(const Instruction* curInst,
+                  std::vector<const SVFInstruction*>& instList) {
+    return LLVMUtil::getNextInsts(curInst, instList);
+}
+
+/// Get the previous instructions following control flow
+void LLVMUtilGetPrevInsts(const Instruction* curInst,
+                  std::vector<const SVFInstruction*>& instList) {
+    return LLVMUtil::getPrevInsts(curInst, instList);
+}
+
+/// Get the next instructions following control flow
+void LLVMUtilGetNextInsts(const Instruction* curInst,
+                  std::vector<const Instruction*>& instList) {
+    return LLVMUtil::getNextInsts(curInst, instList);
+}
+
+/// Get the previous instructions following control flow
+void LLVMUtilGetPrevInsts(const Instruction* curInst,
+                  std::vector<const Instruction*>& instList) {
+    return LLVMUtil::getPrevInsts(curInst, instList);
+}
+
+/// Get num of BB's predecessors
+u32_t LLVMUtilGetBBPredecessorNum(const BasicBlock* BB) {
+    return LLVMUtil::getBBPredecessorNum(BB);
+}
+
+/// Check whether a file is an LLVM IR file
+bool LLVMUtilIsIRFile(const std::string& filename) {
+    return LLVMUtil::isIRFile(filename);
+
+}
+
+/// Parse argument for multi-module analysis
+void LLVMUtilProcessArguments(int argc, char** argv, int& arg_num, char** arg_value,
+                      std::vector<std::string>& moduleNameVec) {
+    return LLVMUtil::processArguments(argc, argv, arg_num, arg_value, moduleNameVec);
+}
+
+/// Helper method to get the size of the type from target data layout
+//@{
+u32_t LLVMUtilGetTypeSizeInBytes(const Type* type) {
+    return LLVMUtil::getTypeSizeInBytes(type);
+}
+u32_t LLVMUtilGetTypeSizeInBytes(const StructType* sty, u32_t field_index) {
+    return LLVMUtil::getTypeSizeInBytes(sty, field_index);
+}
+//@}
+
+const std::string LLVMUtilGetSourceLoc(const Value* val) {
+    return LLVMUtil::getSourceLoc(val);
+}
+const std::string LLVMUtilGetSourceLocOfFunction(const Function* F) {
+    return LLVMUtil::getSourceLocOfFunction(F);
+}
+
+bool LLVMUtilIsIntrinsicInst(const Instruction* inst) {
+    return LLVMUtil::isIntrinsicInst(inst);
+
+}
+bool LLVMUtilIsIntrinsicFun(const Function* func) {
+    return LLVMUtil::isIntrinsicFun(func);
+}
+
+/// Get all called funcions in a parent function
+std::vector<const Function *> LLVMUtilGetCalledFunctions(const Function *F) {
+    return LLVMUtil::getCalledFunctions(F);
+}
+void LLVMUtilRemoveFunAnnotations(Set<Function*>& removedFuncList) {
+    return LLVMUtil::removeFunAnnotations(removedFuncList);
+}
+bool LLVMUtilIsUnusedGlobalVariable(const GlobalVariable& global) {
+    return LLVMUtil::isUnusedGlobalVariable(global);
+}
+void LLVMUtilRemoveUnusedGlobalVariables(Module* module) {
+    return LLVMUtil::removeUnusedGlobalVariables(module);
+}
+/// Delete unused functions, annotations and global variables in extapi.bc
+void LLVMUtilRemoveUnusedFuncsAndAnnotationsAndGlobalVariables(Set<Function*> removedFuncList) {
+    return LLVMUtil::removeUnusedFuncsAndAnnotationsAndGlobalVariables(removedFuncList);
+}
+
+/// Get the corresponding Function based on its name
+SVFFunction* LLVMUtilGetFunction(const std::string& name) {
+    return LLVMUtil::getFunction(name);
+}
+
+/// Return true if the value refers to constant data, e.g., i32 0
+bool LLVMUtilIsConstDataOrAggData(const Value* val)
+{
+    return LLVMUtil::isConstDataOrAggData(val);
+}
+
+/// find the unique defined global across multiple modules
+Value* LLVMUtilGetGlobalRep(const Value* val) {
+    return LLVMUtil::getGlobalRep(val);
+}
+
+/// Check whether this value points-to a constant object
+bool LLVMUtilIsConstantObjSym(const SVFValue* val) {
+    return LLVMUtil::isConstantObjSym(val);
+}
+
+/// Check whether this value points-to a constant object
+bool LLVMUtilIsConstantObjSym(const Value* val) {
+    return LLVMUtil::isConstantObjSym(val);
+}
+
+// Dump Control Flow Graph of llvm function, with instructions
+void LLVMUtilViewCFG(const Function* fun) {
+    return LLVMUtil::viewCFG(fun);
+}
+
+// Dump Control Flow Graph of llvm function, without instructions
+void LLVMUtilViewCFGOnly(const Function* fun) {
+    return LLVMUtil::viewCFGOnly(fun);
+
+}
+
+std::string LLVMUtilDumpValue(const Value* val) {
+    return LLVMUtil::dumpValue(val);
+}
+
+std::string LLVMUtilDumpType(const Type* type) {
+    return LLVMUtil::dumpType(type);
+}
+
+std::string LLVMUtilDumpValueAndDbgInfo(const Value* val) {
+    return LLVMUtil::dumpValueAndDbgInfo(val);
+}
+
+void LLVMUtilGetSuccBBandCondValPairVec(const SwitchInst &switchInst, SuccBBAndCondValPairVec &vec) {
+    return LLVMUtil::getSuccBBandCondValPairVec(switchInst, vec);
+}
+
+/**
+ * Note: default case value is nullptr
+ */
+s64_t LLVMUtilGetCaseValue(const SwitchInst &switchInst, SuccBBAndCondValPair &succBB2CondVal) {
+    return LLVMUtil::getCaseValue(switchInst, succBB2CondVal);
+}

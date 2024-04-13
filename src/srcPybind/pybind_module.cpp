@@ -120,9 +120,6 @@ PYBIND11_MODULE(svfModule_pybind, m) {
 
     m.def("AndersenBaseCleanConsCG", &AndersenBaseCleanConsCG, "Func 45");
 
-
-
-
     // Andersen
     m.def("AndersenInitialize", &AndersenInitialize, "Func 45");
 
@@ -140,7 +137,6 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("AndersenDumpTopLevelPtsTo", &AndersenDumpTopLevelPtsTo, "Func 45");
 
     m.def("AndersenSetDetectPWC", &AndersenSetDetectPWC, "Func 45");
-
 
     // AndersenWaveDiff
     m.def("AndersenWaveDiffInitialize", &AndersenWaveDiffInitialize, "Func 45");
