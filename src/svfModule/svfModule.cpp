@@ -173,14 +173,14 @@ void getICFG(){
     icfg = pag->getICFG();
 }
 
-void VFGNewInstances(){
+void VFGBuild(){
     vfg = new VFG(callgraph);
 }
 
-void buildFullSVFG(){
+void SVFGBuild(){
     SVFGBuilder _svfBuilder;
     svfBuilder = &_svfBuilder;
-    _svfBuilder.buildFullSVFG(ander);
+    svfg = _svfBuilder.buildFullSVFG(ander);
 }
 
 void deleteVfg(){
@@ -1439,4 +1439,172 @@ bool VFGAddVFGEdge(VFGEdge* edge)
     return vfg->addVFGEdge(edge);
 }
 
+// --------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------
+// Graphs/SVFG.h
+/// Return statistics
+SVFGStat* SVFGGetStat()
+{
+    return svfg->getStat();
+}
+
+/// Clear MSSA
+void SVFGClearMSSA()
+{
+    svfg->clearMSSA();
+}
+
+/// Get SVFG memory SSA
+MemSSA* SVFGGetMSSA()
+{
+    return svfg->getMSSA();
+}
+
+/// Get Pointer Analysis
+PointerAnalysis* SVFGGetPTA()
+{
+    return svfg->getPTA();
+}
+
+/// Get a SVFG node
+SVFGNode* SVFGGetSVFGNode(NodeID id)
+{
+    return svfg->getSVFGNode(id);
+}
+
+/// Whether has the SVFGNode
+bool SVFGHasSVFGNode(NodeID id)
+{
+    return svfg->hasSVFGNode(id);
+}
+
+/// Get all inter value flow edges of a indirect call site
+void SVFGGetInterVFEdgesForIndirectCallSite(const CallICFGNode* cs, const SVFFunction* callee, VFG::SVFGEdgeSetTy& edges) {
+    svfg->getInterVFEdgesForIndirectCallSite(cs, callee, edges);
+}
+
+/// Dump graph into dot file
+void SVFGDump(const std::string& file, bool simple) {
+    svfg->dump(file, simple);
+}
+
+/// Connect SVFG nodes between caller and callee for indirect call site
+void SVFGConnectCallerAndCallee(const CallICFGNode* cs, const SVFFunction* callee, VFG::SVFGEdgeSetTy& edges) {
+    svfg->connectCallerAndCallee(cs, callee, edges);
+}
+
+/// Given a pagNode, return its definition site
+const SVFGNode* SVFGGetDefSVFGNode(const PAGNode* pagNode)
+{
+    return svfg->getDefSVFGNode(pagNode);
+}
+
+/// Given a pagNode, return whether it has definition site
+bool SVFGHasDefSVFGNode(const PAGNode* pagNode)
+{
+    return svfg->hasDefSVFGNode(pagNode);
+}
+
+/// Perform statistics
+void SVFGPerformStat() {
+    svfg->performStat();
+}
+
+/// Has a SVFGNode
+//@{
+bool SVFGHasActualINSVFGNodes(const CallICFGNode* cs)
+{
+    return svfg->hasActualINSVFGNodes(cs);
+}
+
+bool SVFGHasActualOUTSVFGNodes(const CallICFGNode* cs)
+{
+    return svfg->hasActualOUTSVFGNodes(cs);
+}
+
+bool SVFGHasFormalINSVFGNodes(const SVFFunction* fun)
+{
+    return svfg->hasFormalINSVFGNodes(fun);
+}
+
+bool SVFGHasFormalOUTSVFGNodes(const SVFFunction* fun)
+{
+    return svfg->hasFormalOUTSVFGNodes(fun);
+}
+//@}
+
+/// Get SVFGNode set
+//@{
+SVFGOPT::ActualINSVFGNodeSet& SVFGGetActualINSVFGNodes(const CallICFGNode* cs)
+{
+    return svfg->getActualINSVFGNodes(cs);
+}
+
+SVFGOPT::ActualOUTSVFGNodeSet& SVFGGetActualOUTSVFGNodes(const CallICFGNode* cs)
+{
+    return svfg->getActualOUTSVFGNodes(cs);
+}
+
+SVFGOPT::FormalINSVFGNodeSet& SVFGGetFormalINSVFGNodes(const SVFFunction* fun)
+{
+    return svfg->getFormalINSVFGNodes(fun);
+}
+
+SVFGOPT::FormalOUTSVFGNodeSet& SVFGGetFormalOUTSVFGNodes(const SVFFunction* fun)
+{
+    return svfg->getFormalOUTSVFGNodes(fun);
+}
+//@}
+
+/// Whether a node is function entry SVFGNode
+const SVFFunction* SVFGIsFunEntrySVFGNode(const SVFGNode* node) {
+    return svfg->isFunEntrySVFGNode(node);
+}
+
+/// Whether a node is callsite return SVFGNode
+const CallICFGNode* SVFGIsCallSiteRetSVFGNode(const SVFGNode* node) {
+    return svfg->isCallSiteRetSVFGNode(node);
+}
+
+/// Remove a SVFG edge
+void SVFGRemoveSVFGEdge(SVFGEdge* edge)
+{
+    svfg->removeSVFGEdge(edge);
+}
+/// Remove a SVFGNode
+void SVFGRemoveSVFGNode(SVFGNode* node)
+{
+    svfg->removeSVFGNode(node);
+}
+
+/// Add SVFG edge
+bool SVFGAddSVFGEdge(SVFGEdge* edge)
+{
+    return svfg->addSVFGEdge(edge);
+}
+
+/// Return total SVFG node number
+u32_t SVFGGetSVFGNodeNum()
+{
+    return svfg->getSVFGNodeNum();
+}
+
+/// Used *only* for Versioned FSPTA to encode propagation of versions
+/// in the worklist (allowing for breadth-first propagation).
+/// Returns the created node.
+const DummyVersionPropSVFGNode *SVFGAddDummyVersionPropSVFGNode(const NodeID object, const NodeID version)
+{
+    return svfg->addDummyVersionPropSVFGNode(object, version);
+}
+
+void SVFGWriteToFile(const std::string& filename) {
+    svfg->writeToFile(filename);
+}
+void SVFGReadFile(const std::string& filename) {
+    svfg->readFile(filename);
+}
+MRVer* SVFGGetMRVERFromString(const std::string& input) {
+    return svfg->getMRVERFromString(input);
+}
 // --------------------------------------------------------------------------------------------------------------

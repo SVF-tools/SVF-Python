@@ -26,10 +26,10 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("getPTACallGraph", &getPTACallGraph, "Func 10");
     m.def("getICFG", &getICFG, "Func 11");
 
-    m.def("VFGNewInstances", &VFGNewInstances, "Func 12");
+    m.def("VFGBuild", &VFGBuild, "Func 12");
 
     // functioning part?
-    m.def("buildFullSVFG", &buildFullSVFG, "Func 13");
+    m.def("SVFGBuild", &SVFGBuild, "Func 13");
     m.def("deleteSvfg", &deleteSvfg, "Func 14");
     m.def("deleteVfg", &deleteVfg, "Func 15");
     // 

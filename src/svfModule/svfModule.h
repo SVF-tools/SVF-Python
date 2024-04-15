@@ -34,12 +34,12 @@
 #include "Graphs/VFGNode.h"
 #include "Graphs/VFGEdge.h"
 
+
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 using namespace std;
 using namespace SVF;
-
 
 // namespace SVF_Header {
 
@@ -82,9 +82,9 @@ void getPTACallGraph();
 
 void getICFG();
 
-void VFGNewInstances();
+void VFGBuild();
 
-void buildFullSVFG();
+void SVFGBuild();
 
 void deleteVfg();
 void deleteSvfg();
@@ -742,4 +742,92 @@ VFGEdge* VFGHasThreadVFGEdge(VFGNode* src, VFGNode* dst, VFGEdge::VFGEdgeK kind)
 /// Add VFG edge
 bool VFGAddVFGEdge(VFGEdge* edge);
 
+// --------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------
+// Graphs/SVFG.h
+/// Return statistics
+SVFGStat* SVFGGetStat();
+
+/// Clear MSSA
+void SVFGClearMSSA();
+
+/// Get SVFG memory SSA
+MemSSA* SVFGGetMSSA();
+
+/// Get Pointer Analysis
+PointerAnalysis* SVFGGetPTA();
+
+/// Get a SVFG node
+SVFGNode* SVFGGetSVFGNode(NodeID id);
+
+/// Whether has the SVFGNode
+bool SVFGHasSVFGNode(NodeID id);
+
+/// Get all inter value flow edges of a indirect call site
+void SVFGGetInterVFEdgesForIndirectCallSite(const CallICFGNode* cs, const SVFFunction* callee, VFG::SVFGEdgeSetTy& edges);
+
+/// Dump graph into dot file
+void SVFGDump(const std::string& file, bool simple);
+
+/// Connect SVFG nodes between caller and callee for indirect call site
+void SVFGConnectCallerAndCallee(const CallICFGNode* cs, const SVFFunction* callee, VFG::SVFGEdgeSetTy& edges);
+
+/// Given a pagNode, return its definition site
+const SVFGNode* SVFGGetDefSVFGNode(const PAGNode* pagNode);
+
+/// Given a pagNode, return whether it has definition site
+bool SVFGHasDefSVFGNode(const PAGNode* pagNode);
+
+/// Perform statistics
+void SVFGPerformStat();
+
+/// Has a SVFGNode
+//@{
+bool SVFGHasActualINSVFGNodes(const CallICFGNode* cs);
+
+bool SVFGHasActualOUTSVFGNodes(const CallICFGNode* cs);
+
+bool SVFGHasFormalINSVFGNodes(const SVFFunction* fun);
+
+bool SVFGHasFormalOUTSVFGNodes(const SVFFunction* fun);
+//@}
+
+/// Get SVFGNode set
+//@{
+SVFGOPT::ActualINSVFGNodeSet& SVFGGetActualINSVFGNodes(const CallICFGNode* cs);
+
+SVFGOPT::ActualOUTSVFGNodeSet& SVFGGetActualOUTSVFGNodes(const CallICFGNode* cs);
+
+SVFGOPT::FormalINSVFGNodeSet& SVFGGetFormalINSVFGNodes(const SVFFunction* fun);
+
+SVFGOPT::FormalOUTSVFGNodeSet& SVFGGetFormalOUTSVFGNodes(const SVFFunction* fun);
+//@}
+
+/// Whether a node is function entry SVFGNode
+const SVFFunction* SVFGIsFunEntrySVFGNode(const SVFGNode* node);
+
+/// Whether a node is callsite return SVFGNode
+const CallICFGNode* SVFGIsCallSiteRetSVFGNode(const SVFGNode* node);
+
+/// Remove a SVFG edge
+void SVFGRemoveSVFGEdge(SVFGEdge* edge);
+/// Remove a SVFGNode
+void SVFGRemoveSVFGNode(SVFGNode* node);
+
+/// Add SVFG edge
+bool SVFGAddSVFGEdge(SVFGEdge* edge);
+
+/// Return total SVFG node number
+u32_t SVFGGetSVFGNodeNum();
+
+/// Used *only* for Versioned FSPTA to encode propagation of versions
+/// in the worklist (allowing for breadth-first propagation).
+/// Returns the created node.
+const DummyVersionPropSVFGNode *SVFGAddDummyVersionPropSVFGNode(const NodeID object, const NodeID version);
+
+void SVFGWriteToFile(const std::string& filename);
+void SVFGReadFile(const std::string& filename);
+MRVer* SVFGGetMRVERFromString(const std::string& input);
 // --------------------------------------------------------------------------------------------------------------
