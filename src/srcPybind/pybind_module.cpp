@@ -108,6 +108,7 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     // --------------------------------------------------------------------------------------------------------------
     // Andersen.h........
     // AndersenBase
+    m.def("AndersenBaseBuild", &AndersenBaseBuild, "Func 45");
     m.def("AndersenBaseAnalyze", &AndersenBaseAnalyze, "Func 45");
 
     m.def("AndersenBaseSolveAndwritePtsToFile", &AndersenBaseSolveAndwritePtsToFile, "Func 46");
@@ -121,6 +122,8 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("AndersenBaseCleanConsCG", &AndersenBaseCleanConsCG, "Func 52");
 
     // Andersen
+    m.def("AndersenBuild", &AndersenBuild, "Func 53");
+
     m.def("AndersenInitialize", &AndersenInitialize, "Func 53");
 
     m.def("AndersenFinalize", &AndersenFinalize, "Func 54");

@@ -282,6 +282,7 @@ void lockValidator();
 // WPA/Andersen.h........ Binding by FUNCTION.... TRYING - SEEMS TO BE WORKING, FURTHER TESTING NEEDED
 
 // AndersenBase
+void AndersenBaseBuild();
 
 void AndersenBaseAnalyze();
 
@@ -300,7 +301,7 @@ void AndersenBaseCleanConsCG(NodeID id);
 // --------------------------------------------------------------------------------------------------------------
 
 // Andersen
-
+void AndersenBuild();
 void AndersenInitialize();
 
 void AndersenFinalize();

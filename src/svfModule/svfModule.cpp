@@ -55,12 +55,15 @@ std::vector<std::string> moduleNameVec;
 SVFModule* svfModule;
 SVFIRBuilder* builder;
 SVFIR* pag;
-AndersenWaveDiff* ander;
 PTACallGraph* callgraph;
 ICFG* icfg;
 VFG* vfg;
 SVFGBuilder* svfBuilder;
 SVFG* svfg;
+
+AndersenBase* ab;
+Andersen* an;
+AndersenWaveDiff* ander;
 
 std::unique_ptr<LeakChecker> saber;
 // --------------------------------------------------------------------------------------------------------------
@@ -406,155 +409,120 @@ void lockValidator(){
 // --------------------------------------------------------------------------------------------------------------
 // Andersen.h........ Binding by FUNCTION.... TRYING
 
+void AndersenBaseBuild() {
+    ab = new AndersenBase(pag);
+}
 // AndersenBase
 void AndersenBaseAnalyze() {
-    AndersenBase* ab = new AndersenBase(pag);
     ab->analyze();
 }
 
 void AndersenBaseSolveAndwritePtsToFile(const std::string& filename) {
-    AndersenBase* ab = new AndersenBase(pag);
     ab->solveAndwritePtsToFile(filename);
 }
 
 void AndersenBaseReadPtsFromFile(const std::string& filename) {
-    AndersenBase* ab = new AndersenBase(pag);
     ab->readPtsFromFile(filename);
 }
 
 void AndersenBaseSolveConstraints() {
-    AndersenBase* ab = new AndersenBase(pag);
     ab->solveConstraints();
 }
 
 void AndersenBaseInitialize() {
-    AndersenBase* ab = new AndersenBase(pag);
     ab->initialize();
 }
 
 void AndersenBaseFinalize() {
-    AndersenBase* ab = new AndersenBase(pag);
     ab->finalize();
 }
 
 void AndersenBaseNormalizePointsTo() {
-    AndersenBase* ab = new AndersenBase(pag);
     ab->normalizePointsTo();
 }
 
 void AndersenBaseCleanConsCG(NodeID id) {
-    AndersenBase* ab = new AndersenBase(pag);
     ab->cleanConsCG(id);
 }
 
 // Andersen
+void AndersenBuild() {
+    an = new Andersen(pag);
+}
 
 /// Initialize analysis
 void AndersenInitialize() {
-    Andersen* ander = new Andersen(pag);
-    ander->initialize();
+    an->initialize();
 }
 
 /// Finalize analysis
 void AndersenFinalize() {
-    Andersen* ander = new Andersen(pag);
-    ander->finalize();
+    an->finalize();
 }
 
 /// Reset data
 void AndersenResetData() {
-    Andersen* ander = new Andersen(pag);
-    ander->resetData();
+    an->resetData();
 }
 
 
 NodeID AndersenSccRepNode(NodeID id) {
-    Andersen* ander = new Andersen(pag);
-    return ander->sccRepNode(id);
+    return an->sccRepNode(id);
 }
 NodeBS& AndersenSccSubNodes(NodeID repId) {
-    Andersen* ander = new Andersen(pag);
-    return ander->sccSubNodes(repId);
+    return an->sccSubNodes(repId);
 }
 //@}
 
 /// Operation of points-to set
 const PointsTo& AndersenGetPts(NodeID id) {
-    Andersen* ander = new Andersen(pag);
-    return ander->getPts(id);
+    return an->getPts(id);
 }
 
 bool AndersenUnionPts(NodeID id, const PointsTo& target)
 {
-    Andersen* ander = new Andersen(pag);
-    return ander->unionPts(id, target);
+    return an->unionPts(id, target);
 }
 bool AndersenUnionPts(NodeID id, NodeID ptd)
 {
-    Andersen* ander = new Andersen(pag);
-    return ander->unionPts(id, ptd);
+    return an->unionPts(id, ptd);
 }
 
 
 void AndersenDumpTopLevelPtsTo() {
-    Andersen* ander = new Andersen(pag);
-    ander->dumpTopLevelPtsTo();
+    an->dumpTopLevelPtsTo();
 }
 
 void AndersenSetDetectPWC(bool flag)
 {
-    Andersen* ander = new Andersen(pag);
-    ander->setDetectPWC(flag);
+    an->setDetectPWC(flag);
 }
 
 
 // AndersenWaveDiff
 
-/// Create an singleton instance directly instead of invoking llvm pass manager
-
-// Created already.....
-// static AndersenWaveDiff* createAndersenWaveDiff(SVFIR* _pag)
-// {
-//     if(diffWave==nullptr)
-//     {
-//         diffWave = new AndersenWaveDiff(_pag, AndersenWaveDiff_WPA, false);
-//         diffWave->analyze();
-//         return diffWave;
-//     }
-//     return diffWave;
-// }
-
-// static void releaseAndersenWaveDiff()
-// {
-//     if (diffWave)
-//         delete diffWave;
-//     diffWave = nullptr;
-// }
-// Created already.....
+// 
+// void AndersenWaveDiffBuild() 
+// This method had been created, named createAndersenWaveDiff.....
+//
 
 void AndersenWaveDiffInitialize() {
-    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
-    diffWave->initialize();
+    ander->initialize();
 }
 void AndersenWaveDiffSolveWorklist() {
-    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
-    diffWave->solveWorklist();
+    ander->solveWorklist();
 }
 void AndersenWaveDiffProcessNode(NodeID nodeId) {
-    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
-    diffWave->processNode(nodeId);
+    ander->processNode(nodeId);
 }
 void AndersenWaveDiffPostProcessNode(NodeID nodeId){
-    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
-    diffWave->postProcessNode(nodeId);
+    ander->postProcessNode(nodeId);
 }
 bool AndersenWaveDiffHandleLoad(NodeID id, const ConstraintEdge* load) {
-    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
-    return diffWave->handleLoad(id, load);
+    return ander->handleLoad(id, load);
 }
 bool AndersenWaveDiffHandleStore(NodeID id, const ConstraintEdge* store) {
-    AndersenWaveDiff* diffWave = new AndersenWaveDiff(pag);
-    return diffWave->handleStore(id, store);
+    return ander->handleStore(id, store);
 }
 
 // --------------------------------------------------------------------------------------------------------------
