@@ -359,4 +359,50 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     // --------------------------------------------------------------------------------------------------------------
 
 
+    // --------------------------------------------------------------------------------------------------------------
+    // Graphs/ICFG.h
+
+    m.def("ICFGGetICFGNodeID", (ICFGNode* (*)(NodeID)) &ICFGGetICFGNode);
+    m.def("ICFGHasICFGNodeID", (ICFGNode* (*)(NodeID)) &ICFGHasICFGNode, "Func 71");
+
+
+    m.def("ICFGHasIntraICFGEdge", &ICFGHasIntraICFGEdge, "Func 72");
+    m.def("ICFGHasInterICFGEdge", &ICFGHasInterICFGEdge, "Func 73");
+    m.def("ICFGHasThreadICFGEdge", &ICFGHasThreadICFGEdge, "Func 74");
+
+    m.def("ICFGGetICFGEdge", &ICFGGetICFGEdge, "Func 75");
+    m.def("ICFGDump", &ICFGDump, "Func 76");
+
+    m.def("ICFGView", &ICFGView, "Func 77");
+    m.def("ICFGUpdateCallGraph", &ICFGUpdateCallGraph, "Func 78");
+
+    m.def("ICFGIsInLoopNode", (bool (*)(const ICFGNode*)) &ICFGIsInLoop);
+    m.def("ICFGIsInLoopInst", (bool (*)(const SVFInstruction*)) &ICFGIsInLoop);
+
+
+    m.def("ICFGAddNodeToSVFLoop", &ICFGAddNodeToSVFLoop, "Func 72");
+    m.def("ICFGGetSVFLoops", &ICFGGetSVFLoops, "Func 73");
+    m.def("ICFGGetIcfgNodeToSVFLoopVec", &ICFGGetIcfgNodeToSVFLoopVec, "Func 74");
+
+    m.def("ICFGGetICFGNodeInst", (ICFGNode* (*)(const SVFInstruction*)) &ICFGGetICFGNode);
+
+
+    m.def("ICFGGetCallICFGNode", &ICFGGetCallICFGNode, "Func 72");
+    m.def("ICFGGetRetICFGNode", &ICFGGetRetICFGNode, "Func 73");
+    m.def("ICFGGetIntraICFGNode", &ICFGGetIntraICFGNode, "Func 74");
+
+    m.def("ICFGGetFunEntryICFGNode", &ICFGGetFunEntryICFGNode, "Func 75");
+    m.def("ICFGGetFunExitICFGNode", &ICFGGetFunExitICFGNode, "Func 76");
+
+    m.def("ICFGGetGlobalICFGNode", &ICFGGetGlobalICFGNode, "Func 77");
+    m.def("ICFGAddGlobalICFGNode", &ICFGAddGlobalICFGNode, "Func 78");
+
+
+
+    m.def("ICFGGetSubNodes", &ICFGGetSubNodes, "Func 72");
+    m.def("ICFGGetRepNode", &ICFGGetRepNode, "Func 73");
+    m.def("ICFGUpdateSubAndRep", &ICFGUpdateSubAndRep, "Func 74");
+    // --------------------------------------------------------------------------------------------------------------
+
+
 }

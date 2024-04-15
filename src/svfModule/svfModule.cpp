@@ -1102,7 +1102,7 @@ s64_t LLVMUtilGetCaseValue(const SwitchInst &switchInst, SuccBBAndCondValPair &s
 
 
 // --------------------------------------------------------------------------------------------------------------
-// Graphs/ICFG.h"
+// Graphs/ICFG.h
 ICFGNode* ICFGGetICFGNode(NodeID id)
 {
     return icfg->getICFGNode(id);
