@@ -5,7 +5,7 @@ class PTACallGraph(object):
     PTACallGraph = svfModule_pybind
 
     def getPTACallGraph(self):
-        self.PTACallGraph.getPTACallGraph()
+        self.PTACallGraph.PTACallGraphBuild()
 
     def updateCallGraph(self):
         self.PTACallGraph.updateCallGraph()

@@ -23,8 +23,8 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     
     m.def("pagBuild", &pagBuild, "Func 8");
     m.def("createAndersenWaveDiff", &createAndersenWaveDiff, "Func 9");
-    m.def("getPTACallGraph", &getPTACallGraph, "Func 10");
-    m.def("getICFG", &getICFG, "Func 11");
+    m.def("PTACallGraphBuild", &PTACallGraphBuild, "Func 10");
+    m.def("ICFGBuild", &ICFGBuild, "Func 11");
 
     m.def("VFGBuild", &VFGBuild, "Func 12");
 

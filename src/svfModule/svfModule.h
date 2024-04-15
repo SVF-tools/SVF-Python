@@ -81,9 +81,9 @@ void setModuleNameVec(char* name);
 void pagBuild();
 void createAndersenWaveDiff();
 
-void getPTACallGraph();
+void PTACallGraphBuild();
 
-void getICFG();
+void ICFGBuild();
 
 void VFGBuild();
 

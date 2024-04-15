@@ -10,7 +10,7 @@ class SVFIR(object):
         self.svfIR.pagBuild()
 
     def getICFG(self):
-        self.svfIR.getICFG()
+        self.svfIR.ICFGBuild()
 
     def releaseSVFIR(self):
         self.svfIR.releaseSVFIR()

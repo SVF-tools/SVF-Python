@@ -165,11 +165,11 @@ void createAndersenWaveDiff(){
     ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
 }
 
-void getPTACallGraph(){
+void PTACallGraphBuild(){
     callgraph = ander->getPTACallGraph();
 }
 
-void getICFG(){
+void ICFGBuild(){
     icfg = pag->getICFG();
 }
 
