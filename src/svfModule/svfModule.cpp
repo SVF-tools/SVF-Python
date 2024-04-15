@@ -1103,13 +1103,13 @@ s64_t LLVMUtilGetCaseValue(const SwitchInst &switchInst, SuccBBAndCondValPair &s
 
 // --------------------------------------------------------------------------------------------------------------
 // Graphs/ICFG.h"
-ICFGNode* ICFGGetICFGNode(NodeID id) const
+ICFGNode* ICFGGetICFGNode(NodeID id)
 {
     return icfg->getICFGNode(id);
 }
 
 /// Whether has the ICFGNode
-bool ICFGHasICFGNode(NodeID id) const
+bool ICFGHasICFGNode(NodeID id)
 {
     return icfg->hasICFGNode(id);
 }
@@ -1133,7 +1133,7 @@ ICFGEdge* ICFGGetICFGEdge(const ICFGNode* src, const ICFGNode* dst, ICFGEdge::IC
 }
 
 /// Dump graph into dot file
-void ICFGDump(const std::string& file, bool simple = false) {
+void ICFGDump(const std::string& file, bool simple) {
     icfg->dump(file, simple);
 }
 
@@ -1166,12 +1166,12 @@ void ICFGAddNodeToSVFLoop(const ICFGNode *node, const SVFLoop* loop)
 }
 
 /// Get loops where a node resides
-SVFLoopVec& ICFGGetSVFLoops(const ICFGNode *node)
+ICFG::SVFLoopVec& ICFGGetSVFLoops(const ICFGNode *node)
 {
     return icfg->getSVFLoops(node);
 }
 
-const ICFGNodeToSVFLoopVec& ICFGGetIcfgNodeToSVFLoopVec() const
+const ICFG::ICFGNodeToSVFLoopVec& ICFGGetIcfgNodeToSVFLoopVec()
 {
     return icfg->getIcfgNodeToSVFLoopVec();
 }
@@ -1201,7 +1201,7 @@ FunExitICFGNode* ICFGGetFunExitICFGNode(const SVFFunction*  fun) {
     return icfg->getFunExitICFGNode(fun);
 }
 
-GlobalICFGNode* ICFGGetGlobalICFGNode() const
+GlobalICFGNode* ICFGGetGlobalICFGNode()
 {
     return icfg->getGlobalICFGNode();
 }
@@ -1210,12 +1210,12 @@ void ICFGAddGlobalICFGNode()
     return icfg->addGlobalICFGNode();
 }
 
-const std::vector<const ICFGNode*>& ICFGGetSubNodes(const ICFGNode* node) const
+const std::vector<const ICFGNode*>& ICFGGetSubNodes(const ICFGNode* node)
 {
     return icfg->getSubNodes(node);
 }
 
-const ICFGNode* ICFGGetRepNode(const ICFGNode* node) const
+const ICFGNode* ICFGGetRepNode(const ICFGNode* node)
 {
     return icfg->getRepNode(node);
 }

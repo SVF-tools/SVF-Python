@@ -578,10 +578,10 @@ s64_t LLVMUtilGetCaseValue(const SwitchInst &switchInst, SuccBBAndCondValPair &s
 
 // --------------------------------------------------------------------------------------------------------------
 // Graphs/ICFG.h"
-ICFGNode* ICFGGetICFGNode(NodeID id) const;
+ICFGNode* ICFGGetICFGNode(NodeID id);
 
 /// Whether has the ICFGNode
-bool ICFGHasICFGNode(NodeID id) const;
+bool ICFGHasICFGNode(NodeID id);
 /// Whether we has a SVFG edge
 //@{
 ICFGEdge* ICFGHasIntraICFGEdge(ICFGNode* src, ICFGNode* dst, ICFGEdge::ICFGEdgeK kind);
@@ -594,7 +594,7 @@ ICFGEdge* ICFGHasThreadICFGEdge(ICFGNode* src, ICFGNode* dst, ICFGEdge::ICFGEdge
 ICFGEdge* ICFGGetICFGEdge(const ICFGNode* src, const ICFGNode* dst, ICFGEdge::ICFGEdgeK kind);
 
 /// Dump graph into dot file
-void ICFGDump(const std::string& file, bool simple = false);
+void ICFGDump(const std::string& file, bool simple);
 
 /// View graph from the debugger
 void ICFGView();
@@ -611,9 +611,9 @@ bool ICFGIsInLoop(const SVFInstruction* inst);
 void ICFGAddNodeToSVFLoop(const ICFGNode *node, const SVFLoop* loop);
 
 /// Get loops where a node resides
-SVFLoopVec& ICFGGetSVFLoops(const ICFGNode *node);
+ICFG::SVFLoopVec& ICFGGetSVFLoops(const ICFGNode *node);
 
-const ICFGNodeToSVFLoopVec& ICFGGetIcfgNodeToSVFLoopVec() const;
+const ICFG::ICFGNodeToSVFLoopVec& ICFGGetIcfgNodeToSVFLoopVec();
 
 
 ICFGNode* ICFGGetICFGNode(const SVFInstruction* inst);
@@ -628,12 +628,12 @@ FunEntryICFGNode* ICFGGetFunEntryICFGNode(const SVFFunction* fun);
 
 FunExitICFGNode* ICFGGetFunExitICFGNode(const SVFFunction* fun);
 
-GlobalICFGNode* ICFGGetGlobalICFGNode() const;
+GlobalICFGNode* ICFGGetGlobalICFGNode();
 void ICFGAddGlobalICFGNode();
 
-const std::vector<const ICFGNode*>& ICFGGetSubNodes(const ICFGNode* node) const;
+const std::vector<const ICFGNode*>& ICFGGetSubNodes(const ICFGNode* node);
 
-const ICFGNode* ICFGGetRepNode(const ICFGNode* node) const;
+const ICFGNode* ICFGGetRepNode(const ICFGNode* node);
 
 
 void ICFGUpdateSubAndRep(const ICFGNode* rep, const ICFGNode* sub);
