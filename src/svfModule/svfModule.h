@@ -34,6 +34,9 @@
 #include "Graphs/VFGNode.h"
 #include "Graphs/VFGEdge.h"
 
+#include "Graphs/VFG.h"
+#include "Graphs/SVFGNode.h"
+
 
 #include <pybind11/pybind11.h>
 
@@ -747,14 +750,14 @@ bool VFGAddVFGEdge(VFGEdge* edge);
 
 // --------------------------------------------------------------------------------------------------------------
 // Graphs/SVFG.h
-/// Return statistics
-SVFGStat* SVFGGetStat();
+// /// Return statistics
+// std::shared_ptr<SVF::SVFGStat> SVFGGetStat();
 
 /// Clear MSSA
 void SVFGClearMSSA();
 
-/// Get SVFG memory SSA
-MemSSA* SVFGGetMSSA();
+// /// Get SVFG memory SSA
+// std::shared_ptr<SVF::MemSSA> SVFGGetMSSA();
 
 /// Get Pointer Analysis
 PointerAnalysis* SVFGGetPTA();

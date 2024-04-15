@@ -480,4 +480,58 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("VFGAddVFGEdge", &VFGAddVFGEdge, "Func 73");
     // --------------------------------------------------------------------------------------------------------------
 
+
+
+    // --------------------------------------------------------------------------------------------------------------
+    // Graphs/SVFG.h
+
+    // m.def("SVFGGetStat", &SVFGGetStat, "Func 72");
+    m.def("SVFGClearMSSA", &SVFGClearMSSA, "Func 73");
+    // m.def("SVFGGetMSSA", &SVFGGetMSSA, "Func 74");
+
+    m.def("SVFGGetPTA", &SVFGGetPTA, "Func 75");
+    m.def("SVFGGetSVFGNode", &SVFGGetSVFGNode, "Func 76");
+
+    m.def("SVFGHasSVFGNode", &SVFGHasSVFGNode, "Func 77");
+    m.def("SVFGGetInterVFEdgesForIndirectCallSite", &SVFGGetInterVFEdgesForIndirectCallSite, "Func 78");
+
+    m.def("SVFGDump", &SVFGDump, "Func 72");
+    m.def("SVFGConnectCallerAndCallee", &SVFGConnectCallerAndCallee, "Func 73");
+    m.def("SVFGGetDefSVFGNode", &SVFGGetDefSVFGNode, "Func 74");
+
+
+    m.def("SVFGHasDefSVFGNode", &SVFGHasDefSVFGNode, "Func 72");
+    m.def("SVFGPerformStat", &SVFGPerformStat, "Func 73");
+    m.def("SVFGHasActualINSVFGNodes", &SVFGHasActualINSVFGNodes, "Func 74");
+
+
+    m.def("SVFGHasActualOUTSVFGNodes", &SVFGHasActualOUTSVFGNodes, "Func 75");
+    m.def("SVFGHasFormalINSVFGNodes", &SVFGHasFormalINSVFGNodes, "Func 76");
+
+    m.def("SVFGHasFormalOUTSVFGNodes", &SVFGHasFormalOUTSVFGNodes, "Func 77");
+    m.def("SVFGGetActualINSVFGNodes", &SVFGGetActualINSVFGNodes, "Func 78");
+
+
+
+    m.def("SVFGGetActualOUTSVFGNodes", &SVFGGetActualOUTSVFGNodes, "Func 72");
+    m.def("SVFGGetFormalINSVFGNodes", &SVFGGetFormalINSVFGNodes, "Func 73");
+    m.def("SVFGGetFormalOUTSVFGNodes", &SVFGGetFormalOUTSVFGNodes, "Func 74");
+
+    m.def("SVFGIsFunEntrySVFGNode", &SVFGIsFunEntrySVFGNode, "Func 75");
+    m.def("SVFGIsCallSiteRetSVFGNode", &SVFGIsCallSiteRetSVFGNode, "Func 76");
+
+    m.def("SVFGRemoveSVFGEdge", &SVFGRemoveSVFGEdge, "Func 77");
+    m.def("SVFGRemoveSVFGNode", &SVFGRemoveSVFGNode, "Func 78");
+
+    m.def("SVFGAddSVFGEdge", &SVFGAddSVFGEdge, "Func 72");
+    m.def("SVFGGetSVFGNodeNum", &SVFGGetSVFGNodeNum, "Func 73");
+    m.def("SVFGAddDummyVersionPropSVFGNode", &SVFGAddDummyVersionPropSVFGNode, "Func 74");
+
+
+    m.def("SVFGWriteToFile", &SVFGWriteToFile, "Func 72");
+    m.def("SVFGReadFile", &SVFGReadFile, "Func 73");
+    m.def("SVFGGetMRVERFromString", &SVFGGetMRVERFromString, "Func 74");
+    // --------------------------------------------------------------------------------------------------------------
+
+
 }

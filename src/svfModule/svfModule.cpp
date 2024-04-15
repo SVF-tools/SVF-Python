@@ -1444,10 +1444,12 @@ bool VFGAddVFGEdge(VFGEdge* edge)
 // --------------------------------------------------------------------------------------------------------------
 // Graphs/SVFG.h
 /// Return statistics
-SVFGStat* SVFGGetStat()
-{
-    return svfg->getStat();
-}
+// std::shared_ptr<SVFGStat> SVFGGetStat()
+// {
+//     // Assuming svfg is an object of a class that has a getStat() method
+//     // that returns a SVFGStat pointer
+//     return std::make_shared<SVFGStat>(svfg->getStat());
+// }
 
 /// Clear MSSA
 void SVFGClearMSSA()
@@ -1456,10 +1458,10 @@ void SVFGClearMSSA()
 }
 
 /// Get SVFG memory SSA
-MemSSA* SVFGGetMSSA()
-{
-    return svfg->getMSSA();
-}
+// std::shared_ptr<SVF::MemSSA> SVFGGetMSSA()
+// {
+//     return std::make_shared<SVF::MemSSA>(svfg->getMSSA());
+// }
 
 /// Get Pointer Analysis
 PointerAnalysis* SVFGGetPTA()
