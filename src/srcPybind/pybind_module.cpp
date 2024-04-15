@@ -407,6 +407,77 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     // --------------------------------------------------------------------------------------------------------------
     // Graphs/VFG.h
 
+    m.def("VFGGetKind", &VFGGetKind, "Func 72");
+    m.def("VFGIsPtrOnlySVFG", &VFGIsPtrOnlySVFG, "Func 73");
+    m.def("VFGGetPAG", &VFGGetPAG, "Func 74");
+
+    m.def("VFGGetCallGraph", &VFGGetCallGraph, "Func 75");
+    m.def("VFGGetVFGNode", &VFGGetVFGNode, "Func 76");
+
+    m.def("VFGHasVFGNode", &VFGHasVFGNode, "Func 77");
+    m.def("VFGGetGlobalVFGNodes", &VFGGetGlobalVFGNodes, "Func 78");
+
+    m.def("VFGGetIntraVFGEdge", &VFGGetIntraVFGEdge, "Func 72");
+    m.def("VFGDump", &VFGDump, "Func 73");
+    m.def("VFGView", &VFGView, "Func 74");
+
+
+    m.def("VFGUpdateCallGraph", &VFGUpdateCallGraph, "Func 72");
+    m.def("VFGConnectCallerAndCallee", &VFGConnectCallerAndCallee, "Func 73");
+    m.def("VFGGetCallSiteID", &VFGGetCallSiteID, "Func 74");
+
+    m.def("VFGGetCallSite", &VFGGetCallSite, "Func 75");
+    m.def("VFGGetDefVFGNode", &VFGGetDefVFGNode, "Func 76");
+
+    m.def("VFGGetLHSTopLevPtr", &VFGGetLHSTopLevPtr, "Func 77");
+    m.def("VFGGetStmtVFGNode", &VFGGetStmtVFGNode, "Func 78");
+
+    m.def("VFGGetIntraPHIVFGNode", &VFGGetIntraPHIVFGNode, "Func 72");
+    m.def("VFGGetBinaryOPVFGNode", &VFGGetBinaryOPVFGNode, "Func 73");
+    m.def("VFGGetUnaryOPVFGNode", &VFGGetUnaryOPVFGNode, "Func 74");
+
+
+    m.def("VFGGetBranchVFGNode", &VFGGetBranchVFGNode, "Func 75");
+    m.def("VFGGetCmpVFGNode", &VFGGetCmpVFGNode, "Func 76");
+
+    m.def("VFGGetActualParmVFGNode", &VFGGetActualParmVFGNode, "Func 77");
+    m.def("VFGGetActualRetVFGNode", &VFGGetActualRetVFGNode, "Func 78");
+
+
+
+    m.def("VFGGetFormalParmVFGNode", &VFGGetFormalParmVFGNode, "Func 72");
+    m.def("VFGGetFormalRetVFGNode", &VFGGetFormalRetVFGNode, "Func 73");
+    m.def("VFGIsFunEntryVFGNode", &VFGIsFunEntryVFGNode, "Func 74");
+
+
+    m.def("VFGHasBlackHoleConstObjAddrAsDef", &VFGHasBlackHoleConstObjAddrAsDef, "Func 75");
+    m.def("VFGGetVFGNodes", &VFGGetVFGNodes, "Func 76");
+
+    m.def("VFGHasVFGNodes", &ICFGGetGlobalICFGNode, "Func 77");
+    m.def("VFGNodes", &VFGNodes, "Func 78");
+
+
+
+    m.def("VFGGetVFGNodeBegin", &VFGGetVFGNodeBegin, "Func 72");
+    m.def("VFGGetVFGNodeEnd", &VFGGetVFGNodeEnd, "Func 73");
+    m.def("VFGAddIntraDirectVFEdge", &VFGAddIntraDirectVFEdge, "Func 74");
+
+
+
+    m.def("VFGAddIntraDirectVFEdge", &VFGAddIntraDirectVFEdge, "Func 72");
+    m.def("VFGAddCallEdge", &VFGAddCallEdge, "Func 73");
+    m.def("VFGAddRetEdge", &VFGAddRetEdge, "Func 74");
+
+    m.def("VFGRemoveVFGEdge", &VFGRemoveVFGEdge, "Func 75");
+    m.def("VFGRemoveVFGNode", &VFGRemoveVFGNode, "Func 76");
+
+    m.def("VFGHasIntraVFGEdge", &VFGHasIntraVFGEdge, "Func 77");
+    m.def("VFGHasInterVFGEdge", &VFGHasInterVFGEdge, "Func 78");
+
+
+
+    m.def("VFGHasThreadVFGEdge", &VFGHasThreadVFGEdge, "Func 72");
+    m.def("VFGAddVFGEdge", &VFGAddVFGEdge, "Func 73");
     // --------------------------------------------------------------------------------------------------------------
 
 }
