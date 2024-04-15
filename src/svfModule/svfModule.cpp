@@ -35,7 +35,6 @@
 #include "SVF-LLVM/LLVMModule.h"
 #include "SVF-LLVM/LLVMUtil.h"
 
-
 #include "svfModule.h"
 
 using namespace llvm;
@@ -174,7 +173,7 @@ void getICFG(){
     icfg = pag->getICFG();
 }
 
-void newInstances(){
+void VFGNewInstances(){
     vfg = new VFG(callgraph);
 }
 
@@ -1225,4 +1224,219 @@ void ICFGUpdateSubAndRep(const ICFGNode* rep, const ICFGNode* sub)
 {
     icfg->updateSubAndRep(rep, sub);
 }
+// --------------------------------------------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------
+// Graphs/VFG.h
+/// Get VFG kind
+VFG::VFGK VFGGetKind()
+{
+    return vfg->getKind();
+}
+
+/// Return true if this VFG only contains pointer related SVFGNodes for pointer analysis
+bool VFGIsPtrOnlySVFG()
+{
+    return vfg->isPtrOnlySVFG();
+}
+
+/// Return SVFIR
+SVFIR* VFGGetPAG()
+{
+    return vfg->getPAG();
+}
+
+/// Return CallGraph
+PTACallGraph* VFGGetCallGraph() 
+{
+    return vfg->getCallGraph();
+}
+
+/// Get a VFG node
+VFGNode* VFGGetVFGNode(NodeID id) 
+{
+    return vfg->getVFGNode(id);
+}
+
+/// Whether has the VFGNode
+bool VFGHasVFGNode(NodeID id)
+{
+    return vfg->hasVFGNode(id);
+}
+/// Return global stores
+SVFGOPT::GlobalVFGNodeSet& VFGGetGlobalVFGNodes()
+{
+    return vfg->getGlobalVFGNodes();
+}
+
+/// Get a SVFG edge according to src and dst
+VFGEdge* VFGGetIntraVFGEdge(const VFGNode* src, const VFGNode* dst, VFGEdge::VFGEdgeK kind) {
+    return vfg->getIntraVFGEdge(src, dst, kind);
+}
+
+/// Dump graph into dot file
+void VFGDump(const std::string& file, bool simple) {
+    vfg->dump(file, simple);
+}
+
+/// Dump graph into dot file
+void VFGView() {
+    vfg->view();
+}
+
+/// Update VFG based on pointer analysis results
+void VFGUpdateCallGraph(PointerAnalysis* pta) {
+    vfg->updateCallGraph(pta);
+}
+
+/// Connect VFG nodes between caller and callee for indirect call site
+void VFGConnectCallerAndCallee(const CallICFGNode* cs, const SVFFunction* callee, VFG::VFGEdgeSetTy& edges) {
+    vfg->connectCallerAndCallee(cs, callee, edges);
+}
+
+/// Get callsite given a callsiteID
+//@{
+CallSiteID VFGGetCallSiteID(const CallICFGNode* cs, const SVFFunction* func)
+{
+    return vfg->getCallSiteID(cs, func);
+}
+const CallICFGNode* VFGGetCallSite(CallSiteID id)
+{
+    return vfg->getCallSite(id);
+}
+//@}
+
+/// Given a pagNode, return its definition site
+const VFGNode* VFGGetDefVFGNode(const PAGNode* pagNode)
+{
+    return vfg->getDefVFGNode(pagNode);
+}
+
+// Given an VFG node, return its left hand side top level pointer (PAGnode)
+const PAGNode* VFGGetLHSTopLevPtr(const VFGNode* node) {
+    return vfg->getLHSTopLevPtr(node);
+}
+
+/// Get an VFGNode
+//@{
+StmtVFGNode* VFGGetStmtVFGNode(const PAGEdge* pagEdge)
+{
+    return vfg->getStmtVFGNode(pagEdge);
+}
+IntraPHIVFGNode* VFGGetIntraPHIVFGNode(const PAGNode* pagNode)
+{
+    return vfg->getIntraPHIVFGNode(pagNode);
+}
+BinaryOPVFGNode* VFGGetBinaryOPVFGNode(const PAGNode* pagNode)
+{
+    return vfg->getBinaryOPVFGNode(pagNode);
+}
+UnaryOPVFGNode* VFGGetUnaryOPVFGNode(const PAGNode* pagNode)
+{
+    return vfg->getUnaryOPVFGNode(pagNode);
+}
+BranchVFGNode* VFGGetBranchVFGNode(const PAGNode* pagNode)
+{
+    return vfg->getBranchVFGNode(pagNode);
+}
+CmpVFGNode* VFGGetCmpVFGNode(const PAGNode* pagNode)
+{
+    return vfg->getCmpVFGNode(pagNode);
+}
+ActualParmVFGNode* VFGGetActualParmVFGNode(const PAGNode* aparm,const CallICFGNode* cs)
+{
+    return vfg->getActualParmVFGNode(aparm, cs);
+}
+ActualRetVFGNode* VFGGetActualRetVFGNode(const PAGNode* aret)
+{
+    return vfg->getActualRetVFGNode(aret);
+}
+FormalParmVFGNode* VFGGetFormalParmVFGNode(const PAGNode* fparm)
+{
+    return vfg->getFormalParmVFGNode(fparm);
+}
+FormalRetVFGNode* VFGGetFormalRetVFGNode(const PAGNode* fret)
+{
+    return vfg->getFormalRetVFGNode(fret);
+}
+//@}
+
+/// Whether a node is function entry VFGNode
+const SVFFunction* VFGIsFunEntryVFGNode(const VFGNode* node) {
+    return vfg->isFunEntryVFGNode(node);
+
+}
+
+/// Whether a PAGNode has a blackhole or const object as its definition
+bool VFGHasBlackHoleConstObjAddrAsDef(const PAGNode* pagNode)
+{
+    return vfg->hasBlackHoleConstObjAddrAsDef(pagNode);
+}
+
+/// Return all the VFGNodes of a function
+///@{
+SVFGOPT::VFGNodeSet& VFGGetVFGNodes(const SVFFunction *fun)
+{
+    return vfg->getVFGNodes(fun);
+}
+bool VFGHasVFGNodes(const SVFFunction *fun)
+{
+    return vfg->hasVFGNodes(fun);
+}
+bool VFGNodes(const SVFFunction *fun)
+{
+    return vfg->VFGNodes(fun);
+}
+SVFGOPT::VFGNodeSet::const_iterator VFGGetVFGNodeBegin(const SVFFunction *fun)
+{
+    return vfg->getVFGNodeBegin(fun);
+}
+SVFGOPT::VFGNodeSet::const_iterator VFGGetVFGNodeEnd(const SVFFunction *fun)
+{
+    return vfg->getVFGNodeEnd(fun);
+}
+///@}
+/// Add control-flow edges for top level pointers
+//@{
+VFGEdge* VFGAddIntraDirectVFEdge(NodeID srcId, NodeID dstId) {
+    return vfg->addIntraDirectVFEdge(srcId, dstId);
+}
+VFGEdge* VFGAddCallEdge(NodeID srcId, NodeID dstId, CallSiteID csId) {
+    return vfg->addCallEdge(srcId, dstId, csId);
+}
+VFGEdge* VFGAddRetEdge(NodeID srcId, NodeID dstId, CallSiteID csId) {
+    return vfg->addRetEdge(srcId, dstId, csId);
+}
+//@}
+
+/// Remove a SVFG edge
+void VFGRemoveVFGEdge(VFGEdge* edge)
+{
+    vfg->removeVFGEdge(edge);
+}
+/// Remove a VFGNode
+void VFGRemoveVFGNode(VFGNode* node)
+{
+    vfg->removeVFGNode(node);
+}
+
+/// Whether we has a SVFG edge
+//@{
+VFGEdge* VFGHasIntraVFGEdge(VFGNode* src, VFGNode* dst, VFGEdge::VFGEdgeK kind) {
+    return vfg->hasIntraVFGEdge(src, dst, kind);
+}
+VFGEdge* VFGHasInterVFGEdge(VFGNode* src, VFGNode* dst, VFGEdge::VFGEdgeK kind, CallSiteID csId) {
+    return vfg->hasInterVFGEdge(src, dst, kind, csId);
+}
+VFGEdge* VFGHasThreadVFGEdge(VFGNode* src, VFGNode* dst, VFGEdge::VFGEdgeK kind) {
+    return vfg->hasThreadVFGEdge(src, dst, kind);
+}
+//@}
+
+/// Add VFG edge
+bool VFGAddVFGEdge(VFGEdge* edge)
+{
+    return vfg->addVFGEdge(edge);
+}
+
 // --------------------------------------------------------------------------------------------------------------

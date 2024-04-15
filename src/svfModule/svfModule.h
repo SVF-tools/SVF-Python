@@ -30,6 +30,9 @@
 #include "Util/WorkList.h"
 #include "MemoryModel/SVFLoop.h"
 
+#include "Graphs/PTACallGraph.h"
+#include "Graphs/VFGNode.h"
+#include "Graphs/VFGEdge.h"
 
 #include <pybind11/pybind11.h>
 
@@ -77,11 +80,11 @@ void createAndersenWaveDiff();
 
 void getPTACallGraph();
 
-// void getICFG();
+void getICFG();
 
-// void newInstances();
+void VFGNewInstances();
 
-// void buildFullSVFG();
+void buildFullSVFG();
 
 void deleteVfg();
 void deleteSvfg();
@@ -637,4 +640,106 @@ const ICFGNode* ICFGGetRepNode(const ICFGNode* node);
 
 
 void ICFGUpdateSubAndRep(const ICFGNode* rep, const ICFGNode* sub);
+// --------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------
+// Graphs/VFG.h
+// Get VFG kind
+VFG::VFGK VFGGetKind();
+
+/// Return true if this VFG only contains pointer related SVFGNodes for pointer analysis
+bool VFGIsPtrOnlySVFG();
+
+/// Return SVFIR
+SVFIR* VFGGetPAG();
+
+/// Return CallGraph
+PTACallGraph* VFGGetCallGraph();
+
+/// Get a VFG node
+VFGNode* VFGGetVFGNode(NodeID id);
+
+/// Whether has the VFGNode
+bool VFGHasVFGNode(NodeID id);
+
+/// Return global stores
+SVFGOPT::GlobalVFGNodeSet& VFGGetGlobalVFGNodes();
+
+/// Get a SVFG edge according to src and dst
+VFGEdge* VFGGetIntraVFGEdge(const VFGNode* src, const VFGNode* dst, VFGEdge::VFGEdgeK kind);
+
+/// Dump graph into dot file
+void VFGDump(const std::string& file, bool simple);
+
+/// Dump graph into dot file
+void VFGView();
+
+/// Update VFG based on pointer analysis results
+void VFGUpdateCallGraph(PointerAnalysis* pta);
+
+/// Connect VFG nodes between caller and callee for indirect call site
+void VFGConnectCallerAndCallee(const CallICFGNode* cs, const SVFFunction* callee, VFG::VFGEdgeSetTy& edges);
+
+/// Get callsite given a callsiteID
+//@{
+CallSiteID VFGGetCallSiteID(const CallICFGNode* cs, const SVFFunction* func);
+const CallICFGNode* VFGGetCallSite(CallSiteID id);
+//@}
+
+/// Given a pagNode, return its definition site
+const VFGNode* VFGGetDefVFGNode(const PAGNode* pagNode);
+
+// Given an VFG node, return its left hand side top level pointer (PAGnode)
+const PAGNode* VFGGetLHSTopLevPtr(const VFGNode* node);
+/// Get an VFGNode
+//@{
+StmtVFGNode* VFGGetStmtVFGNode(const PAGEdge* pagEdge);
+IntraPHIVFGNode* VFGGetIntraPHIVFGNode(const PAGNode* pagNode);
+BinaryOPVFGNode* VFGGetBinaryOPVFGNode(const PAGNode* pagNode);
+UnaryOPVFGNode* VFGGetUnaryOPVFGNode(const PAGNode* pagNode);
+BranchVFGNode* VFGGetBranchVFGNode(const PAGNode* pagNode);
+CmpVFGNode* VFGGetCmpVFGNode(const PAGNode* pagNode);
+ActualParmVFGNode* VFGGetActualParmVFGNode(const PAGNode* aparm,const CallICFGNode* cs);
+ActualRetVFGNode* VFGGetActualRetVFGNode(const PAGNode* aret);
+FormalParmVFGNode* VFGGetFormalParmVFGNode(const PAGNode* fparm);
+FormalRetVFGNode* VFGGetFormalRetVFGNode(const PAGNode* fret);
+//@}
+
+/// Whether a node is function entry VFGNode
+const SVFFunction* VFGIsFunEntryVFGNode(const VFGNode* node);
+
+/// Whether a PAGNode has a blackhole or const object as its definition
+bool VFGHasBlackHoleConstObjAddrAsDef(const PAGNode* pagNode);
+
+/// Return all the VFGNodes of a function
+///@{
+SVFGOPT::VFGNodeSet& VFGGetVFGNodes(const SVFFunction *fun);
+bool VFGHasVFGNodes(const SVFFunction *fun);
+bool VFGNodes(const SVFFunction *fun);
+SVFGOPT::VFGNodeSet::const_iterator VFGGetVFGNodeBegin(const SVFFunction *fun);
+SVFGOPT::VFGNodeSet::const_iterator VFGGetVFGNodeEnd(const SVFFunction *fun);
+///@}
+/// Add control-flow edges for top level pointers
+//@{
+VFGEdge* VFGAddIntraDirectVFEdge(NodeID srcId, NodeID dstId);
+VFGEdge* VFGAddCallEdge(NodeID srcId, NodeID dstId, CallSiteID csId);
+VFGEdge* VFGAddRetEdge(NodeID srcId, NodeID dstId, CallSiteID csId);
+//@}
+
+/// Remove a SVFG edge
+void VFGRemoveVFGEdge(VFGEdge* edge);
+/// Remove a VFGNode
+void VFGRemoveVFGNode(VFGNode* node);
+
+/// Whether we has a SVFG edge
+//@{
+VFGEdge* VFGHasIntraVFGEdge(VFGNode* src, VFGNode* dst, VFGEdge::VFGEdgeK kind);
+VFGEdge* VFGHasInterVFGEdge(VFGNode* src, VFGNode* dst, VFGEdge::VFGEdgeK kind, CallSiteID csId);
+VFGEdge* VFGHasThreadVFGEdge(VFGNode* src, VFGNode* dst, VFGEdge::VFGEdgeK kind);
+//@}
+
+/// Add VFG edge
+bool VFGAddVFGEdge(VFGEdge* edge);
+
 // --------------------------------------------------------------------------------------------------------------
