@@ -80,7 +80,7 @@ MTA* mta;
 // --------------------------------------------------------------------------------------------------------------
 
 
-// Old work.......................
+// Old Work.......................
 // --------------------------------------------------------------------------------------------------------------
 // /*
 // input1: argc: the number of given argument
@@ -109,7 +109,6 @@ void processArguments(int argc, py::list argv) {
     LLVMUtil::processArguments(argc, _argv, arg_num, arg_value, moduleNameVec);
 
 }
-
 
 
 // get the length of the moduleNameVec
@@ -211,10 +210,7 @@ void llvm_shutdown(){
     llvm::llvm_shutdown();
 }
 
-
 // --------------------------------------------------------------------------------------------------------------
-
-
 
 // New work.......................
 // --------------------------------------------------------------------------------------------------------------
@@ -1102,6 +1098,131 @@ void LLVMUtilGetSuccBBandCondValPairVec(const SwitchInst &switchInst, SuccBBAndC
 s64_t LLVMUtilGetCaseValue(const SwitchInst &switchInst, SuccBBAndCondValPair &succBB2CondVal) {
     return LLVMUtil::getCaseValue(switchInst, succBB2CondVal);
 }
+// --------------------------------------------------------------------------------------------------------------
 
 
+// --------------------------------------------------------------------------------------------------------------
+// Graphs/ICFG.h"
+ICFGNode* ICFGGetICFGNode(NodeID id) const
+{
+    return icfg->getICFGNode(id);
+}
+
+/// Whether has the ICFGNode
+bool ICFGHasICFGNode(NodeID id) const
+{
+    return icfg->hasICFGNode(id);
+}
+
+/// Whether we has a SVFG edge
+//@{
+ICFGEdge* ICFGHasIntraICFGEdge(ICFGNode* src, ICFGNode* dst, ICFGEdge::ICFGEdgeK kind) {
+    return icfg->hasIntraICFGEdge(src, dst, kind);
+}
+ICFGEdge* ICFGHasInterICFGEdge(ICFGNode* src, ICFGNode* dst, ICFGEdge::ICFGEdgeK kind) {
+    return icfg->hasInterICFGEdge(src, dst, kind);
+}
+ICFGEdge* ICFGHasThreadICFGEdge(ICFGNode* src, ICFGNode* dst, ICFGEdge::ICFGEdgeK kind) {
+    return icfg->hasThreadICFGEdge(src, dst, kind);
+}
+//@}
+
+/// Get a SVFG edge according to src and dst
+ICFGEdge* ICFGGetICFGEdge(const ICFGNode* src, const ICFGNode* dst, ICFGEdge::ICFGEdgeK kind) {
+    return icfg->getICFGEdge(src, dst, kind);
+}
+
+/// Dump graph into dot file
+void ICFGDump(const std::string& file, bool simple = false) {
+    icfg->dump(file, simple);
+}
+
+/// View graph from the debugger
+void ICFGView() {
+    icfg->view();
+}
+
+/// update ICFG for indirect calls
+void ICFGUpdateCallGraph(PTACallGraph* callgraph) {
+    icfg->updateCallGraph(callgraph);
+}
+
+/// Whether node is in a loop
+bool ICFGIsInLoop(const ICFGNode *node)
+{
+    return icfg->isInLoop(node);
+}
+
+/// Whether node is in a loop
+bool ICFGIsInLoop(const SVFInstruction* inst)
+{
+    return icfg->isInLoop(inst);
+}
+
+/// Insert (node, loop) to icfgNodeToSVFLoopVec
+void ICFGAddNodeToSVFLoop(const ICFGNode *node, const SVFLoop* loop)
+{
+    icfg->addNodeToSVFLoop(node, loop);
+}
+
+/// Get loops where a node resides
+SVFLoopVec& ICFGGetSVFLoops(const ICFGNode *node)
+{
+    return icfg->getSVFLoops(node);
+}
+
+const ICFGNodeToSVFLoopVec& ICFGGetIcfgNodeToSVFLoopVec() const
+{
+    return icfg->getIcfgNodeToSVFLoopVec();
+}
+
+
+ICFGNode* ICFGGetICFGNode(const SVFInstruction* inst) {
+    return icfg->getICFGNode(inst);
+}
+
+CallICFGNode* ICFGGetCallICFGNode(const SVFInstruction* inst) {
+    return icfg->getCallICFGNode(inst);
+}
+
+RetICFGNode* ICFGGetRetICFGNode(const SVFInstruction* inst) {
+    return icfg->getRetICFGNode(inst);
+}
+
+IntraICFGNode* ICFGGetIntraICFGNode(const SVFInstruction* inst) {
+    return icfg->getIntraICFGNode(inst);
+}
+
+FunEntryICFGNode* ICFGGetFunEntryICFGNode(const SVFFunction*  fun) {
+    return icfg->getFunEntryICFGNode(fun);
+}
+
+FunExitICFGNode* ICFGGetFunExitICFGNode(const SVFFunction*  fun) {
+    return icfg->getFunExitICFGNode(fun);
+}
+
+GlobalICFGNode* ICFGGetGlobalICFGNode() const
+{
+    return icfg->getGlobalICFGNode();
+}
+void ICFGAddGlobalICFGNode()
+{
+    return icfg->addGlobalICFGNode();
+}
+
+const std::vector<const ICFGNode*>& ICFGGetSubNodes(const ICFGNode* node) const
+{
+    return icfg->getSubNodes(node);
+}
+
+const ICFGNode* ICFGGetRepNode(const ICFGNode* node) const
+{
+    return icfg->getRepNode(node);
+}
+
+
+void ICFGUpdateSubAndRep(const ICFGNode* rep, const ICFGNode* sub)
+{
+    icfg->updateSubAndRep(rep, sub);
+}
 // --------------------------------------------------------------------------------------------------------------

@@ -25,6 +25,11 @@
 #include "SVFIR/SVFValue.h"
 #include "Util/ThreadAPI.h"
 
+#include "Graphs/ICFGNode.h"
+#include "Graphs/ICFGEdge.h"
+#include "Util/WorkList.h"
+#include "MemoryModel/SVFLoop.h"
+
 
 #include <pybind11/pybind11.h>
 
@@ -568,4 +573,68 @@ std::string LLVMUtilDumpType(const Type* type);
 std::string LLVMUtilDumpValueAndDbgInfo(const Value* val);
 void LLVMUtilGetSuccBBandCondValPairVec(const SwitchInst &switchInst, SuccBBAndCondValPairVec &vec);
 s64_t LLVMUtilGetCaseValue(const SwitchInst &switchInst, SuccBBAndCondValPair &succBB2CondVal);
+// --------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------
+// Graphs/ICFG.h"
+ICFGNode* ICFGGetICFGNode(NodeID id) const;
+
+/// Whether has the ICFGNode
+bool ICFGHasICFGNode(NodeID id) const;
+/// Whether we has a SVFG edge
+//@{
+ICFGEdge* ICFGHasIntraICFGEdge(ICFGNode* src, ICFGNode* dst, ICFGEdge::ICFGEdgeK kind);
+ICFGEdge* ICFGHasInterICFGEdge(ICFGNode* src, ICFGNode* dst, ICFGEdge::ICFGEdgeK kind);
+
+ICFGEdge* ICFGHasThreadICFGEdge(ICFGNode* src, ICFGNode* dst, ICFGEdge::ICFGEdgeK kind);
+//@}
+
+/// Get a SVFG edge according to src and dst
+ICFGEdge* ICFGGetICFGEdge(const ICFGNode* src, const ICFGNode* dst, ICFGEdge::ICFGEdgeK kind);
+
+/// Dump graph into dot file
+void ICFGDump(const std::string& file, bool simple = false);
+
+/// View graph from the debugger
+void ICFGView();
+/// update ICFG for indirect calls
+void ICFGUpdateCallGraph(PTACallGraph* callgraph);
+
+/// Whether node is in a loop
+bool ICFGIsInLoop(const ICFGNode *node);
+
+/// Whether node is in a loop
+bool ICFGIsInLoop(const SVFInstruction* inst);
+
+/// Insert (node, loop) to icfgNodeToSVFLoopVec
+void ICFGAddNodeToSVFLoop(const ICFGNode *node, const SVFLoop* loop);
+
+/// Get loops where a node resides
+SVFLoopVec& ICFGGetSVFLoops(const ICFGNode *node);
+
+const ICFGNodeToSVFLoopVec& ICFGGetIcfgNodeToSVFLoopVec() const;
+
+
+ICFGNode* ICFGGetICFGNode(const SVFInstruction* inst);
+
+CallICFGNode* ICFGGetCallICFGNode(const SVFInstruction* inst);
+
+RetICFGNode* ICFGGetRetICFGNode(const SVFInstruction* inst);
+
+IntraICFGNode* ICFGGetIntraICFGNode(const SVFInstruction* inst);
+
+FunEntryICFGNode* ICFGGetFunEntryICFGNode(const SVFFunction* fun);
+
+FunExitICFGNode* ICFGGetFunExitICFGNode(const SVFFunction* fun);
+
+GlobalICFGNode* ICFGGetGlobalICFGNode() const;
+void ICFGAddGlobalICFGNode();
+
+const std::vector<const ICFGNode*>& ICFGGetSubNodes(const ICFGNode* node) const;
+
+const ICFGNode* ICFGGetRepNode(const ICFGNode* node) const;
+
+
+void ICFGUpdateSubAndRep(const ICFGNode* rep, const ICFGNode* sub);
 // --------------------------------------------------------------------------------------------------------------
