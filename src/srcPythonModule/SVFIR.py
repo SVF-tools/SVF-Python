@@ -1,9 +1,5 @@
 import svfModule_pybind
 
-class ICFG(object):
-    pass
-
-
 class SVFIR(object):
     svfIR = svfModule_pybind
     def pagBuild(self):
