@@ -4,7 +4,7 @@
 
 import sys
 import system
-from src.srcPythonModule.svfLLVMUtil import svfLLVMUtil
+from src.srcPythonModule.LLVMUtil import LLVMUtil
 from src.srcPythonModule.LLVMModuleSet import LLVMModuleSet
 from src.srcPythonModule.CL import CL
 from src.srcPythonModule.DDA import DDA
@@ -18,7 +18,7 @@ import svfModule_pybind
 def main(arg_value):
     moduleNameVec = []
     print(arg_value)
-    svfLLVMUtil.processArguments(arg_value, moduleNameVec)
+    LLVMUtil.processArguments(arg_value, moduleNameVec)
     print(moduleNameVec)
     CL.ParseCommandLineOptions()
 

@@ -993,17 +993,17 @@ std::vector<const Function *> LLVMUtilGetCalledFunctions(const Function *F) {
     return LLVMUtil::getCalledFunctions(F);
 }
 void LLVMUtilRemoveFunAnnotations(Set<Function*>& removedFuncList) {
-    return LLVMUtil::removeFunAnnotations(removedFuncList);
+    LLVMUtil::removeFunAnnotations(removedFuncList);
 }
 bool LLVMUtilIsUnusedGlobalVariable(const GlobalVariable& global) {
     return LLVMUtil::isUnusedGlobalVariable(global);
 }
 void LLVMUtilRemoveUnusedGlobalVariables(Module* module) {
-    return LLVMUtil::removeUnusedGlobalVariables(module);
+    LLVMUtil::removeUnusedGlobalVariables(module);
 }
 /// Delete unused functions, annotations and global variables in extapi.bc
 void LLVMUtilRemoveUnusedFuncsAndAnnotationsAndGlobalVariables(Set<Function*> removedFuncList) {
-    return LLVMUtil::removeUnusedFuncsAndAnnotationsAndGlobalVariables(removedFuncList);
+    LLVMUtil::removeUnusedFuncsAndAnnotationsAndGlobalVariables(removedFuncList);
 }
 
 /// Get the corresponding Function based on its name
