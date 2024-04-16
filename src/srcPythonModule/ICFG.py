@@ -2,6 +2,9 @@ import svfModule_pybind
 
 class ICFG(object):
     ICFG = svfModule_pybind
+    def ICFGBuild(self):
+        self.ICFG.ICFGBuild()
+
     def ICFGGetICFGNodeID(self, id):
         return self.ICFG.ICFGGetICFGNodeID(id)
     
@@ -49,8 +52,6 @@ class ICFG(object):
     def ICFGGetSVFLoops(self, node):
         return self.ICFG.ICFGGetSVFLoops(node)
     
-
-
 
 
 
