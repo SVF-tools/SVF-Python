@@ -81,7 +81,7 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     // --------------------------------------------------------------------------------
     // cfl.cpp
     m.def("boolCFLGraphEmpty", &boolCFLGraphEmpty, "Func 34");
-    m.def("svfirBuild", &svfirBuild, "Func 35");
+    m.def("SVFIRBuild", &SVFIRBuild, "Func 35");
     m.def("cflCheckerAllInOne", &cflCheckerAllInOne, "Func 36");
     m.def("cflAnalyze", &cflAnalyze, "Func 37");
     // --------------------------------------------------------------------------------
@@ -134,8 +134,8 @@ PYBIND11_MODULE(svfModule_pybind, m) {
     m.def("AndersenGetPts", &AndersenGetPts, "Func 58");
 
 
-    m.def("AndersenUnionPts", (bool (*)(NodeID, const PointsTo&)) &AndersenUnionPts, "Func 59");
-    m.def("AndersenUnionPts", (bool (*)(NodeID, NodeID)) &AndersenUnionPts, "Func 60");
+    m.def("AndersenUnionPtsPointsTo", (bool (*)(NodeID, const PointsTo&)) &AndersenUnionPts, "Func 59");
+    m.def("AndersenUnionPtsNodeID", (bool (*)(NodeID, NodeID)) &AndersenUnionPts, "Func 60");
 
     m.def("AndersenDumpTopLevelPtsTo", &AndersenDumpTopLevelPtsTo, "Func 61");
 

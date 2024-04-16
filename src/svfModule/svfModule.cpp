@@ -319,7 +319,7 @@ bool boolCFLGraphEmpty(){
     return Options::CFLGraph().empty();
 }
 
-void svfirBuild(){
+void SVFIRBuild(){
     SVFIRBuilder _builder(svfModule);
     builder = &_builder;
     svfir = _builder.build();
