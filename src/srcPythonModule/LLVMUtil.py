@@ -21,12 +21,12 @@ class LLVMUtil(object):
             i = i + 1
 
 
-    def LLVMUtilIsCallSite(self, inst):
-        return self.LLVMUtil.LLVMUtilIsCallSite(inst)
+    def LLVMUtilIsCallSiteInst(self, inst):
+        return self.LLVMUtil.LLVMUtilIsCallSiteInst(inst)
     
 
-    def LLVMUtilIsCallSite(self, val):
-        return self.LLVMUtil.LLVMUtilIsCallSite(val)
+    def LLVMUtilIsCallSiteVal(self, val):
+        return self.LLVMUtil.LLVMUtilIsCallSiteVal(val)
     
 
     def LLVMUtilGetDefFunForMultipleModule(self, fun):
