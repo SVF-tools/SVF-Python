@@ -90,7 +90,7 @@ void VFGBuild();
 void SVFGBuild();
 
 void deleteVfg();
-void deleteSvfg();
+// void deleteSvfg();
 
 void releaseAndersenWaveDiff();
 

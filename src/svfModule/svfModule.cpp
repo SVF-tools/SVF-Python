@@ -189,9 +189,9 @@ void SVFGBuild(){
 void deleteVfg(){
     delete vfg;
 }
-void deleteSvfg(){
-    delete svfg;
-}
+// void deleteSvfg(){
+//     delete svfg;
+// }
 
 void releaseAndersenWaveDiff(){
     AndersenWaveDiff::releaseAndersenWaveDiff();

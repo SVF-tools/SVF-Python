@@ -30,7 +30,7 @@ PYBIND11_MODULE(svfModule_pybind, m) {
 
     // functioning part?
     m.def("SVFGBuild", &SVFGBuild, "Func 13");
-    m.def("deleteSvfg", &deleteSvfg, "Func 14");
+    // m.def("deleteSvfg", &deleteSvfg, "Func 14");
     m.def("deleteVfg", &deleteVfg, "Func 15");
     // 
 

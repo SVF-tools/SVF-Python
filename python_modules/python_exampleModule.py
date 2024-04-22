@@ -48,15 +48,14 @@ def main(arg_value):
 
     # clean up memory
     VFG.VFGDelete()
-    # SVFG.SVFGDelete()
 
-    # AndersenWaveDiff.releaseAndersenWaveDiff()
-    # SVFIR.releaseSVFIR()
+    AndersenWaveDiff.releaseAndersenWaveDiff()
+    SVFIR.releaseSVFIR()
 
-    # LLVMModuleSet.dumpModulesToFile(".svf.bc")
-    # LLVMModuleSet.releaseLLVMModuleSet()
+    LLVMModuleSet.dumpModulesToFile(".svf.bc")
+    LLVMModuleSet.releaseLLVMModuleSet()
 
-    # LLVMUtil.LLVMShutdown()
+    LLVMUtil.LLVMShutdown()
 
 
 if __name__ == "__main__":

@@ -7,8 +7,8 @@ class SVFG(object):
     def SVFGBuild(self):
         self.SVFG.SVFGBuild()
 
-    def SVFGDelete(self):
-        self.SVFG.deleteSvfg()
+    # def SVFGDelete(self):
+    #     self.SVFG.deleteSvfg()
 
     def SVFGClearMSSA(self):
         self.SVFG.SVFGClearMSSA()
