@@ -389,9 +389,9 @@ void outSVFIRJsonPath(std::string jsonPath){
 // --------------------------------------------------------------------------------------------------------------
 // mta.cpp........
 void MTARunOnModule(){
-    MTA _mta;
-    _mta.runOnModule(pag);
-    mta = &_mta;
+    MTA* _mta = new MTA();
+    _mta->runOnModule(pag);
+    mta = _mta;
 }
 
 void MTAValidator(){
