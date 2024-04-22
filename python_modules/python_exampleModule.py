@@ -47,7 +47,7 @@ def main(arg_value):
 
 
     # clean up memory
-    # VFG.VFGDelete()
+    VFG.VFGDelete()
     # SVFG.SVFGDelete()
 
     # AndersenWaveDiff.releaseAndersenWaveDiff()
