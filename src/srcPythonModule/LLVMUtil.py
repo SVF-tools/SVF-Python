@@ -286,6 +286,10 @@ class LLVMUtil(object):
 
     def LLVMUtilGetCaseValue(self, switchInst, succBB2CondVal):
         return self.LLVMUtil.LLVMUtilGetCaseValue(switchInst, succBB2CondVal)
+    
+
+    def LLVMShutdown(self):
+        self.LLVMUtil.llvm_shutdown()
 
 
 

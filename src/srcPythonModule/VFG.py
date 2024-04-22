@@ -7,12 +7,11 @@ class VFG(object):
     def VFGBuild(self):
         self.VFG.VFGBuild()
 
+    def VFGDelete(self):
+        self.VFG.deleteVfg()
+
     def VFGGetKind(self):
         return self.VFG.VFGGetKind()
-    
-
-
-
     
     def VFGIsPtrOnlySVFG(self):
         return self.VFG.VFGIsPtrOnlySVFG()
