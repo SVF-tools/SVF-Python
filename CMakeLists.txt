@@ -75,36 +75,25 @@ include_directories(${SVF_HEADER} ${SVF_LLVM_HEADER} ${SVF_BIN_HEADER} ${SVF_LLV
 if (DEFINED Z3_DIR)
     set(ENV{Z3_DIR} "${Z3_DIR}")
 endif()
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    if(EXISTS "${Z3_DIR}/src")
-        find_package(Z3 REQUIRED CONFIG)
-        include_directories(${Z3_CXX_INCLUDE_DIRS})
-    else()
-        find_library(Z3_LIBRARIES NAMES libz3.a libz3.so
-                HINTS $ENV{Z3_DIR}
-                PATH_SUFFIXES bin)
-        find_path(Z3_INCLUDES NAMES z3++.h
-                HINTS $ENV{Z3_DIR}
-                PATH_SUFFIXES include z3)
-        if(NOT Z3_LIBRARIES OR NOT Z3_INCLUDES)
-            message(FATAL_ERROR "Z3 not found!")
-        endif()
-        include_directories(${Z3_INCLUDES})
-        LINK_DIRECTORIES(${Z3_DIR}/bin)
-    endif()
-else()
-    find_library(Z3_LIBRARIES NAMES libz3.a libz3.so
-            HINTS $ENV{Z3_DIR}
-            PATH_SUFFIXES bin)
-    find_path(Z3_INCLUDES NAMES z3++.h
-            HINTS $ENV{Z3_DIR}
-            PATH_SUFFIXES include z3)
-    if(NOT Z3_LIBRARIES OR NOT Z3_INCLUDES)
-        message(FATAL_ERROR "Z3 not found!")
-    endif()
-    include_directories(${Z3_INCLUDES})
-    LINK_DIRECTORIES(${Z3_DIR}/bin)
-endif()
+find_library(
+  Z3_LIBRARIES
+  REQUIRED
+  NAMES z3
+  HINTS ${Z3_DIR} ENV Z3_DIR
+  PATH_SUFFIXES bin lib)
+find_path(
+  Z3_INCLUDES
+  REQUIRED
+  NAMES z3++.h
+  HINTS ${Z3_DIR} ENV Z3_DIR
+  PATH_SUFFIXES include z3)
+message(STATUS "Z3 STATUS:
+  Z3 library file:        ${Z3_LIBRARIES}
+  Z3 include directory:   ${Z3_INCLUDES}")
+
+# Add the Z3 include directory and link the Z3 library to all targets of SVF
+link_libraries(${Z3_LIBRARIES})
+include_directories(SYSTEM ${Z3_INCLUDES})
 # -------------------------------------------------------------------------------
 
 
