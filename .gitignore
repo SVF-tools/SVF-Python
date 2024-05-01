@@ -11,3 +11,4 @@ svfModule_pybind.cpython-39-darwin.so
 *.db
 *.dot
 *.json
+test.py
