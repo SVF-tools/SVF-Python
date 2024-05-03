@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.3)
-project(SVF-TOOL) 
+project(SVF-PYTHON) 
 
 find_package(Python3 3.9 EXACT COMPONENTS Interpreter Development)
 
