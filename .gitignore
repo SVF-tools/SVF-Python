@@ -12,3 +12,5 @@ svfModule_pybind.cpython-39-darwin.so
 *.dot
 *.json
 test.py
+tcg.dot
+example2.svf.bc
