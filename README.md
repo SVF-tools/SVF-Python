@@ -12,7 +12,7 @@ brew install zlib-ng unzip cmake gcc nodejs npm pybind11
 conda install zlib-ng unzip cmake nodejs pybind11
 ```
 
-## 1. Install SVF and its dependence (LLVM pre-built binary) via npm
+## 1. Install SVF and its dependencies (LLVM & Z3) via npm
 ```
 npm i --silent svf-tools --prefix {desired_download_path} 
 ```
@@ -27,12 +27,12 @@ cd {desired_download_path}/node_modules/SVF
 source ./build.sh
 ```
 
-## 3. Clone SVF-Python repository
+## 3. Clone SVF-Python GitHub repository
 ```
 git clone https://github.com/SVF-tools/SVF-Python
 ```
 
-## 4. Setup SVF environment and create python lib
+## 4. Setup system environment and create Pybind dynamic library for SVF
 ```
 cd SVF-Python
 source ./env.sh
