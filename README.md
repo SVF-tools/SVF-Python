@@ -58,7 +58,7 @@ Then you can install the wheel by pip. The wheel file is in the `dist` folder. Y
 pip install dist/****.whl
 ```
 
-### Release to Pypi
+### Publish pysvf library to Pypi
 You can upload to test pypi by the following command.
 ```angular2html
 python -m twine upload --repository testpypi dist/* --verbose
