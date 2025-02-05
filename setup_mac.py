@@ -44,11 +44,11 @@ subprocess.run(f"{strip_cmd} {os.path.join(lib_dest, 'libz3.dylib')}", shell=Tru
 ext_modules = [
     Pybind11Extension(
         "pysvf",
-        ["svf-python/pag_pybind.cpp"],
+        ["pybind/svf_pybind.cpp"],
         include_dirs=[
-            os.path.join(svf_dir, "svf/include"),
-            os.path.join(svf_dir, "svf-llvm/include"),
-            os.path.join(svf_dir, "Release-build/include"),
+            os.path.join(svf_dir, "SVF/svf/include"),
+            os.path.join(svf_dir, "SVF/svf-llvm/include"),
+            os.path.join(svf_dir, "Release-build/SVF/include"),
             llvm_include_dir
         ],
         library_dirs=[lib_dest, llvm_lib_dir],
