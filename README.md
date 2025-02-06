@@ -9,7 +9,6 @@ This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF).
 
 - Python 3.x
 - You can compile SVF from the source code
-- 
 
 
 ### Installation
@@ -17,7 +16,7 @@ This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF).
 Make sure you have installed the Pybind.
 
 ```angular2html
-pip install pybind11 setuptools wheel
+python3 -m pip install pybind11 setuptools wheel
 ```
 
 Then clone the submodules and build the SVF-Python.
@@ -32,7 +31,7 @@ Then cmake and build the SVF-Python.
 We should make sure the some environment variables are set correctly.
 
 - `LLVM_DIR`: same to the `LLVM_DIR` in SVF
-- `CMAKE_PREFIX_PATH`: You should try to find out the pybind installation dir and get its cmake toolkit folder. You can run `python -m pybind11 --cmakedir`. For example, the path maybe `~/.pyenv/versions/3.12.6/lib/python3.12/site-packages/pybind11/share/cmake/pybind11`
+- `CMAKE_PREFIX_PATH`: You should try to find out the pybind installation dir and get its cmake toolkit folder. You can run `python3 -m pybind11 --cmakedir`. For example, the path maybe `~/.pyenv/versions/3.12.6/lib/python3.12/site-packages/pybind11/share/cmake/pybind11`
 
 Then you should replace the cmake variables in the following command.
 ```angular2html
@@ -50,36 +49,48 @@ make -j20
 Then run the setup tools to build pip wheel.
 ```angular2html
 cd ..
-python setup.py bdist_wheel
+python3 setup.py bdist_wheel
 ```
 
 Then you can install the wheel by pip. The wheel file is in the `dist` folder. You should check the file name first.
 ```angular2html
-pip install dist/****.whl
+python3 -m pip install dist/****.whl
 ```
 
-### Release to Pypi
+### Publish to Pypi
 You can upload to test pypi by the following command.
 ```angular2html
-python -m twine upload --repository testpypi dist/* --verbose
+python3 -m twine upload --repository testpypi dist/* --verbose
 ```
 
 If test is ok, you can upload to the real pypi by the following command.
 ```angular2html
-python -m twine upload dist/* --verbose
+python3 -m twine upload dist/* --verbose
 ```
 
 ## For SVF-Python Users
+
+### Pre-requisite
+
+- Python 3.x
+- LLVM 16
+
+For Mac User, you can install LLVM 16 by the following command.
+```angular2html
+brew install llvm@16
+```
+
+### Installation and Running
 
 If you want to use the pysvf from pypi, you can run the following command. (If you installed the wheel from the above steps, you can ignore it.)
 ```angular2html
 python3 -m pip install  -i https://test.pypi.org/simple/ pysvf
 ```
 
-Then you can use the pysvf in your python code.
+Then you can use the pysvf in your python3 code.
 ```angular2html
 cd test_cases
-python test.py
+python3 test.py
 ```
 
 You should see a bunch of output from ICFGNode from the bitcodes.
