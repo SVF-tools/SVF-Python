@@ -78,7 +78,7 @@ python3 -m pip install  -i https://test.pypi.org/simple/ pysvf
 
 Then you can use the pysvf in your python code.
 ```angular2html
-git clone https://github.com/SVF-tools/Test-Suite.git
+cd test_cases
 python test.py
 ```
 

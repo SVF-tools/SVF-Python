@@ -4,7 +4,7 @@
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Util/CommandLine.h"
 #include "Util/Options.h"
-#include "Graphs/ICFG.h"  // 需要 include ICFG 头文件
+#include "Graphs/ICFG.h"
 #include "SVFIR/SVFStatements.h"
 
 namespace py = pybind11;
@@ -17,33 +17,29 @@ public:
 
         SVFModule* svfModule = LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder(svfModule);
-        SVFIR* pag = builder.build();  // 构造 SVFIR
+        SVFIR* pag = builder.build();  // TODO: maybe we need to split build() into more steps
 
-        return pag;  // 直接返回 SVFIR 供 Python 端使用
+        return pag;  // Now we directly return SVFIR(pag)
     }
 };
 
 void bind_icfg_node(py::module& m) {
     py::class_<ICFGNode>(m, "ICFGNode")
-            // `to_string` 方法
             .def("to_string", [](const ICFGNode& node) {
                 std::ostringstream oss;
                 oss << node.toString() << "\n";
                 return oss.str();
             })
 
-                    // 获取所属函数
             .def("get_fun", &ICFGNode::getFun, py::return_value_policy::reference)
 
-                    // 获取所属基本块
             .def("get_bb", &ICFGNode::getBB, py::return_value_policy::reference)
 
-                    // TODO:获取该 ICFG 节点关联的 VFGNodes
+            // TODO: fetch VFGNodes list related to ICFGNode
 
-                    // 获取该 ICFG 节点关联的 SVF 语句
             .def("get_svf_stmts", &ICFGNode::getSVFStmts, py::return_value_policy::reference)
 
-                    // Downcast 方法
+            // Downcast to ICFGNode's subtypes
             .def("as_fun_entry", [](ICFGNode* node) {
                 return dynamic_cast<FunEntryICFGNode*>(node);
             }, py::return_value_policy::reference)
@@ -60,7 +56,7 @@ void bind_icfg_node(py::module& m) {
                 return dynamic_cast<RetICFGNode*>(node);
             }, py::return_value_policy::reference)
 
-                    // 判断 ICFGNode 类型的方法
+            // check whether the node is a ICFGNode's subtype
             .def("is_fun_entry", [](const ICFGNode* node) {
                 return node->getNodeKind() == SVF::ICFGNode::FunEntryBlock;
             })
@@ -109,8 +105,7 @@ void bind_svf_stmt(py::module& m) {
                 return dynamic_cast<const UnaryOPStmt*>(stmt) != nullptr;})
             .def("is_branch_stmt", [](const SVFStmt* stmt) {
                 return dynamic_cast<const BranchStmt*>(stmt) != nullptr;})
-
-                    // downcast
+             // downcast TODO: more downcast here
             .def("as_cmp_stmt", [](SVFStmt* stmt) { return dynamic_cast<CmpStmt*>(stmt); }, py::return_value_policy::reference);
 
     py::class_<CmpStmt, SVFStmt>(m, "CmpStmt")  // TODO: Return int, maybe need to think about friendly return value
@@ -123,7 +118,7 @@ void bind_svf_stmt(py::module& m) {
 }
 
 
-// 绑定 ICFG
+// Bind class ICFG
 void bind_icfg_graph(py::module& m) {
     py::class_<ICFG>(m, "ICFG")
             .def("get_nodes", [](const ICFG& icfg) {
@@ -134,7 +129,7 @@ void bind_icfg_graph(py::module& m) {
                 return nodes;
             }, py::return_value_policy::reference)
 
-                    // 添加 get_gnode 方法
+            // getGNode(id)
             .def("get_gnode", [](ICFG& icfg, NodeID id) -> ICFGNode* {
                 ICFGNode* node = icfg.getGNode(id);
                 if (!node) {
@@ -145,7 +140,7 @@ void bind_icfg_graph(py::module& m) {
 }
 
 
-// 绑定 SVFIR
+// Bind SVFIR (PAG)
 void bind_svf(py::module& m) {
     py::class_<SVFIR>(m, "SVFIR")
             .def("get_icfg", [](SVFIR* pag) { return pag->getICFG(); }, py::return_value_policy::reference);
