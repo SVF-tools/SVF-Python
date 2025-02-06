@@ -7,13 +7,10 @@ project(SVF-PYTHON
         LANGUAGES C CXX
 )
 
-# 查找 Python
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
-# 启用 PYBIND11_FINDPYTHON
 set(PYBIND11_FINDPYTHON ON)
 
-# 查找 pybind11
 find_package(pybind11 REQUIRED)
 
 
@@ -51,7 +48,6 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 endif ()
 
 
-# 添加编译目标
 add_library(pysvf MODULE pybind/svf_pybind.cpp)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
@@ -61,8 +57,6 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     target_link_directories(pysvf PRIVATE ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-linux/Release-build/lib)
 endif ()
 
-# 连接 pybind11 库
 target_link_libraries(pysvf PRIVATE pybind11::module SvfLLVM SvfCore)
 
-# 设置 C++ 标准
 set_target_properties(pysvf PROPERTIES CXX_STANDARD 17)
