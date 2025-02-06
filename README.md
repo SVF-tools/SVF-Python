@@ -7,8 +7,64 @@ This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF).
 ## For Building SVF-Python
 ### Pre-requisite
 
-- Python 3.x
-- You can compile SVF from the source code
+- Python 3.x (highly recommend using pyenv to maintain multiple Python versions
+
+
+Then you should install pyenv to maintain multiple Python versions. You can follow the following steps to install pyenv.
+### Install pyenv
+
+1. **Install dependencies** (ensure you have the necessary build tools):
+
+   ```bash
+   # macOS
+   brew update
+   brew install openssl readline sqlite3 xz zlib tcl-tk
+   ```
+
+2. **Install pyenv**:
+
+   ```bash
+   brew install pyenv
+   ```
+
+3. **Configure your shell environment**:
+
+   Add the following to your shell configuration file (e.g., `~/.bashrc` or `~/.zshrc`):
+
+   ```bash
+   export PYENV_ROOT="$HOME/.pyenv"
+   export PATH="$PYENV_ROOT/bin:$PATH"
+   eval "$(pyenv init --path)"
+   eval "$(pyenv init -)"
+   ```
+
+   Then reload your configuration file:
+
+   ```bash
+   source ~/.bashrc  # or source ~/.zshrc
+   ```
+
+### Install multiple Python versions
+
+1. **List available Python versions**:
+
+   ```bash
+   pyenv install --list
+   ```
+
+2. **Install the required Python versions (3.8 to 3.13)**:
+
+   ```bash
+   pyenv install 3.8.12
+   pyenv install 3.9.7
+   pyenv install 3.10.2
+   pyenv install 3.11.5
+   pyenv install 3.12.0
+   pyenv install 3.13.0
+   ```
+
+This will set up `pyenv` and install Python versions 3.8 through 3.13. You can then use your script to build your project for each version.
+
 
 
 ### Installation
@@ -27,29 +83,11 @@ cd SVF-Python
 git submodule update --init --recursive --depth 1
 ```
 
-Then cmake and build the SVF-Python.
-We should make sure the some environment variables are set correctly.
-
-- `LLVM_DIR`: same to the `LLVM_DIR` in SVF
-- `CMAKE_PREFIX_PATH`: You should try to find out the pybind installation dir and get its cmake toolkit folder. You can run `python3 -m pybind11 --cmakedir`. For example, the path maybe `~/.pyenv/versions/3.12.6/lib/python3.12/site-packages/pybind11/share/cmake/pybind11`
+###  Build the Wheels for multiple Python versions
 
 Then you should replace the cmake variables in the following command.
 ```angular2html
-mkdir Release-build
-cd Release-build
-cmake -DLLVM_DIR=/path/to/LLVM_DIR -DCMAKE_PREFIX_PATH=/path/to/pybind11/cmake/ ..
-```
-
-Build the SVF-Python.
-
-```angular2html
-make -j20
-```
-
-Then run the setup tools to build pip wheel.
-```angular2html
-cd ..
-python3 setup.py bdist_wheel
+bash build_whl_mac.sh
 ```
 
 Then you can install the wheel by pip. The wheel file is in the `dist` folder. You should check the file name first.
