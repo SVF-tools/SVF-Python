@@ -9,7 +9,6 @@ project(SVF-PYTHON
 
 # 查找 Python
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
-add_subdirectory(SVF)
 
 # 启用 PYBIND11_FINDPYTHON
 set(PYBIND11_FINDPYTHON ON)
@@ -40,50 +39,27 @@ endif()
 
 # Add LLVM's include directories and link directory for all targets defined hereafter
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
-include_directories(SYSTEM ${CMAKE_BINARY_DIR}/SVF/include)
-link_directories(${LLVM_LIBRARY_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
 
-# Check if LLVM was built generating the single libLLVM.so shared library file or as separate static libraries
-if(LLVM_LINK_LLVM_DYLIB)
-    message(STATUS "Linking to LLVM dynamic shared library object")
-    set(llvm_libs LLVM)
 
-    # Set which components to include in the dynamic library to include the new SvfLLVM
-    if (LLVM_DYLIB_COMPONENTS)
-        message(STATUS "Appending SvfLLVM to LLVM dynamic library components")
-        list(APPEND LLVM_DYLIB_COMPONENTS SvfLLVM)
-    else()
-        message(STATUS "Adding all;SvfLLVM to LLVM dynamic library components (was unset)")
-        set(LLVM_DYLIB_COMPONENTS all;SvfLLVM)
-    endif()
-else()
-    message(STATUS "Linking to separate LLVM static libraries")
-    llvm_map_components_to_libnames(
-            llvm_libs
-            analysis
-            bitwriter
-            core
-            instcombine
-            instrumentation
-            ipo
-            irreader
-            linker
-            scalaropts
-            support
-            target
-            transformutils
-    )
-endif()
+# if system is darwin or linux
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/include)
 
-# Make the "add_llvm_library()" command available and configure LLVM/CMake
-list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
-include(AddLLVM)
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-linux/Release-build/include)
 
+endif ()
 
 
 # 添加编译目标
 add_library(pysvf MODULE pybind/svf_pybind.cpp)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+# add target link dir
+    target_link_directories(pysvf PRIVATE ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/lib)
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    target_link_directories(pysvf PRIVATE ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-linux/Release-build/lib)
+endif ()
 
 # 连接 pybind11 库
 target_link_libraries(pysvf PRIVATE pybind11::module SvfLLVM SvfCore)

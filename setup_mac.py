@@ -3,6 +3,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 import os
 import subprocess
 import platform
+from setuptools import setup, Extension
 import shutil
 
 svf_dir = os.path.abspath(os.path.dirname(__file__))
@@ -11,66 +12,76 @@ svf_dir = os.path.abspath(os.path.dirname(__file__))
 llvm_include_dir = subprocess.check_output(["llvm-config", "--includedir"]).decode("utf-8").strip()
 llvm_lib_dir = subprocess.check_output(["llvm-config", "--libdir"]).decode("utf-8").strip()
 
-# macOS specific settings
-if platform.system() == "Darwin":
-    z3_lib = "z3.obj/bin/libz3.dylib"
-    llvm_lib = "/opt/homebrew/Cellar/llvm@16/16.0.6_1/lib/libLLVM.dylib"
-    force_load_flag = "-Wl,-force_load"
-    strip_cmd = "strip -x"
-else:
-    raise RuntimeError("Only macOS is supported in this setup.py")
+z3_dir = os.getenv("Z3_DIR", "")
+llvm_dir = os.getenv("LLVM_DIR", "")
+SVF_DIR = os.getenv("SVF_DIR", "")
+VERSION = os.getenv("VERSION", "0.1.0")
 
-lib_dest = os.path.join("pysvf", "libs")
-os.makedirs(lib_dest, exist_ok=True)
+if z3_dir == "" or llvm_dir == "" or SVF_DIR == "":
+    raise RuntimeError("Please set Z3_DIR, LLVM_DIR or SVF_DIR environment variable")
 
-# Copy static library `.a` files
-a_files = ["libSvfCore.a", "libSvfLLVM.a"]
-for a_file in a_files:
-    a_src = os.path.join("Release-build/lib", a_file)
-    a_dst = os.path.join(lib_dest, a_file)
-    if os.path.exists(a_src):
-        shutil.copy(a_src, a_dst)
-        print(f"Copied {a_src} to {a_dst}")
-        # strip .a file (reduce size)
-        subprocess.run(f"{strip_cmd} {a_dst}", shell=True, check=False)
-    else:
-        raise FileNotFoundError(f"{a_src} not found!")
+# dst
+dst = os.path.join(svf_dir, "pysvf")
+# Copy all files in SVF_DIR to dst (including SVF_DIR itself)
+svf_dst = os.path.join(dst, "SVF")
+shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
 
-# copy extapi.bc
-extapi_bc_src = os.path.join("Release-build/lib", "extapi.bc")
-extapi_bc_dst = os.path.join(lib_dest, "extapi.bc")
-shutil.copy(extapi_bc_src, extapi_bc_dst)
-# Copy `libz3.dylib`, but not `libLLVM.dylib`
-shutil.copy(z3_lib, os.path.join(lib_dest, "libz3.dylib"))
-# Strip `libz3.dylib`
-subprocess.run(f"{strip_cmd} {os.path.join(lib_dest, 'libz3.dylib')}", shell=True, check=False)
+# Copy all file in Z3_DIR to dst (including Z3_DIR itself)
+z3_dst = os.path.join(dst, "z3.obj")
+shutil.copytree(z3_dir, z3_dst, dirs_exist_ok=True)
 
+# we do not copy LLVM because it is too huge
+
+force_load_flag = "-Wl,-force_load"
 
 ext_modules = [
     Pybind11Extension(
         "pysvf.pysvf",
         ["pybind/svf_pybind.cpp"],
-        include_dirs=["SVF/svf/include", "SVF/svf-llvm/include", "Release-build/SVF/include", llvm_include_dir],
-        library_dirs=[lib_dest, llvm_lib_dir],
+        include_dirs=[os.path.join(svf_dst, "Release-build/include"), llvm_include_dir],
+        library_dirs=[os.path.join(z3_dst, "lib"), llvm_lib_dir],
         libraries=["LLVM", "z3"],
         extra_link_args=[
-            "-Wl,-rpath,@loader_path/libs",
+            "-Wl,-rpath,@loader_path/SVF/Release-build/lib",
+            "-Wl,-rpath,@loader_path/z3.obj/lib",
             "-Wl,-rpath," + llvm_lib_dir,
-            f"{force_load_flag},{os.path.join(lib_dest, 'libSvfCore.a')}",
-            f"{force_load_flag},{os.path.join(lib_dest, 'libSvfLLVM.a')}",
-        ],
+            f"{force_load_flag},{os.path.join(svf_dst, 'Release-build/lib', 'libSvfCore.a')}",
+            f"{force_load_flag},{os.path.join(svf_dst,  'Release-build/lib', 'libSvfLLVM.a')}",
+            ],
     ),
 ]
 
+class CustomBuildExt(build_ext):
+    def run(self):
+        # Run the standard build_ext first
+        super().run()
+
+        # Path to the built shared object file
+        ext_path = self.get_ext_fullpath('pysvf')
+
+        # If the module is in a subdirectory, adjust the path
+        ext_path = os.path.join(os.path.dirname(ext_path), 'pysvf', os.path.basename(ext_path))
+
+        # Modify the library path
+        subprocess.check_call([
+            'install_name_tool',
+            '-change',
+            '/opt/homebrew/opt/z3/lib/libz3.4.13.dylib',
+            '@rpath/libz3.dylib',
+            ext_path
+        ])
+
 setup(
     name="pysvf",
-    version="0.1.3.dev5",
+    version=VERSION,
     author="Your Name",
     description="SVF with Python bindings",
     packages=find_packages(),
     ext_modules=ext_modules,
-    cmdclass={"build_ext": build_ext},
     zip_safe=False,
-    package_data={"pysvf": ["libs/*"]},
+    package_data={"pysvf": ["SVF/**/*", "z3.obj/**/*"]},
+    cmdclass={
+        'build_ext': CustomBuildExt,
+    },
     include_package_data=True,
 )
