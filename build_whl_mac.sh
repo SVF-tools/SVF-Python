@@ -4,7 +4,7 @@ SOURCE_DIR=$PWD
 VERSION="0.1.3.dev7"
 
 # git submodule clone, but depth = 1
-git submodule init SVF-npm --depth 1
+git clone https://github.com/SVF-tools/SVF-npm SVF-npm --depth 1
 
 
 # get pybind path
