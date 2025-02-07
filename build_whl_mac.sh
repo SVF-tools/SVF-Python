@@ -4,7 +4,7 @@ SOURCE_DIR=$PWD
 VERSION="0.1.3.dev7"
 
 # git submodule clone, but depth = 1
-git submodule update --init --recursive --depth 1
+git submodule init SVF-npm --depth 1
 
 
 # get pybind path
@@ -56,7 +56,7 @@ for VERSION in "${PYTHON_VERSIONS[@]}"; do
         "$PYTHON_BIN" -m pip install -U pip setuptools wheel pybind11
 
         # 设置环境变量并执行构建
-        SVF_DIR=$SVF_DIR LLVM_DIR=$LLVM_DIR Z3_DIR=$Z3_DIR VERSION=$VERSION "$PYTHON_BIN" setup_mac.py bdist_wheel --plat-name macosx_11_0_arm64
+        SVF_DIR=$SVF_DIR LLVM_DIR=$LLVM_DIR Z3_DIR=$Z3_DIR VERSION=$VERSION BUILD_TYPE="Release" "$PYTHON_BIN" setup_mac.py bdist_wheel --plat-name macosx_11_0_arm64
     else
         echo "Python binary not found or not executable for version $VERSION"
     fi

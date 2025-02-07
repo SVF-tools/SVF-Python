@@ -18,6 +18,7 @@ z3_dir = os.getenv("Z3_DIR", "")
 llvm_dir = os.getenv("LLVM_DIR", "")
 SVF_DIR = os.getenv("SVF_DIR", "")
 VERSION = os.getenv("VERSION", "0.1.0")
+BUILD_TYPE= os.getenv("BUILD_TYPE", "Release")
 
 if z3_dir == "" or llvm_dir == "" or SVF_DIR == "":
     raise RuntimeError("Please set Z3_DIR, LLVM_DIR or SVF_DIR environment variable")
@@ -31,6 +32,10 @@ shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
 # Copy all file in Z3_DIR to dst (including Z3_DIR itself)
 z3_dst = os.path.join(dst, "SVF/z3.obj")
 shutil.copytree(z3_dir, z3_dst, dirs_exist_ok=True)
+
+# Copy all file in LLVM_DIR to dst (including LLVM_DIR itself)
+llvm_dst = os.path.join(dst, "SVF/llvm-16.0.0.obj")
+shutil.copytree(llvm_dir, llvm_dst, dirs_exist_ok=True)
 
 # we do not copy LLVM because it is too huge
 
@@ -59,42 +64,6 @@ def get_site_packages_path():
     else:
         return os.path.join(sys.prefix, "lib", f"python{sys.version_info.major}.{sys.version_info.minor}", "site-packages")  # `venv`
 
-
-class CustomInstall(install):
-    def run(self):
-        # 先执行默认安装流程
-        install.run(self)
-        if "bdist_wheel" in sys.argv:
-            print("Skipping installation script during bdist_wheel build")
-            return
-
-        # 获取 `site-packages` 目录路径
-        site_packages_path = get_site_packages_path()
-        pysvf_path = os.path.join(site_packages_path, "pysvf")
-
-        print(f"Running installation script inside {pysvf_path}")
-
-        # 定义 Bash 脚本，确保在 `site-packages/mypackage/` 目录下执行
-        bash_script = f"""
-           cd {pysvf_path}
-           # if exist  {pysvf_path}/SVF, rm it
-           if [ -d "SVF" ]; then rm -rf SVF; fi
-           git clone https://github.com/SVF-tools/SVF-npm.git --depth 1
-           cd SVF-npm/SVF-osx/Release-build/
-           bash ../../llvm_install.sh
-           cd {pysvf_path}
-           mv SVF-npm/SVF-osx SVF
-           rm -rf SVF-npm
-        """
-
-        print("Running shell script to install dependencies...")
-        process = subprocess.run(["/bin/bash", "-c", bash_script], check=True, text=True, capture_output=True)
-
-        if process.returncode == 0:
-            print("Bash script executed successfully.")
-        else:
-            print("Bash script execution failed.")
-            exit(1)
 
 class CustomBuildExt(build_ext):
     def run(self):
@@ -132,19 +101,33 @@ class CustomBuildExt(build_ext):
             ext_path
         ])
 
-
-setup(
-    name="pysvf",
-    version=VERSION,
-    author="Your Name",
-    description="SVF with Python bindings",
-    packages=find_packages(),
-    ext_modules=ext_modules,
-    zip_safe=False,
-    package_data={},
-    cmdclass={
-        'build_ext': CustomBuildExt,
-        "install": CustomInstall
-    },
-    include_package_data=True,
-)
+if BUILD_TYPE == "RELEASE":
+    setup(
+        name="pysvf",
+        version=VERSION,
+        author="Your Name",
+        description="SVF with Python bindings",
+        packages=find_packages(),
+        ext_modules=ext_modules,
+        zip_safe=False,
+        package_data={},
+        cmdclass={
+            'build_ext': CustomBuildExt,
+        },
+        include_package_data=True,
+    )
+elif BUILD_TYPE == "DEBUG":
+    setup(
+        name="pysvf",
+        version=VERSION,
+        author="Your Name",
+        description="SVF with Python bindings",
+        packages=find_packages(),
+        ext_modules=ext_modules,
+        zip_safe=False,
+        package_data={"pysvf": ["SVF/**/*/*"]},
+        cmdclass={
+            'build_ext': CustomBuildExt,
+        },
+        include_package_data=True,
+    )

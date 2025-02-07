@@ -1,3 +1,6 @@
 [submodule "SVF-npm"]
 	path = SVF-npm
 	url = https://github.com/SVF-tools/SVF-npm
+[submodule "SVF"]
+	path = SVF
+	url = https://github.com/SVF-tools/SVF
