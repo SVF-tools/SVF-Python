@@ -1,135 +1,62 @@
 # Pysvf: the Python bindings of SVF
 
-## Introduction
+## 1. Introduction
+This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF). 
 
-This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF).
+- If you are interested in using SVF by Python, please install the SVF-Python by the following command in Chapter 2.
 
-## For Building SVF-Python
-### Pre-requisite
+- If you are interested in building SVF-Python from scratch, please read [Build From Scratch](./Build_From_Scratch.md). If you cannot use
+  the pre-built wheels, you can follow this guide.
 
-- Python 3.x (highly recommend using pyenv to maintain multiple Python versions
+- If you are publishing a new release of SVF-Python, please read [Build Release Whl](./Build_Release_Whl.md). [For SVF maintainers only]
 
-
-Then you should install pyenv to maintain multiple Python versions. You can follow the following steps to install pyenv.
-### Install pyenv
-
-1. **Install dependencies** (ensure you have the necessary build tools):
-
-   ```bash
-   # macOS
-   brew update
-   brew install openssl readline sqlite3 xz zlib tcl-tk
-   ```
-
-2. **Install pyenv**:
-
-   ```bash
-   brew install pyenv
-   ```
-
-3. **Configure your shell environment**:
-
-   Add the following to your shell configuration file (e.g., `~/.bashrc` or `~/.zshrc`):
-
-   ```bash
-   export PYENV_ROOT="$HOME/.pyenv"
-   export PATH="$PYENV_ROOT/bin:$PATH"
-   eval "$(pyenv init --path)"
-   eval "$(pyenv init -)"
-   ```
-
-   Then reload your configuration file:
-
-   ```bash
-   source ~/.bashrc  # or source ~/.zshrc
-   ```
-
-### Install multiple Python versions
-
-1. **List available Python versions**:
-
-   ```bash
-   pyenv install --list
-   ```
-
-2. **Install the required Python versions (3.8 to 3.13)**:
-
-   ```bash
-   pyenv install 3.8.12
-   pyenv install 3.9.7
-   pyenv install 3.10.2
-   pyenv install 3.11.5
-   pyenv install 3.12.0
-   pyenv install 3.13.0
-   ```
-
-This will set up `pyenv` and install Python versions 3.8 through 3.13. You can then use your script to build your project for each version.
-
-
-
-### Installation
-
-Make sure you have installed the Pybind.
-
-```angular2html
-python3 -m pip install pybind11 setuptools wheel
-```
-
-Then clone the submodules and build the SVF-Python. (set depth 1 to speed up the clone
-
-```angular2html
-git clone https://github.com/SVF-tools/SVF-Python.git
-cd SVF-Python
-git submodule update --init --recursive --depth 1
-```
-
-###  Build the Wheels for multiple Python versions
-
-Then you should replace the cmake variables in the following command.
-```angular2html
-bash build_whl_mac.sh
-```
-
-Then you can install the wheel by pip. The wheel file is in the `dist` folder. You should check the file name first.
-```angular2html
-python3 -m pip install dist/****.whl
-```
-
-### Publish pysvf library to Pypi
-You can upload to test pypi by the following command.
-```angular2html
-python3 -m twine upload --repository testpypi dist/* --verbose
-```
-
-If test is ok, you can upload to the real pypi by the following command.
-```angular2html
-python3 -m twine upload dist/* --verbose
-```
-
-## For SVF-Python Users
+## 2. Install SVF-Python
 
 ### Pre-requisite
 
-- Python 3.x
-- LLVM 16
+- Python 3.8 - 3.13
 
-For Mac User, you can install LLVM 16 by the following command.
-```angular2html
-brew install llvm@16
-```
+### Install
 
-### Installation and Running
-
-If you want to use the pysvf from pypi, you can run the following command. (If you installed the wheel from the above steps, you can ignore it.)
+install pysvf by pip
 ```angular2html
 python3 -m pip install  -i https://test.pypi.org/simple/ pysvf
 ```
 
+### Demo
+
 Then you can use the pysvf in your python3 code.
 ```angular2html
-cd test_cases
+git clone https://github.com/SVF-tools/SVF-Python.git
+cd SVF-Python/test_cases
 python3 test.py
 ```
 
-You should see a bunch of output from ICFGNode from the bitcodes.
+If you are using pysvf for the first time after installation. you may see the following output.  
+```angular2html
+SVF/Z3/LLVM dependencies not found.
+Running dependency installation process...
+Starting SVF/Z3/LLVM dependency installation...
+[1/5] Checking and removing existing SVF directory...
+[2/5] Cloning SVF repository...
+....[Dependency configuration output]
+[4/5] Building SVF...
+[5/5] Finalizing installation...
+SVF_DIR: ~/.pyenv/versions/3.11.5/lib/python3.11/site-packages/pysvf/SVF
+LLVM_DIR: ~/.pyenv/versions/3.11.5/lib/python3.11/site-packages/pysvf/SVF/llvm-16.0.0.obj
+Z3_DIR: ~/.pyenv/versions/3.11.5/lib/python3.11/site-packages/pysvf/SVF/z3.obj
+```
 
+Then you should see a bunch of output from ICFGNode from the bitcodes.
+```angular2html
+.... [Other output
+CallICFGNode45 {fun: main{ "ln": 21, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }}
+   call void @svf_assert(i1 noundef zeroext %cmp), !dbg !47 CallICFGNode: { "ln": 21, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }
+
+RetICFGNode46 {fun: main{ "ln": 21, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }}
+   call void @svf_assert(i1 noundef zeroext %cmp), !dbg !47 RetICFGNode: { "ln": 21, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }
+
+IntraICFGNode47 {fun: main{ "ln": 22, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }}
+   ret i32 0, !dbg !48 { "ln": 22, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }
+
+```
