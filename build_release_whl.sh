@@ -45,23 +45,23 @@ PROJECT_DIR=$(pwd)
 
 mkdir -p dist
 
-# 定义 Python 版本列表
+
 PYTHON_VERSIONS=("3.10.13" "3.11.5"  "3.12.1"  "3.12.6"  "3.13.0"  "3.8.16"  "3.9.18")
 
-# 遍历每个版本
+
 for VERSION in "${PYTHON_VERSIONS[@]}"; do
     PYTHON_BIN="$PYENV_ROOT/versions/$VERSION/bin/python"
     echo "Building for $PYTHON_BIN"
     if [ -f "$PYTHON_BIN" ] && [ -x "$PYTHON_BIN" ]; then
         echo "Building for $PYTHON_BIN"
 
-        # 清理构建目录
+
         rm -rf build pysvf/SVF pysvf/z3.obj
 
-        # 更新 pip 和安装依赖
+
         "$PYTHON_BIN" -m pip install -U pip setuptools wheel pybind11
 
-        # 设置环境变量并执行构建
+
         SVF_DIR=$SVF_DIR LLVM_DIR=$LLVM_DIR Z3_DIR=$Z3_DIR VERSION=$VERSION BUILD_TYPE="Release" "$PYTHON_BIN" setup_mac.py bdist_wheel --plat-name macosx_11_0_arm64
     else
         echo "Python binary not found or not executable for version $VERSION"
