@@ -3,7 +3,7 @@
 ## 1. Introduction
 This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF). 
 
-- If you are interested in using SVF by Python, please install the SVF-Python by the following command in Chapter 2.
+- If you are interested in using SVF by Python, please install the SVF-Python by the following command in (Chapter 2. Install SVF-Python).
 
 - If you are interested in building SVF-Python from scratch, please read [Build From Scratch](./Build_From_Scratch.md). If you cannot use
   the pre-built wheels, you can follow this guide.
@@ -32,7 +32,7 @@ cd SVF-Python/test_cases
 python3 test.py
 ```
 
-If you are using pysvf for the first time after installation. you may see the following output.  
+If you are using pysvf for the first time after installation. you will see the following output. If you are using it again, you won't see this output.
 ```angular2html
 SVF/Z3/LLVM dependencies not found.
 Running dependency installation process...
