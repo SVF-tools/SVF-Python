@@ -2,6 +2,7 @@
 # Source folder
 SOURCE_DIR=$PWD
 VERSION="0.1.3.dev7"
+PYENV_ROOT=".pyenv"
 
 # git submodule clone, but depth = 1
 git clone https://github.com/SVF-tools/SVF-npm SVF-npm --depth 1
@@ -38,7 +39,7 @@ echo "LLVM_DIR=$LLVM_DIR"
 echo "Z3_DIR=$Z3_DIR"
 SVF_DIR="$SOURCE_DIR/SVF-npm/SVF-osx/"
 
-PYENV_ROOT="/Users/z5489735/.pyenv"
+
 PROJECT_DIR=$(pwd)
 
 

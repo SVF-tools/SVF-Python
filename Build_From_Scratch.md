@@ -14,6 +14,13 @@ If you cannot use the pre-built wheels because of running environment, network c
 
 You can build SVF-Python by the following commands. If you want to rebuild it, please clean the cache `build` `dist` `pysvf.egg-info` `pysvf/SVF` directories. `rm -rf build dist pysvf.egg-info pysvf/SVF`.
 
+Then you should check the Python3 binary path and the version of SVF-Python in the `build_from_scratch.sh` file.
+
+```angular2html
+VERSION="0.1.3.dev7"
+PYTHON_BIN="python3"
+```
+
 ```angular2html
 git clone https://github.com/SVF-tools/SVF-Python.git
 cd SVF-Python

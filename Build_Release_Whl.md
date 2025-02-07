@@ -69,7 +69,14 @@ This will set up `pyenv` and install Python versions 3.8 through 3.13. You can t
 
 ###  Build the Wheels for multiple Python versions
 
-Then you should replace the cmake variables in the following command.
+Then you should replace the cmake variables in the following command. You should check the Pyenv folder and the version of SVF-Python in the `build_whl_mac.sh` file.
+
+```angular2html
+VERSION="0.1.3.dev7"
+PYENV_ROOT=".pyenv"
+```
+
+
 ```angular2html
 bash build_whl_mac.sh
 ```
