@@ -20,11 +20,16 @@ then
   cd $SOURCE_DIR/SVF-npm/SVF-osx/
   source ../llvm_install.sh
   cd $SOURCE_DIR
+  # if Release-build exists, remove it
+  if [ -d "Release-build" ]; then
+    rm -rf Release-build
+  fi
   mkdir Release-build
   cd Release-build
   cmake -DSVF_DIR=$SOURCE_DIR/SVF-npm/SVF-osx/ -DLLVM_DIR=$LLVM_DIR -DZ3_DIR=$Z3_DIR -DCMAKE_PREFIX_PATH=$PYBIND_DIR ..
   make -j4
 fi
+
 cd $SOURCE_DIR
 
 

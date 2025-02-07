@@ -23,40 +23,13 @@ BUILD_TYPE= os.getenv("BUILD_TYPE", "Release")
 if z3_dir == "" or llvm_dir == "" or SVF_DIR == "":
     raise RuntimeError("Please set Z3_DIR, LLVM_DIR or SVF_DIR environment variable")
 
-# dst
-dst = os.path.join(svf_dir, "pysvf")
-# Copy all files in SVF_DIR to dst (including SVF_DIR itself)
-svf_dst = os.path.join(dst, "SVF")
-shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
 
-# Copy all file in Z3_DIR to dst (including Z3_DIR itself)
-z3_dst = os.path.join(dst, "SVF/z3.obj")
-shutil.copytree(z3_dir, z3_dst, dirs_exist_ok=True)
 
-# Copy all file in LLVM_DIR to dst (including LLVM_DIR itself)
-llvm_dst = os.path.join(dst, "SVF/llvm-16.0.0.obj")
-shutil.copytree(llvm_dir, llvm_dst, dirs_exist_ok=True)
 
 # we do not copy LLVM because it is too huge
 
 force_load_flag = "-Wl,-force_load"
 
-ext_modules = [
-    Pybind11Extension(
-        "pysvf.pysvf",
-        ["pybind/svf_pybind.cpp"],
-        include_dirs=[os.path.join(svf_dst, "Release-build/include"), llvm_include_dir],
-        library_dirs=[os.path.join(z3_dst, "lib"), llvm_lib_dir],
-        libraries=["LLVM", "z3"],
-        extra_link_args=[
-            "-Wl,-rpath,@loader_path/SVF/Release-build/lib",
-            "-Wl,-rpath,@loader_path/SVF/z3.obj/lib",
-            "-Wl,-rpath,@loader_path/SVF/llvm-16.0.0.obj/lib",
-            f"{force_load_flag},{os.path.join(svf_dst, 'Release-build/lib', 'libSvfCore.a')}",
-            f"{force_load_flag},{os.path.join(svf_dst,  'Release-build/lib', 'libSvfLLVM.a')}",
-            ],
-    ),
-]
 
 def get_site_packages_path():
     if hasattr(site, 'getsitepackages'):
@@ -101,7 +74,33 @@ class CustomBuildExt(build_ext):
             ext_path
         ])
 
-if BUILD_TYPE == "RELEASE":
+if BUILD_TYPE == "Release":
+    # dst
+    dst = os.path.join(svf_dir, "pysvf")
+    # Copy all files in SVF_DIR to dst (including SVF_DIR itself)
+    svf_dst = os.path.join(dst, "SVF")
+    shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
+
+    # Copy all file in Z3_DIR to dst (including Z3_DIR itself)
+    z3_dst = os.path.join(dst, "SVF/z3.obj")
+    shutil.copytree(z3_dir, z3_dst, dirs_exist_ok=True)
+
+    ext_modules = [
+        Pybind11Extension(
+            "pysvf.pysvf",
+            ["pybind/svf_pybind.cpp"],
+            include_dirs=[os.path.join(svf_dst, "Release-build/include"), llvm_include_dir],
+            library_dirs=[os.path.join(z3_dst, "lib"), llvm_lib_dir],
+            libraries=["LLVM", "z3"],
+            extra_link_args=[
+                "-Wl,-rpath,@loader_path/SVF/Release-build/lib",
+                "-Wl,-rpath,@loader_path/SVF/z3.obj/lib",
+                "-Wl,-rpath,@loader_path/SVF/llvm-16.0.0.obj/lib",
+                f"{force_load_flag},{os.path.join(svf_dst, 'Release-build/lib', 'libSvfCore.a')}",
+                f"{force_load_flag},{os.path.join(svf_dst,  'Release-build/lib', 'libSvfLLVM.a')}",
+            ],
+        ),
+    ]
     setup(
         name="pysvf",
         version=VERSION,
@@ -116,7 +115,32 @@ if BUILD_TYPE == "RELEASE":
         },
         include_package_data=True,
     )
-elif BUILD_TYPE == "DEBUG":
+elif BUILD_TYPE == "Debug":
+    # dst
+    dst = os.path.join(svf_dir, "pysvf")
+    # Copy all files in SVF_DIR to dst (including SVF_DIR itself)
+    svf_dst = os.path.join(dst, "SVF")
+    shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
+
+    z3_dst = os.path.join(svf_dst, "z3.obj")
+
+    print("svf_dst", svf_dst)
+    ext_modules = [
+        Pybind11Extension(
+            "pysvf.pysvf",
+            ["pybind/svf_pybind.cpp"],
+            include_dirs=[os.path.join(svf_dst, "svf/include"), os.path.join(svf_dst, "svf-llvm/include"), os.path.join(svf_dst, "Release-build/include"), llvm_include_dir],
+            library_dirs=[os.path.join(z3_dst, "lib"), llvm_lib_dir],
+            libraries=["LLVM", "z3"],
+            extra_link_args=[
+                "-Wl,-rpath,@loader_path/SVF/Release-build/lib",
+                "-Wl,-rpath,@loader_path/SVF/z3.obj/lib",
+                "-Wl,-rpath,@loader_path/SVF/llvm-16.0.0.obj/lib",
+                f"{force_load_flag},{os.path.join(svf_dst, 'Release-build/lib', 'libSvfCore.a')}",
+                f"{force_load_flag},{os.path.join(svf_dst,  'Release-build/lib', 'libSvfLLVM.a')}",
+            ],
+        ),
+    ]
     setup(
         name="pysvf",
         version=VERSION,
@@ -125,9 +149,8 @@ elif BUILD_TYPE == "DEBUG":
         packages=find_packages(),
         ext_modules=ext_modules,
         zip_safe=False,
-        package_data={"pysvf": ["SVF/**/*/*"]},
+        package_data={"pysvf": ["SVF/Release-build/*"]},
         cmdclass={
-            'build_ext': CustomBuildExt,
         },
         include_package_data=True,
     )
