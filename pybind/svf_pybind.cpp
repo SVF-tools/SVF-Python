@@ -219,7 +219,7 @@ void bind_svf_stmt(py::module& m) {
             .def("get_op", &UnaryOPStmt::getOpcode)
             .def("get_res", &UnaryOPStmt::getRes, py::return_value_policy::reference)
             .def("get_res_id", &UnaryOPStmt::getResID)
-            .def("get_op_var", [](UnaryOPStmt& stmt, int ID) { return stmt.getOpVar(ID); },
+            .def("get_op_var", [](UnaryOPStmt& stmt) { return stmt.getOpVar(); },
                  py::return_value_policy::reference);
 
     py::class_<BranchStmt, SVFStmt>(m, "BranchStmt")
@@ -266,10 +266,29 @@ void bind_svf(py::module& m) {
 
 }
 
+// Bind SVFVar
+void bind_svf_var(py::module &m) {
+    py::class_<SVFVar>(m, "SVFVar")
+            .def("get_name", &SVFVar::getName)
+            .def("get_type", &SVFVar::getType)
+            // SVFFunction* getFunction()
+            .def("get_function", &SVFVar::getFunction, py::return_value_policy::reference)
+            .def("get_id", &SVFVar::getId)
+            .def("to_string", &SVFVar::toString);
+            // TODO: implement the downcast and isa
+}
+
+// Bind SVFType
+void bind_svf_type(py::module &m) {
+
+}
+
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
     bind_icfg_node(m);
     bind_icfg_graph(m);
     bind_svf_stmt(m);
+    bind_svf_var(m);
+    bind_svf_type(m);
     m.def("analyze", &PySVF::analyze, py::return_value_policy::reference, "Analyze LLVM bitcode and return SVFIR");
 }
