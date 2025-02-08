@@ -106,16 +106,135 @@ void bind_svf_stmt(py::module& m) {
             .def("is_branch_stmt", [](const SVFStmt* stmt) {
                 return dynamic_cast<const BranchStmt*>(stmt) != nullptr;})
              // downcast TODO: more downcast here
-            .def("as_cmp_stmt", [](SVFStmt* stmt) { return dynamic_cast<CmpStmt*>(stmt); }, py::return_value_policy::reference);
+            .def("as_addr_stmt", [](SVFStmt *stmt) { return dynamic_cast<AddrStmt *>(stmt); },
+                  py::return_value_policy::reference)
+            .def("as_copy_stmt", [](SVFStmt *stmt) { return dynamic_cast<CopyStmt *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_store_stmt", [](SVFStmt *stmt) { return dynamic_cast<StoreStmt *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_load_stmt", [](SVFStmt *stmt) { return dynamic_cast<LoadStmt *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_call_pe", [](SVFStmt *stmt) { return dynamic_cast<CallPE *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_ret_pe", [](SVFStmt *stmt) { return dynamic_cast<RetPE *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_gep_stmt", [](SVFStmt *stmt) { return dynamic_cast<GepStmt *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_phi_stmt", [](SVFStmt *stmt) { return dynamic_cast<PhiStmt *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_select_stmt", [](SVFStmt *stmt) { return dynamic_cast<SelectStmt *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_cmp_stmt", [](SVFStmt* stmt) { return dynamic_cast<CmpStmt*>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_binary_op_stmt", [](SVFStmt* stmt) { return dynamic_cast<BinaryOPStmt*>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_unary_op_stmt", [](SVFStmt *stmt) { return dynamic_cast<UnaryOPStmt *>(stmt); },
+                 py::return_value_policy::reference)
+            .def("as_branch_stmt", [](SVFStmt *stmt) { return dynamic_cast<BranchStmt *>(stmt); },
+                 py::return_value_policy::reference);
 
-    py::class_<CmpStmt, SVFStmt>(m, "CmpStmt")  // TODO: Return int, maybe need to think about friendly return value
+    py::class_<AddrStmt, SVFStmt>(m, "AddrStmt")
+            .def("get_lhs_var", &AddrStmt::getLHSVar, py::return_value_policy::reference)
+            .def("get_lhs_id", &AddrStmt::getLHSVarID)
+            .def("get_rhs_var", &AddrStmt::getRHSVar, py::return_value_policy::reference)
+            .def("get_rhs_id", &AddrStmt::getRHSVarID)
+            .def("get_arr_size", &AddrStmt::getArrSize, py::return_value_policy::reference);
+
+    py::class_<CopyStmt, SVFStmt>(m, "CopyStmt")
+            // TODO: more API from CopyStmt
+            .def("get_lhs_var", &CopyStmt::getLHSVar, py::return_value_policy::reference)
+            .def("get_lhs_id", &CopyStmt::getLHSVarID)
+            .def("get_rhs_var", &CopyStmt::getRHSVar, py::return_value_policy::reference)
+            .def("get_rhs_id", &CopyStmt::getRHSVarID);
+
+
+    py::class_<StoreStmt, SVFStmt>(m, "StoreStmt")
+            .def("get_lhs_var", &StoreStmt::getLHSVar, py::return_value_policy::reference)
+            .def("get_lhs_id", &StoreStmt::getLHSVarID)
+            .def("get_rhs_var", &StoreStmt::getRHSVar, py::return_value_policy::reference)
+            .def("get_rhs_id", &StoreStmt::getRHSVarID);
+
+
+    py::class_<LoadStmt, SVFStmt>(m, "LoadStmt")
+            .def("get_lhs_var", &LoadStmt::getLHSVar, py::return_value_policy::reference)
+            .def("get_lhs_id", &LoadStmt::getLHSVarID)
+            .def("get_rhs_var", &LoadStmt::getRHSVar, py::return_value_policy::reference)
+            .def("get_rhs_id", &LoadStmt::getRHSVarID);
+
+    py::class_<CallPE, SVFStmt>(m, "CallPE")
+            .def("get_callsite", &CallPE::getCallSite)
+            .def("get_lhs_var", &CallPE::getLHSVar, py::return_value_policy::reference)
+            .def("get_lhs_id", &CallPE::getLHSVarID)
+            .def("get_rhs_var", &CallPE::getRHSVar, py::return_value_policy::reference)
+            .def("get_rhs_id", &CallPE::getRHSVarID)
+            .def("get_fun_entry_icfg_node", &CallPE::getFunEntryICFGNode, py::return_value_policy::reference);
+
+    py::class_<RetPE, SVFStmt>(m, "RetPE")
+            .def("get_callsite", &RetPE::getCallSite)
+            .def("get_lhs_var", &RetPE::getLHSVar, py::return_value_policy::reference)
+            .def("get_lhs_id", &RetPE::getLHSVarID)
+            .def("get_rhs_var", &RetPE::getRHSVar, py::return_value_policy::reference)
+            .def("get_rhs_id", &RetPE::getRHSVarID)
+            .def("get_fun_exit_icfg_node", &RetPE::getFunExitICFGNode, py::return_value_policy::reference);
+
+    py::class_<GepStmt, SVFStmt>(m, "GepStmt")
+            .def("get_lhs_var", &GepStmt::getLHSVar, py::return_value_policy::reference)
+            .def("get_lhs_id", &GepStmt::getLHSVarID)
+            .def("get_rhs_var", &GepStmt::getRHSVar, py::return_value_policy::reference)
+            .def("get_rhs_id", &GepStmt::getRHSVarID)
+            .def("is_constant_offset", &GepStmt::isConstantOffset)
+            .def("get_constant_offset", &GepStmt::accumulateConstantOffset)
+            .def("get_constant_byte_offset", &GepStmt::accumulateConstantByteOffset)
+            .def("get_constant_struct_fld_idx", &GepStmt::getConstantStructFldIdx)
+            //maybe change a name
+            .def("get_offset_var_and_gep_type_pair_vec", &GepStmt::getOffsetVarAndGepTypePairVec, py::return_value_policy::reference);
+
+    py::class_<PhiStmt, SVFStmt>(m, "PhiStmt")
+            // TODO: may implement get_op_var and get_op_var_id
+            .def("get_res_var", &PhiStmt::getRes, py::return_value_policy::reference)
+            .def("get_res_id", &PhiStmt::getResID)
+            .def("get_op_icfg_node", [](PhiStmt& stmt, int idx) { return stmt.getOpVar(idx); },
+                 py::return_value_policy::reference);
+
+   // TODO: selectStmt
+
+    py::class_<CmpStmt, SVFStmt>(m, "CmpStmt")
+            // TODO: Return int, maybe need to think about friendly return value
             .def("get_predicate", &CmpStmt::getPredicate)
             .def("get_res", &CmpStmt::getRes, py::return_value_policy::reference)
             .def("get_res_id", &CmpStmt::getResID)
+            // TODO: implement SVFVar
             .def("get_op_var", [](CmpStmt& stmt, int ID) { return stmt.getOpVar(ID); },
                  py::return_value_policy::reference);
 
+    py::class_<BinaryOPStmt, SVFStmt>(m, "BinaryOPStmt")
+            //TODO: enum of get_op
+            .def("get_op", &BinaryOPStmt::getOpcode)
+            .def("get_res", &BinaryOPStmt::getRes, py::return_value_policy::reference)
+            .def("get_res_id", &BinaryOPStmt::getResID)
+            .def("get_op_var", [](BinaryOPStmt& stmt, int ID) { return stmt.getOpVar(ID); },
+                 py::return_value_policy::reference);
+
+    py::class_<UnaryOPStmt, SVFStmt>(m, "UnaryOPStmt")
+            .def("get_op", &UnaryOPStmt::getOpcode)
+            .def("get_res", &UnaryOPStmt::getRes, py::return_value_policy::reference)
+            .def("get_res_id", &UnaryOPStmt::getResID)
+            .def("get_op_var", [](UnaryOPStmt& stmt, int ID) { return stmt.getOpVar(ID); },
+                 py::return_value_policy::reference);
+
+    py::class_<BranchStmt, SVFStmt>(m, "BranchStmt")
+            //std::vector<std::pair<const ICFGNode*, s32_t>> getSuccessors()
+            .def("get_successors", &BranchStmt::getSuccessors, py::return_value_policy::reference)
+            .def("get_num_successors", &BranchStmt::getNumSuccessors)
+            .def("is_conditional", &BranchStmt::isConditional)
+            .def("is_unconditional", &BranchStmt::isUnconditional)
+            .def("get_condition", &BranchStmt::getCondition, py::return_value_policy::reference)
+            .def("get_branch_inst", &BranchStmt::getBranchInst, py::return_value_policy::reference);
+
+
 }
+
+// Bind
 
 
 // Bind class ICFG
