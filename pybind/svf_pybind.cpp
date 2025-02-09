@@ -235,9 +235,6 @@ void bind_svf_stmt(py::module& m) {
 
 }
 
-// Bind
-
-
 // Bind class ICFG
 void bind_icfg_graph(py::module& m) {
     py::class_<ICFG>(m, "ICFG")
@@ -269,15 +266,95 @@ void bind_svf(py::module& m) {
 
 // Bind SVFVar
 void bind_svf_var(py::module &m) {
-    py::class_<SVFVar>(m, "SVFVar")
-            .def("get_name", &SVFVar::getName)
-            .def("get_type", &SVFVar::getType)
-            // SVFFunction* getFunction()
-            .def("get_function", &SVFVar::getFunction, py::return_value_policy::reference)
-            .def("get_id", &SVFVar::getId)
-            .def("to_string", &SVFVar::toString);
-            // TODO: implement the downcast and isa
+    py::class_<SVF::SVFVar>(m, "SVFVar")
+            .def("get_id", &SVF::SVFVar::getId)  // 绑定 getId() 到 Python 的 get_id()
+            .def("is_pointer", &SVF::SVFVar::isPointer)
+            .def("is_const_data_or_agg_data_but_not_null_ptr", &SVF::SVFVar::isConstDataOrAggDataButNotNullPtr)
+            .def("is_isolated_node", &SVF::SVFVar::isIsolatedNode)
+            .def("get_value_name", &SVF::SVFVar::getValueName)
+            .def("get_function", &SVF::SVFVar::getFunction, py::return_value_policy::reference)
+            .def("ptr_in_uncalled_function", &SVF::SVFVar::ptrInUncalledFunction)
+            .def("is_const_data_or_agg_data", &SVF::SVFVar::isConstDataOrAggData)
+            .def("to_string", &SVF::SVFVar::toString);
+
+    py::class_<SVF::ValVar, SVF::SVFVar>(m, "ValVar")
+            .def("get_icfg_node", &SVF::ValVar::getICFGNode, py::return_value_policy::reference)
+            .def("get_value_name", &SVF::ValVar::getValueName)
+            .def("get_function", &SVF::ValVar::getFunction, py::return_value_policy::reference)
+            .def("to_string", &SVF::ValVar::toString);
+
+    py::class_<SVF::ObjVar, SVF::SVFVar>(m, "ObjVar")
+            .def("get_value_name", &SVF::ObjVar::getValueName)
+            .def("to_string", &SVF::ObjVar::toString);
+
+    //// BaseObjVar
+    py::class_<SVF::BaseObjVar, SVF::SVFVar>(m, "BaseObjVar")
+            .def("get_type", &SVF::BaseObjVar::getType, py::return_value_policy::reference)
+            .def("get_byte_size_of_obj", &SVF::BaseObjVar::getByteSizeOfObj);
+
+    py::class_<SVF::FunObjVar, SVF::BaseObjVar>(m, "FunObjVar")
+            .def("is_declaration", &SVF::FunObjVar::isDeclaration)
+            .def("is_intrinsic", &SVF::FunObjVar::isIntrinsic)
+            .def("has_address_taken", &SVF::FunObjVar::hasAddressTaken)
+            .def("is_vararg", &SVF::FunObjVar::isVarArg)
+            .def("is_uncalled_function", &SVF::FunObjVar::isUncalledFunction)
+            .def("has_return", &SVF::FunObjVar::hasReturn)
+            .def("get_function_type", &SVF::FunObjVar::getFunctionType, py::return_value_policy::reference)
+            .def("get_return_type", &SVF::FunObjVar::getReturnType, py::return_value_policy::reference)
+            .def("to_string", &SVF::FunObjVar::toString);
+
+    py::class_<SVF::FunValVar, SVF::ValVar>(m, "FunValVar")
+            .def("get_function", &SVF::FunValVar::getFunction, py::return_value_policy::reference)
+            .def("is_pointer", &SVF::FunValVar::isPointer)
+            .def("to_string", &SVF::FunValVar::toString);
+
+    //// FunObjVar
+    py::class_<SVF::FunObjVar, SVF::BaseObjVar>(m, "FunObjVar")
+            .def("is_declaration", &SVF::FunObjVar::isDeclaration)
+            .def("has_address_taken", &SVF::FunObjVar::hasAddressTaken);
+
+    py::class_<SVF::ArgValVar, SVF::ValVar>(m, "ArgValVar")
+            .def("get_function", &SVF::ArgValVar::getFunction, py::return_value_policy::reference)
+            .def("get_parent", &SVF::ArgValVar::getParent, py::return_value_policy::reference)
+            .def("get_arg_no", &SVF::ArgValVar::getArgNo)
+            .def("is_pointer", &SVF::ArgValVar::isPointer)
+            .def("to_string", &SVF::ArgValVar::toString);
+
+    //// RetValPN
+    //inline const FunObjVar* getCallGraphNode() const;
+    py::class_<SVF::RetValPN, SVF::ValVar>(m, "RetValPN")
+            .def("get_function", &SVF::RetValPN::getFunction, py::return_value_policy::reference);
+
+    py::class_<SVF::GepValVar, SVF::ValVar>(m, "GepValVar")
+            .def("get_constant_field_idx", &SVF::GepValVar::getConstantFieldIdx)
+            .def("get_base_node", &SVF::GepValVar::getBaseNode, py::return_value_policy::reference)
+            .def("get_value_name", &SVF::GepValVar::getValueName)
+            .def("is_pointer", &SVF::GepValVar::isPointer)
+            .def("get_type", &SVF::GepValVar::getType, py::return_value_policy::reference)
+            .def("get_function", &SVF::GepValVar::getFunction, py::return_value_policy::reference)
+            .def("to_string", &SVF::GepValVar::toString);
+
+    //// ConstFPValVar
+    py::class_<SVF::ConstFPValVar, SVF::ValVar>(m, "ConstFPValVar")
+            .def("get_fp_value", &SVF::ConstFPValVar::getFPValue);
+
+    //// ConstIntValVar
+    py::class_<SVF::ConstIntValVar, SVF::ValVar>(m, "ConstIntValVar")
+            .def("get_sext_value", &SVF::ConstIntValVar::getSExtValue)
+            .def("get_zext_value", &SVF::ConstIntValVar::getZExtValue);
+
+    //// ConstFPObjVar
+    py::class_<SVF::ConstFPObjVar, SVF::BaseObjVar>(m, "ConstFPObjVar")
+            .def("get_fp_value", &SVF::ConstFPObjVar::getFPValue);
+
+
+    //// ConstIntObjVar
+    py::class_<SVF::ConstIntObjVar, SVF::BaseObjVar>(m, "ConstIntObjVar")
+            .def("get_sext_value", &SVF::ConstIntObjVar::getSExtValue)
+            .def("get_zext_value", &SVF::ConstIntObjVar::getZExtValue);
+
 }
+
 
 // Bind SVFType
 void bind_svf_type(py::module& m) {
@@ -292,40 +369,34 @@ void bind_svf_type(py::module& m) {
 
 
     py::class_<SVFPointerType, SVFType>(m, "SVFPointerType")
-            .def("print", &SVFPointerType::print)
-            .def_static("classof", &SVFPointerType::classof);
+            .def("print", &SVFPointerType::print);
 
     py::class_<SVFIntegerType, SVFType>(m, "SVFIntegerType")
             .def("print", &SVFIntegerType::print)
             .def("set_sign_and_width", &SVFIntegerType::setSignAndWidth)
-            .def("is_signed", &SVFIntegerType::isSigned)
-            .def_static("classof", &SVFIntegerType::classof);
+            .def("is_signed", &SVFIntegerType::isSigned);
 
     py::class_<SVFFunctionType, SVFType>(m, "SVFFunctionType")
             .def("print", &SVFFunctionType::print)
-            .def("get_return_type", &SVFFunctionType::getReturnType, py::return_value_policy::reference)
-            .def_static("classof", &SVFFunctionType::classof);
+            .def("get_return_type", &SVFFunctionType::getReturnType, py::return_value_policy::reference);
 
     py::class_<SVFStructType, SVFType>(m, "SVFStructType")
             .def("print", &SVFStructType::print)
             .def("get_name", &SVFStructType::getName)
             .def("set_name", py::overload_cast<const std::string&>(&SVFStructType::setName))
-            .def("set_name", py::overload_cast<std::string&&>(&SVFStructType::setName))
-            .def_static("classof", &SVFStructType::classof);
+            .def("set_name", py::overload_cast<std::string&&>(&SVFStructType::setName));
 
     py::class_<SVFArrayType, SVFType>(m, "SVFArrayType")
             .def("print", &SVFArrayType::print)
             .def("get_type_of_element", &SVFArrayType::getTypeOfElement, py::return_value_policy::reference)
             .def("set_type_of_element", &SVFArrayType::setTypeOfElement)
-            .def("set_num_of_element", &SVFArrayType::setNumOfElement)
-            .def_static("classof", &SVFArrayType::classof);
+            .def("set_num_of_element", &SVFArrayType::setNumOfElement);
 
     py::class_<SVFOtherType, SVFType>(m, "SVFOtherType")
             .def("print", &SVFOtherType::print)
             .def("get_repr", &SVFOtherType::getRepr)
             .def("set_repr", py::overload_cast<const std::string&>(&SVFOtherType::setRepr))
-            .def("set_repr", py::overload_cast<std::string&&>(&SVFOtherType::setRepr))
-            .def_static("classof", &SVFOtherType::classof);
+            .def("set_repr", py::overload_cast<std::string&&>(&SVFOtherType::setRepr));
 
     // Downcasting utilities for polymorphic types
     m.def("as_pointer_type", [](SVFType* type) { return dynamic_cast<SVFPointerType*>(type); }, py::return_value_policy::reference);
