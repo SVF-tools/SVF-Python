@@ -5,6 +5,7 @@
 #include "Util/CommandLine.h"
 #include "Util/Options.h"
 #include "Graphs/ICFG.h"
+#include "SVFIR/SVFType.h"
 #include "SVFIR/SVFStatements.h"
 
 namespace py = pybind11;
@@ -279,9 +280,62 @@ void bind_svf_var(py::module &m) {
 }
 
 // Bind SVFType
-void bind_svf_type(py::module &m) {
+void bind_svf_type(py::module& m) {
+    py::class_<SVFType>(m, "SVFType")
+            .def("get_kind", &SVFType::getKind)
+            .def("get_byte_size", &SVFType::getByteSize)
+            .def("is_pointer_ty", &SVFType::isPointerTy)
+            .def("is_array_ty", &SVFType::isArrayTy)
+            .def("is_struct_ty", &SVFType::isStructTy)
+            .def("is_single_value_ty", &SVFType::isSingleValueType)
+            .def("to_string", &SVFType::toString);
 
+
+    py::class_<SVFPointerType, SVFType>(m, "SVFPointerType")
+            .def("print", &SVFPointerType::print)
+            .def_static("classof", &SVFPointerType::classof);
+
+    py::class_<SVFIntegerType, SVFType>(m, "SVFIntegerType")
+            .def("print", &SVFIntegerType::print)
+            .def("set_sign_and_width", &SVFIntegerType::setSignAndWidth)
+            .def("is_signed", &SVFIntegerType::isSigned)
+            .def_static("classof", &SVFIntegerType::classof);
+
+    py::class_<SVFFunctionType, SVFType>(m, "SVFFunctionType")
+            .def("print", &SVFFunctionType::print)
+            .def("get_return_type", &SVFFunctionType::getReturnType, py::return_value_policy::reference)
+            .def_static("classof", &SVFFunctionType::classof);
+
+    py::class_<SVFStructType, SVFType>(m, "SVFStructType")
+            .def("print", &SVFStructType::print)
+            .def("get_name", &SVFStructType::getName)
+            .def("set_name", py::overload_cast<const std::string&>(&SVFStructType::setName))
+            .def("set_name", py::overload_cast<std::string&&>(&SVFStructType::setName))
+            .def_static("classof", &SVFStructType::classof);
+
+    py::class_<SVFArrayType, SVFType>(m, "SVFArrayType")
+            .def("print", &SVFArrayType::print)
+            .def("get_type_of_element", &SVFArrayType::getTypeOfElement, py::return_value_policy::reference)
+            .def("set_type_of_element", &SVFArrayType::setTypeOfElement)
+            .def("set_num_of_element", &SVFArrayType::setNumOfElement)
+            .def_static("classof", &SVFArrayType::classof);
+
+    py::class_<SVFOtherType, SVFType>(m, "SVFOtherType")
+            .def("print", &SVFOtherType::print)
+            .def("get_repr", &SVFOtherType::getRepr)
+            .def("set_repr", py::overload_cast<const std::string&>(&SVFOtherType::setRepr))
+            .def("set_repr", py::overload_cast<std::string&&>(&SVFOtherType::setRepr))
+            .def_static("classof", &SVFOtherType::classof);
+
+    // Downcasting utilities for polymorphic types
+    m.def("as_pointer_type", [](SVFType* type) { return dynamic_cast<SVFPointerType*>(type); }, py::return_value_policy::reference);
+    m.def("as_integer_type", [](SVFType* type) { return dynamic_cast<SVFIntegerType*>(type); }, py::return_value_policy::reference);
+    m.def("as_function_type", [](SVFType* type) { return dynamic_cast<SVFFunctionType*>(type); }, py::return_value_policy::reference);
+    m.def("as_struct_type", [](SVFType* type) { return dynamic_cast<SVFStructType*>(type); }, py::return_value_policy::reference);
+    m.def("as_array_type", [](SVFType* type) { return dynamic_cast<SVFArrayType*>(type); }, py::return_value_policy::reference);
+    m.def("as_other_type", [](SVFType* type) { return dynamic_cast<SVFOtherType*>(type); }, py::return_value_policy::reference);
 }
+
 
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
