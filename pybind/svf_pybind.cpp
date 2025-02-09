@@ -7,6 +7,9 @@
 #include "Graphs/ICFG.h"
 #include "SVFIR/SVFType.h"
 #include "SVFIR/SVFStatements.h"
+#include "AE/Core/ICFGWTO.h"
+#include "MemoryModel/PointerAnalysis.h"
+#include "WPA/Andersen.h"
 
 namespace py = pybind11;
 using namespace SVF;
@@ -19,7 +22,9 @@ public:
         SVFModule* svfModule = LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder(svfModule);
         SVFIR* pag = builder.build();  // TODO: maybe we need to split build() into more steps
-
+        CallGraph* callgraph = AndersenWaveDiff::createAndersenWaveDiff(pag)->getCallGraph();
+        builder.updateCallGraph(callgraph);
+        pag->getICFG()->updateCallGraph(callgraph);
         return pag;  // Now we directly return SVFIR(pag)
     }
 };
@@ -31,49 +36,98 @@ void bind_icfg_node(py::module& m) {
                 oss << node.toString() << "\n";
                 return oss.str();
             })
-
             .def("get_fun", &ICFGNode::getFun, py::return_value_policy::reference)
-
             .def("get_bb", &ICFGNode::getBB, py::return_value_policy::reference)
-
-            // TODO: fetch VFGNodes list related to ICFGNode
-
             .def("get_svf_stmts", &ICFGNode::getSVFStmts, py::return_value_policy::reference)
-
-            // Downcast to ICFGNode's subtypes
-            .def("as_fun_entry", [](ICFGNode* node) {
-                return dynamic_cast<FunEntryICFGNode*>(node);
+            // Downcast
+            .def("as_fun_entry", [](ICFGNode* node) { return dynamic_cast<FunEntryICFGNode*>(node); }, py::return_value_policy::reference)
+            .def("as_fun_exit", [](ICFGNode* node) { return dynamic_cast<FunExitICFGNode*>(node); }, py::return_value_policy::reference)
+            .def("as_call", [](ICFGNode* node) { return dynamic_cast<CallICFGNode*>(node); }, py::return_value_policy::reference)
+            .def("as_ret", [](ICFGNode* node) { return dynamic_cast<RetICFGNode*>(node); }, py::return_value_policy::reference)
+            // Type checking
+            .def("is_fun_entry", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunEntryBlock; })
+            .def("is_fun_exit", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunExitBlock; })
+            .def("is_call", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunCallBlock; })
+            .def("is_ret", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunRetBlock; })
+            // get out edges and get in edges. gather them in a list
+            .def("get_out_edges", [](const ICFGNode *node) {
+                std::vector<ICFGEdge *> edges;
+                for (auto &edge : node->getOutEdges()) {
+                    edges.push_back(edge);
+                }
+                return edges;
             }, py::return_value_policy::reference)
+            .def("get_in_edges", [](const ICFGNode *node) {
+                std::vector < ICFGEdge * > edges;
+                for (auto &edge: node->getInEdges()) {
+                    edges.push_back(edge);
+                }
+                return edges;
+            }, py::return_value_policy::reference);
 
-            .def("as_fun_exit", [](ICFGNode* node) {
-                return dynamic_cast<FunExitICFGNode*>(node);
-            }, py::return_value_policy::reference)
+    // === IntraICFGNode ===
+    py::class_<IntraICFGNode, ICFGNode>(m, "IntraICFGNode")
+            .def("is_ret_inst", &IntraICFGNode::isRetInst);
 
-            .def("as_call", [](ICFGNode* node) {
-                return dynamic_cast<CallICFGNode*>(node);
-            }, py::return_value_policy::reference)
+    // === InterICFGNode ===
+    py::class_<InterICFGNode, ICFGNode>(m, "InterICFGNode");
 
-            .def("as_ret", [](ICFGNode* node) {
-                return dynamic_cast<RetICFGNode*>(node);
-            }, py::return_value_policy::reference)
+    // === FunEntryICFGNode ===
+    py::class_<FunEntryICFGNode, InterICFGNode>(m, "FunEntryICFGNode")
+            .def("get_formal_parms", &FunEntryICFGNode::getFormalParms, py::return_value_policy::reference)
+            .def("add_formal_parm", &FunEntryICFGNode::addFormalParms);
 
-            // check whether the node is a ICFGNode's subtype
-            .def("is_fun_entry", [](const ICFGNode* node) {
-                return node->getNodeKind() == SVF::ICFGNode::FunEntryBlock;
-            })
+    // === FunExitICFGNode ===
+    py::class_<FunExitICFGNode, InterICFGNode>(m, "FunExitICFGNode")
+            .def("get_formal_ret", &FunExitICFGNode::getFormalRet, py::return_value_policy::reference)
+            .def("add_formal_ret", &FunExitICFGNode::addFormalRet);
 
-            .def("is_fun_exit", [](const ICFGNode* node) {
-                return node->getNodeKind() == SVF::ICFGNode::FunExitBlock;
-            })
+    // === CallICFGNode ===
+    py::class_<CallICFGNode, InterICFGNode>(m, "CallICFGNode")
+            .def("get_caller", &CallICFGNode::getCaller, py::return_value_policy::reference)
+            .def("get_called_function", &CallICFGNode::getCalledFunction, py::return_value_policy::reference)
+            .def("get_actual_parms", &CallICFGNode::getActualParms, py::return_value_policy::reference)
+            .def("add_actual_parm", &CallICFGNode::addActualParms)
+            .def("is_vararg", &CallICFGNode::isVarArg)
+            .def("is_virtual_call", &CallICFGNode::isVirtualCall);
 
-            .def("is_call", [](const ICFGNode* node) {
-                return node->getNodeKind() == SVF::ICFGNode::FunCallBlock;
-            })
-
-            .def("is_ret", [](const ICFGNode* node) {
-                return node->getNodeKind() == SVF::ICFGNode::FunRetBlock;
-            });
+    // === RetICFGNode ===
+    py::class_<RetICFGNode, InterICFGNode>(m, "RetICFGNode")
+            .def("get_actual_ret", &RetICFGNode::getActualRet, py::return_value_policy::reference)
+            .def("add_actual_ret", &RetICFGNode::addActualRet);
 }
+
+void bind_icfg_edge(py::module& m) {
+    using namespace SVF;
+
+    py::class_<ICFGEdge, std::shared_ptr<ICFGEdge>>(m, "ICFGEdge")
+            .def("to_string", &ICFGEdge::toString)
+            .def("is_cfg_edge", &ICFGEdge::isCFGEdge)
+            .def("is_call_cfg_edge", &ICFGEdge::isCallCFGEdge)
+            .def("is_ret_cfg_edge", &ICFGEdge::isRetCFGEdge)
+            .def("is_intra_cfg_edge", &ICFGEdge::isIntraCFGEdge)
+            //downcast
+            .def("as_intra_cfg_edge", [](ICFGEdge *edge) { return dynamic_cast<IntraCFGEdge *>(edge); },
+                 py::return_value_policy::reference)
+            .def("as_call_cfg_edge", [](ICFGEdge *edge) { return dynamic_cast<CallCFGEdge *>(edge); },
+                 py::return_value_policy::reference)
+            .def("as_ret_cfg_edge", [](ICFGEdge *edge) { return dynamic_cast<RetCFGEdge *>(edge); },
+                 py::return_value_policy::reference);
+
+    py::class_<IntraCFGEdge, ICFGEdge, std::shared_ptr<IntraCFGEdge>>(m, "IntraCFGEdge")
+            .def("get_condition", &IntraCFGEdge::getCondition, py::return_value_policy::reference)
+            .def("get_successor_cond_value", &IntraCFGEdge::getSuccessorCondValue);
+
+    py::class_<CallCFGEdge, ICFGEdge, std::shared_ptr<CallCFGEdge>>(m, "CallCFGEdge")
+            .def("get_call_site", &CallCFGEdge::getCallSite, py::return_value_policy::reference)
+            .def("get_call_pes", &CallCFGEdge::getCallPEs, py::return_value_policy::reference);
+
+    py::class_<RetCFGEdge, ICFGEdge, std::shared_ptr<RetCFGEdge>>(m, "RetCFGEdge")
+            .def("get_call_site", &RetCFGEdge::getCallSite, py::return_value_policy::reference)
+            .def("get_ret_pe", &RetCFGEdge::getRetPE, py::return_value_policy::reference);
+}
+
+
 
 void bind_svf_stmt(py::module& m) {
     py::class_<SVFStmt>(m, "SVFStmt")
@@ -267,7 +321,8 @@ void bind_svf(py::module& m) {
 // Bind SVFVar
 void bind_svf_var(py::module &m) {
     py::class_<SVF::SVFVar>(m, "SVFVar")
-            .def("get_id", &SVF::SVFVar::getId)  // 绑定 getId() 到 Python 的 get_id()
+            .def("get_name", &SVF::SVFVar::getName)
+            .def("get_id", &SVF::SVFVar::getId)
             .def("is_pointer", &SVF::SVFVar::isPointer)
             .def("is_const_data_or_agg_data_but_not_null_ptr", &SVF::SVFVar::isConstDataOrAggDataButNotNullPtr)
             .def("is_isolated_node", &SVF::SVFVar::isIsolatedNode)
@@ -287,10 +342,44 @@ void bind_svf_var(py::module &m) {
             .def("get_value_name", &SVF::ObjVar::getValueName)
             .def("to_string", &SVF::ObjVar::toString);
 
+    py::class_<SVF::ArgValVar, SVF::ValVar>(m, "ArgValVar")
+            .def("get_function", &SVF::ArgValVar::getFunction, py::return_value_policy::reference)
+            .def("get_parent", &SVF::ArgValVar::getParent, py::return_value_policy::reference)
+            .def("get_arg_no", &SVF::ArgValVar::getArgNo)
+            .def("is_pointer", &SVF::ArgValVar::isPointer)
+            .def("to_string", &SVF::ArgValVar::toString);
+
+    py::class_<SVF::GepValVar, SVF::ValVar>(m, "GepValVar")
+            .def("get_constant_field_idx", &SVF::GepValVar::getConstantFieldIdx)
+            .def("get_base_node", &SVF::GepValVar::getBaseNode, py::return_value_policy::reference)
+            .def("get_value_name", &SVF::GepValVar::getValueName)
+            .def("is_pointer", &SVF::GepValVar::isPointer)
+            .def("get_type", &SVF::GepValVar::getType, py::return_value_policy::reference)
+            .def("get_function", &SVF::GepValVar::getFunction, py::return_value_policy::reference)
+            .def("to_string", &SVF::GepValVar::toString);
+
+
     //// BaseObjVar
-    py::class_<SVF::BaseObjVar, SVF::SVFVar>(m, "BaseObjVar")
+    py::class_<SVF::BaseObjVar, SVF::ObjVar>(m, "BaseObjVar")
             .def("get_type", &SVF::BaseObjVar::getType, py::return_value_policy::reference)
             .def("get_byte_size_of_obj", &SVF::BaseObjVar::getByteSizeOfObj);
+
+    /// GepObjVar
+    py::class_<SVF::GepObjVar, SVF::ObjVar>(m, "GepObjVar")
+            .def("get_constant_field_idx", &SVF::GepObjVar::getConstantFieldIdx)
+            .def("get_base_node", &SVF::GepObjVar::getBaseNode, py::return_value_policy::reference)
+            .def("get_type", &SVF::GepObjVar::getType, py::return_value_policy::reference)
+            .def("get_value_name", &SVF::GepObjVar::getValueName)
+            .def("is_pointer", &SVF::GepObjVar::isPointer)
+            .def("to_string", &SVF::GepObjVar::toString);
+
+    /// HeapObjVar
+    py::class_<SVF::HeapObjVar, SVF::BaseObjVar>(m, "HeapObjVar");
+
+    /// StackObjVar
+    py::class_<SVF::StackObjVar, SVF::BaseObjVar>(m, "StackObjVar");
+
+
 
     py::class_<SVF::FunObjVar, SVF::BaseObjVar>(m, "FunObjVar")
             .def("is_declaration", &SVF::FunObjVar::isDeclaration)
@@ -308,51 +397,67 @@ void bind_svf_var(py::module &m) {
             .def("is_pointer", &SVF::FunValVar::isPointer)
             .def("to_string", &SVF::FunValVar::toString);
 
-    //// FunObjVar
-    py::class_<SVF::FunObjVar, SVF::BaseObjVar>(m, "FunObjVar")
-            .def("is_declaration", &SVF::FunObjVar::isDeclaration)
-            .def("has_address_taken", &SVF::FunObjVar::hasAddressTaken);
 
-    py::class_<SVF::ArgValVar, SVF::ValVar>(m, "ArgValVar")
-            .def("get_function", &SVF::ArgValVar::getFunction, py::return_value_policy::reference)
-            .def("get_parent", &SVF::ArgValVar::getParent, py::return_value_policy::reference)
-            .def("get_arg_no", &SVF::ArgValVar::getArgNo)
-            .def("is_pointer", &SVF::ArgValVar::isPointer)
-            .def("to_string", &SVF::ArgValVar::toString);
+    /// GlobalValVar
+    py::class_<SVF::GlobalValVar, SVF::ValVar>(m, "GlobalValVar");
+
+    ///ConstAggValVar
+    py::class_<SVF::ConstAggValVar, SVF::ValVar>(m, "ConstAggValVar");
+
+    ///ConstDataValVar
+    py::class_<SVF::ConstDataValVar, SVF::ValVar>(m, "ConstDataValVar");
+
+    ///BlackHoleValVar
+    py::class_<SVF::BlackHoleValVar, SVF::ValVar>(m, "BlackHoleValVar");
+
+    //// ConstFPValVar
+    py::class_<SVF::ConstFPValVar, SVF::ConstDataValVar>(m, "ConstFPValVar")
+            .def("get_fp_value", &SVF::ConstFPValVar::getFPValue);
+
+    //// ConstIntValVar
+    py::class_<SVF::ConstIntValVar, SVF::ConstDataValVar>(m, "ConstIntValVar")
+            .def("get_sext_value", &SVF::ConstIntValVar::getSExtValue)
+            .def("get_zext_value", &SVF::ConstIntValVar::getZExtValue);
+
+    ///ConstNullPtrValVar
+    py::class_<SVF::ConstNullPtrValVar, SVF::ConstDataValVar>(m, "ConstNullPtrValVar");
+
+    ///GlobalObjVar
+    py::class_<SVF::GlobalObjVar, SVF::BaseObjVar>(m, "GlobalObjVar");
+
+    ///ConstAggObjVar
+    py::class_<SVF::ConstAggObjVar, SVF::BaseObjVar>(m, "ConstAggObjVar");
+
+    ///ConstDataObjVar
+    py::class_<SVF::ConstDataObjVar, SVF::BaseObjVar>(m, "ConstDataObjVar");
+
+    //// ConstFPObjVar
+    py::class_<SVF::ConstFPObjVar, SVF::ConstDataObjVar>(m, "ConstFPObjVar")
+            .def("get_fp_value", &SVF::ConstFPObjVar::getFPValue);
+
+
+    //// ConstIntObjVar
+    py::class_<SVF::ConstIntObjVar, SVF::ConstDataObjVar>(m, "ConstIntObjVar")
+            .def("get_sext_value", &SVF::ConstIntObjVar::getSExtValue)
+            .def("get_zext_value", &SVF::ConstIntObjVar::getZExtValue);
+
+
+    ///ConstNullPtrObjVar
+    py::class_<SVF::ConstNullPtrObjVar, SVF::ConstDataObjVar>(m, "ConstNullPtrObjVar");
 
     //// RetValPN
     //inline const FunObjVar* getCallGraphNode() const;
     py::class_<SVF::RetValPN, SVF::ValVar>(m, "RetValPN")
             .def("get_function", &SVF::RetValPN::getFunction, py::return_value_policy::reference);
 
-    py::class_<SVF::GepValVar, SVF::ValVar>(m, "GepValVar")
-            .def("get_constant_field_idx", &SVF::GepValVar::getConstantFieldIdx)
-            .def("get_base_node", &SVF::GepValVar::getBaseNode, py::return_value_policy::reference)
-            .def("get_value_name", &SVF::GepValVar::getValueName)
-            .def("is_pointer", &SVF::GepValVar::isPointer)
-            .def("get_type", &SVF::GepValVar::getType, py::return_value_policy::reference)
-            .def("get_function", &SVF::GepValVar::getFunction, py::return_value_policy::reference)
-            .def("to_string", &SVF::GepValVar::toString);
+    ///VarArgValPN
+    py::class_<SVF::VarArgValPN, SVF::ValVar>(m, "VarArgValPN")
+            .def("get_function", &SVF::VarArgValPN::getFunction, py::return_value_policy::reference);
 
-    //// ConstFPValVar
-    py::class_<SVF::ConstFPValVar, SVF::ValVar>(m, "ConstFPValVar")
-            .def("get_fp_value", &SVF::ConstFPValVar::getFPValue);
-
-    //// ConstIntValVar
-    py::class_<SVF::ConstIntValVar, SVF::ValVar>(m, "ConstIntValVar")
-            .def("get_sext_value", &SVF::ConstIntValVar::getSExtValue)
-            .def("get_zext_value", &SVF::ConstIntValVar::getZExtValue);
-
-    //// ConstFPObjVar
-    py::class_<SVF::ConstFPObjVar, SVF::BaseObjVar>(m, "ConstFPObjVar")
-            .def("get_fp_value", &SVF::ConstFPObjVar::getFPValue);
-
-
-    //// ConstIntObjVar
-    py::class_<SVF::ConstIntObjVar, SVF::BaseObjVar>(m, "ConstIntObjVar")
-            .def("get_sext_value", &SVF::ConstIntObjVar::getSExtValue)
-            .def("get_zext_value", &SVF::ConstIntObjVar::getZExtValue);
-
+    ///DummyValVar
+    py::class_<SVF::DummyValVar, SVF::ValVar>(m, "DummyValVar");
+    ///DummyObjVar
+    py::class_<SVF::DummyObjVar, SVF::BaseObjVar>(m, "DummyObjVar");
 }
 
 
@@ -407,13 +512,46 @@ void bind_svf_type(py::module& m) {
     m.def("as_other_type", [](SVFType* type) { return dynamic_cast<SVFOtherType*>(type); }, py::return_value_policy::reference);
 }
 
+void bind_svf_value(py::module& m) {
+
+    py::class_<SVFValue, std::shared_ptr<SVFValue>>(m, "SVFValue")
+            .def("get_kind", &SVFValue::getKind)
+            .def("get_type", &SVFValue::getType, py::return_value_policy::reference)
+            .def("get_name", &SVFValue::getName)
+            .def("set_name", &SVFValue::setName)
+            .def("is_null_ptr", &SVFValue::isNullPtr)
+            .def("is_black_hole", &SVFValue::isblackHole)
+            .def("get_source_loc", &SVFValue::getSourceLoc)
+            .def("set_source_loc", &SVFValue::setSourceLoc)
+            .def("to_string", &SVFValue::toString);
+
+    py::class_<SVFFunction, SVFValue, std::shared_ptr<SVFFunction>>(m, "SVFFunction")
+            .def("is_declaration", &SVFFunction::isDeclaration)
+            .def("is_intrinsic", &SVFFunction::isIntrinsic)
+            .def("has_address_taken", &SVFFunction::hasAddressTaken)
+            .def("get_function_type", &SVFFunction::getFunctionType, py::return_value_policy::reference)
+            .def("get_return_type", &SVFFunction::getReturnType, py::return_value_policy::reference)
+            .def("arg_size", &SVFFunction::arg_size)
+            .def("get_arg", &SVFFunction::getArg, py::return_value_policy::reference)
+            .def("get_entry_block", &SVFFunction::getEntryBlock, py::return_value_policy::reference)
+            .def("get_exit_bb", &SVFFunction::getExitBB, py::return_value_policy::reference)
+            .def("has_loop_info", &SVFFunction::hasLoopInfo)
+            .def("get_loop_info", &SVFFunction::getLoopInfo, py::return_value_policy::reference)
+            .def("dominate", &SVFFunction::dominate)
+            .def("post_dominate", &SVFFunction::postDominate);
+    /// TODO: add more subclass
+}
+
+
 
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
     bind_icfg_node(m);
+    bind_icfg_edge(m);
     bind_icfg_graph(m);
     bind_svf_stmt(m);
     bind_svf_var(m);
     bind_svf_type(m);
+    bind_svf_value(m);
     m.def("analyze", &PySVF::analyze, py::return_value_policy::reference, "Analyze LLVM bitcode and return SVFIR");
 }
