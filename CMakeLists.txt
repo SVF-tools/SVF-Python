@@ -10,9 +10,7 @@ project(SVF-PYTHON
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
 set(PYBIND11_FINDPYTHON ON)
-
 find_package(pybind11 REQUIRED)
-
 
 # Find the LLVM instance to use for building SvfLLVM
 find_package(LLVM REQUIRED CONFIG HINTS ${LLVM_DIR} $ENV{LLVM_DIR})
@@ -28,35 +26,55 @@ message(STATUS "LLVM STATUS:
   Dynamic lib   ${LLVM_LINK_LLVM_DYLIB}"
 )
 
-# Though not necessary, check if SVF is being built in debug mode & if that matches LLVM
+# Check if building in Debug mode vs. LLVM's build type
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT ${LLVM_BUILD_TYPE} STREQUAL "Debug")
-    message(NOTICE  "Building SVF in debug-mode but LLVM was not built in debug-mode; "
+    message(NOTICE "Building SVF in debug-mode but LLVM was not built in debug-mode; "
             "debug information could be incomplete when using SVF from LLVM")
 endif()
 
-# Add LLVM's include directories and link directory for all targets defined hereafter
+# Add LLVM's include directories for all targets defined hereafter
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 
+# ------------------------------------------------------------------------------
+# 1) Decide where SVF headers/libraries come from:
+#    - If SVF_DIR environment variable is set, use that;
+#    - Otherwise, fallback to OS-specific default (SVF-npm/SVF-osx or SVF-npm/SVF-linux).
+# ------------------------------------------------------------------------------
+if(SVF_DIR)
+    message(STATUS "Detected SVF_DIR environment variable: $SVF_DIR")
+    set(SVF_CUSTOM_DIR ${SVF_DIR})
+    set(SVF_INCLUDE_DIR "${SVF_CUSTOM_DIR}/Release-build/include" "${SVF_CUSTOM_DIR}/svf/include" "${SVF_CUSTOM_DIR}/svf-llvm/include")
+    set(SVF_LIB_DIR     "${SVF_CUSTOM_DIR}/Release-build/lib")
+else()
+    message(STATUS "No SVF_DIR environment variable found; using OS-specific defaults.")
 
-# if system is darwin or linux
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/include)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set(SVF_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/include")
+        set(SVF_LIB_DIR     "${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/lib")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(SVF_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/SVF-npm/SVF-linux/Release-build/include")
+        set(SVF_LIB_DIR     "${CMAKE_SOURCE_DIR}/SVF-npm/SVF-linux/Release-build/lib")
+    else()
+        message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}. Please set SVF_DIR manually.")
+    endif()
+endif()
 
-elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-linux/Release-build/include)
-
-endif ()
-
+# ------------------------------------------------------------------------------
+# 2) Add include directories and link directories for the pysvf target
+# ------------------------------------------------------------------------------
+include_directories(SYSTEM "${SVF_INCLUDE_DIR}")
 
 add_library(pysvf MODULE pybind/svf_pybind.cpp)
+target_link_directories(pysvf PRIVATE "${SVF_LIB_DIR}")
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-# add target link dir
-    target_link_directories(pysvf PRIVATE ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/lib)
-elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    target_link_directories(pysvf PRIVATE ${CMAKE_SOURCE_DIR}/SVF-npm/SVF-linux/Release-build/lib)
-endif ()
+# ------------------------------------------------------------------------------
+# 3) Link against SVF libraries and pybind11
+# ------------------------------------------------------------------------------
+target_link_libraries(pysvf PRIVATE
+        pybind11::module   # from pybind11
+        SvfLLVM
+        SvfCore
+)
 
-target_link_libraries(pysvf PRIVATE pybind11::module SvfLLVM SvfCore)
-
+# Set C++ standard to 17 (adjust as needed)
 set_target_properties(pysvf PROPERTIES CXX_STANDARD 17)
