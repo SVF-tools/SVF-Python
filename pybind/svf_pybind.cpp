@@ -1,13 +1,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "SVF-LLVM/LLVMUtil.h"
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Util/CommandLine.h"
-#include "Util/Options.h"
 #include "Graphs/ICFG.h"
 #include "SVFIR/SVFType.h"
 #include "SVFIR/SVFStatements.h"
-#include "AE/Core/ICFGWTO.h"
 #include "MemoryModel/PointerAnalysis.h"
 #include "WPA/Andersen.h"
 
@@ -36,6 +33,8 @@ void bind_icfg_node(py::module& m) {
                 oss << node.toString() << "\n";
                 return oss.str();
             })
+            //get_id
+            .def("get_id", &ICFGNode::getId)
             .def("get_fun", &ICFGNode::getFun, py::return_value_policy::reference)
             .def("get_bb", &ICFGNode::getBB, py::return_value_policy::reference)
             .def("get_svf_stmts", &ICFGNode::getSVFStmts, py::return_value_policy::reference)
@@ -65,24 +64,24 @@ void bind_icfg_node(py::module& m) {
                 return edges;
             }, py::return_value_policy::reference);
 
-    // === IntraICFGNode ===
+    // IntraICFGNode
     py::class_<IntraICFGNode, ICFGNode>(m, "IntraICFGNode")
             .def("is_ret_inst", &IntraICFGNode::isRetInst);
 
-    // === InterICFGNode ===
+    // InterICFGNode
     py::class_<InterICFGNode, ICFGNode>(m, "InterICFGNode");
 
-    // === FunEntryICFGNode ===
+    // FunEntryICFGNode
     py::class_<FunEntryICFGNode, InterICFGNode>(m, "FunEntryICFGNode")
             .def("get_formal_parms", &FunEntryICFGNode::getFormalParms, py::return_value_policy::reference)
             .def("add_formal_parm", &FunEntryICFGNode::addFormalParms);
 
-    // === FunExitICFGNode ===
+    // FunExitICFGNode
     py::class_<FunExitICFGNode, InterICFGNode>(m, "FunExitICFGNode")
             .def("get_formal_ret", &FunExitICFGNode::getFormalRet, py::return_value_policy::reference)
             .def("add_formal_ret", &FunExitICFGNode::addFormalRet);
 
-    // === CallICFGNode ===
+    // CallICFGNode
     py::class_<CallICFGNode, InterICFGNode>(m, "CallICFGNode")
             .def("get_caller", &CallICFGNode::getCaller, py::return_value_policy::reference)
             .def("get_called_function", &CallICFGNode::getCalledFunction, py::return_value_policy::reference)
@@ -95,6 +94,9 @@ void bind_icfg_node(py::module& m) {
     py::class_<RetICFGNode, InterICFGNode>(m, "RetICFGNode")
             .def("get_actual_ret", &RetICFGNode::getActualRet, py::return_value_policy::reference)
             .def("add_actual_ret", &RetICFGNode::addActualRet);
+
+    // GlobalICFGNode
+    py::class_<GlobalICFGNode, ICFGNode>(m, "GlobalICFGNode");
 }
 
 void bind_icfg_edge(py::module& m) {
@@ -106,6 +108,9 @@ void bind_icfg_edge(py::module& m) {
             .def("is_call_cfg_edge", &ICFGEdge::isCallCFGEdge)
             .def("is_ret_cfg_edge", &ICFGEdge::isRetCFGEdge)
             .def("is_intra_cfg_edge", &ICFGEdge::isIntraCFGEdge)
+            // get inedge and outedge
+            .def("get_src", &ICFGEdge::getSrcNode, py::return_value_policy::reference)
+            .def("get_dst", &ICFGEdge::getDstNode, py::return_value_policy::reference)
             //downcast
             .def("as_intra_cfg_edge", [](ICFGEdge *edge) { return dynamic_cast<IntraCFGEdge *>(edge); },
                  py::return_value_policy::reference)
@@ -307,14 +312,28 @@ void bind_icfg_graph(py::module& m) {
                     throw std::runtime_error("ICFGNode with given ID not found.");
                 }
                 return node;
-            }, py::arg("id"), py::return_value_policy::reference);
+            }, py::arg("id"), py::return_value_policy::reference)
+
+            .def("get_global_icfg_node", &ICFG::getGlobalICFGNode, py::return_value_policy::reference)
+            //void dump(const std::string& file);
+            .def("dump", [](ICFG &icfg, std::string file) {
+                icfg.dump(file);
+            });
 }
 
 
 // Bind SVFIR (PAG)
 void bind_svf(py::module& m) {
     py::class_<SVFIR>(m, "SVFIR")
-            .def("get_icfg", [](SVFIR* pag) { return pag->getICFG(); }, py::return_value_policy::reference);
+            .def("get_icfg", [](SVFIR* pag) { return pag->getICFG(); }, py::return_value_policy::reference)
+            .def("get_call_sites", [](SVFIR *pag) {
+                // move  pag->getCallSiteSet() to vector
+                std::vector<const CallICFGNode*> callSites;
+                for (auto &callSite : pag->getCallSiteSet()) {
+                    callSites.push_back(callSite);
+                }
+                return callSites;
+                }, py::return_value_policy::reference);
 
 }
 
