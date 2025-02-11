@@ -13,13 +13,13 @@ LLVM_VERSION="${LLVM_VERSION:-$LLVM_VERSION_DEFAULT}"
 
 # On Linux, the LLVM CMake config path could be something like /usr/lib/llvm-16/cmake
 # Adjust as necessary for your system or prebuilt LLVM.
-LLVM_DIR="${LLVM_DIR:-/usr/lib/llvm-${LLVM_VERSION}/lib/cmake/llvm}"
+LLVM_DIR="${LLVM_DIR:-/share/apps/z_install_tree/linux-debian12-zen3/gcc-12.2.0/llvm-16.0.6-re62fk5iempvhanea5swi32uzrky6vz4/}"
 
 # The path to Z3
 Z3_DIR="${Z3_DIR:-/usr/local/lib/z3}"   # Adjust to your actual install path
 
 # Python interpreter to use for building/packaging
-PYTHON_BIN="${PYTHON_BIN:-python3}"
+PYTHON_BIN="${PYTHON_BIN:-/srv/scratch/PAG/Wjw/0211/SVF-Python/svfenv/bin/python}"
 
 # Version string for packaging
 VERSION="${VERSION:-0.1.3.dev7}"
@@ -60,6 +60,7 @@ echo "Entering SVF directory to run build.sh..."
 # if SVF_DIR not define
 if [ -z "$SVF_DIR" ]; then
   SVF_DIR="$SOURCE_DIR/SVF"
+  rm -rf "$SVF_DIR"
   git clone https://github.com/SVF-tools/SVF SVF --depth 1
   cd "$SOURCE_DIR/SVF"
   source build.sh  # Adjust if your build script name/path is different

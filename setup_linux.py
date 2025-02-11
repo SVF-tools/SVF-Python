@@ -14,11 +14,12 @@ svf_python_dir = os.path.abspath(os.path.dirname(__file__))
 
 # The following calls assume 'llvm-config' is in PATH (or specify full path).
 # If needed, you can also parse env vars (e.g., LLVM_DIR) to locate llvm-config.
-llvm_include_dir = subprocess.check_output(["llvm-config", "--includedir"]).decode("utf-8").strip()
-llvm_lib_dir     = subprocess.check_output(["llvm-config", "--libdir"]).decode("utf-8").strip()
+llvm_dir = os.getenv("LLVM_DIR", "")
+llvm_config_dir = os.path.join(llvm_dir, "bin", "llvm-config")
+llvm_include_dir = subprocess.check_output([llvm_config_dir, "--includedir"]).decode("utf-8").strip()
+llvm_lib_dir     = subprocess.check_output([llvm_config_dir, "--libdir"]).decode("utf-8").strip()
 
 z3_dir  = os.getenv("Z3_DIR", "")
-llvm_dir = os.getenv("LLVM_DIR", "")
 SVF_DIR = os.getenv("SVF_DIR", "")
 VERSION = os.getenv("VERSION", "0.1.0")
 BUILD_TYPE= os.getenv("BUILD_TYPE", "Release")
@@ -120,12 +121,12 @@ else:
     dst = os.path.join(svf_python_dir, "pysvf")
     # Copy all files in SVF_DIR to dst (including SVF_DIR itself)
     svf_dst = os.path.join(dst, "SVF")
-    shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
-
+    shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True, ignore=lambda directory, files: ['.git'] if '.git' in files else [])
+    # Copy z3.obj
+    shutil.copytree(os.path.join(SVF_DIR, "z3.obj"), os.path.join(svf_dst, "z3.obj"), dirs_exist_ok=True)
     extra_link_args = [
         "-Wl,-rpath,$ORIGIN/SVF/Release-build/lib",
         "-Wl,-rpath,$ORIGIN/SVF/z3.obj/lib",
-        "-Wl,-rpath,$ORIGIN/SVF/llvm-16.0.0.obj/lib",
     ]
     # forcibly link static libs
     svf_core_path  = os.path.join(svf_lib_dir, "libSvfCore.a")
@@ -133,6 +134,7 @@ else:
     extra_link_args += whole_archive_args(svf_core_path)
     extra_link_args += whole_archive_args(svf_llvm_path)
 
+    print("llvm_lib_dir: ", llvm_lib_dir)
     ext_modules = [
         Pybind11Extension(
             "pysvf.pysvf",
@@ -144,7 +146,7 @@ else:
                 llvm_include_dir
             ],
             library_dirs=[os.path.join(z3_dst, "bin"), llvm_lib_dir],
-            libraries=["z3"],
+            libraries=["z3", "LLVM", "LLVM-16"],
             extra_link_args=extra_link_args,
         ),
     ]
@@ -157,6 +159,6 @@ else:
         packages=find_packages(),
         ext_modules=ext_modules,
         zip_safe=False,
-        package_data={"pysvf": ["pysvf/SVF/Release-build/**/*"]},
+        package_data={"pysvf": ["SVF/Release-build/**/*", "SVF/z3.obj/**/*"]},
         include_package_data=True,
     )

@@ -533,18 +533,18 @@ void bind_svf_type(py::module& m) {
 
 void bind_svf_value(py::module& m) {
 
-    py::class_<SVFValue, std::shared_ptr<SVFValue>>(m, "SVFValue")
-            .def("get_kind", &SVFValue::getKind)
-            .def("get_type", &SVFValue::getType, py::return_value_policy::reference)
-            .def("get_name", &SVFValue::getName)
-            .def("set_name", &SVFValue::setName)
-            .def("is_null_ptr", &SVFValue::isNullPtr)
-            .def("is_black_hole", &SVFValue::isblackHole)
-            .def("get_source_loc", &SVFValue::getSourceLoc)
-            .def("set_source_loc", &SVFValue::setSourceLoc)
-            .def("to_string", &SVFValue::toString);
+    py::class_<SVFLLVMValue, std::shared_ptr<SVFLLVMValue>>(m, "SVFLLVMValue")
+            .def("get_kind", &SVFLLVMValue::getKind)
+            .def("get_type", &SVFLLVMValue::getType, py::return_value_policy::reference)
+            .def("get_name", &SVFLLVMValue::getName)
+            .def("set_name", &SVFLLVMValue::setName)
+            .def("is_null_ptr", &SVFLLVMValue::isNullPtr)
+            .def("is_black_hole", &SVFLLVMValue::isblackHole)
+            .def("get_source_loc", &SVFLLVMValue::getSourceLoc)
+            .def("set_source_loc", &SVFLLVMValue::setSourceLoc)
+            .def("to_string", &SVFLLVMValue::toString);
 
-    py::class_<SVFFunction, SVFValue, std::shared_ptr<SVFFunction>>(m, "SVFFunction")
+    py::class_<SVFFunction, SVFLLVMValue, std::shared_ptr<SVFFunction>>(m, "SVFFunction")
             .def("is_declaration", &SVFFunction::isDeclaration)
             .def("is_intrinsic", &SVFFunction::isIntrinsic)
             .def("has_address_taken", &SVFFunction::hasAddressTaken)

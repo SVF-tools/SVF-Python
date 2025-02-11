@@ -41,7 +41,7 @@ include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 #    - Otherwise, fallback to OS-specific default (SVF-npm/SVF-osx or SVF-npm/SVF-linux).
 # ------------------------------------------------------------------------------
 if(SVF_DIR)
-    message(STATUS "Detected SVF_DIR environment variable: $SVF_DIR")
+    message(STATUS "Detected SVF_DIR environment variable: ${SVF_DIR}")
     set(SVF_CUSTOM_DIR ${SVF_DIR})
     set(SVF_INCLUDE_DIR "${SVF_CUSTOM_DIR}/Release-build/include" "${SVF_CUSTOM_DIR}/svf/include" "${SVF_CUSTOM_DIR}/svf-llvm/include")
     set(SVF_LIB_DIR     "${SVF_CUSTOM_DIR}/Release-build/lib")
@@ -62,6 +62,7 @@ endif()
 # ------------------------------------------------------------------------------
 # 2) Add include directories and link directories for the pysvf target
 # ------------------------------------------------------------------------------
+message("SVF_INCLUDE_DIR: ${SVF_INCLUDE_DIR}")
 include_directories(SYSTEM "${SVF_INCLUDE_DIR}")
 
 add_library(pysvf MODULE pybind/svf_pybind.cpp)
