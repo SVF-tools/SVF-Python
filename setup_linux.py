@@ -117,6 +117,10 @@ if BUILD_TYPE == "Release":
 else:
     # Debug build as an example
     svf_lib_dir = os.path.join(svf_dst, "Release-build", "lib")  # or "Debug-build/lib", adjust as you see fit
+    dst = os.path.join(svf_python_dir, "pysvf")
+    # Copy all files in SVF_DIR to dst (including SVF_DIR itself)
+    svf_dst = os.path.join(dst, "SVF")
+    shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
 
     extra_link_args = [
         "-Wl,-rpath,$ORIGIN/SVF/Release-build/lib",
@@ -140,7 +144,7 @@ else:
                 llvm_include_dir
             ],
             library_dirs=[os.path.join(z3_dst, "bin"), llvm_lib_dir],
-            libraries=["LLVM", "z3"],
+            libraries=["z3"],
             extra_link_args=extra_link_args,
         ),
     ]
@@ -153,6 +157,6 @@ else:
         packages=find_packages(),
         ext_modules=ext_modules,
         zip_safe=False,
-        package_data={"pysvf": ["SVF/Release-build/*"]},
+        package_data={"pysvf": ["pysvf/SVF/Release-build/**/*"]},
         include_package_data=True,
     )

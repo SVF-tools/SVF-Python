@@ -53,19 +53,27 @@ if [[ "$sysOS" != "Linux" ]]; then
   exit 1
 fi
 
-# 2) Clone SVF with depth = 1 (If it doesn't exist yet)
-if [ ! -d "$SOURCE_DIR/SVF" ]; then
-  echo "Cloning SVF repo..."
-  git clone --depth 1 https://github.com/SVF-tools/SVF SVF
-fi
-
 # 3) (Optional) If you have a separate build script for SVF, source it
 #    or directly run the commands needed to build SVF.
 #    This step depends on your SVF repo structure. For example:
 echo "Entering SVF directory to run build.sh..."
-cd "$SOURCE_DIR/SVF"
-source build.sh  # Adjust if your build script name/path is different
-cd "$SOURCE_DIR"
+# if SVF_DIR not define
+if [ -z "$SVF_DIR" ]; then
+  SVF_DIR="$SOURCE_DIR/SVF"
+  git clone https://github.com/SVF-tools/SVF SVF --depth 1
+  cd "$SOURCE_DIR/SVF"
+  source build.sh  # Adjust if your build script name/path is different
+  cd "$SOURCE_DIR"
+else
+  cd $SVF_DIR
+  source build.sh
+  cd "$SOURCE_DIR"
+fi
+
+
+
+$PYTHON_BIN -m pip install pybind11
+PYBIND_DIR=$($PYTHON_BIN -m pybind11 --cmakedir)
 
 # 4) Create a Release-build directory (recreating if it exists)
 if [ -d "Release-build" ]; then
@@ -82,6 +90,7 @@ cmake \
   -DSVF_DIR="$SOURCE_DIR/SVF" \
   -DLLVM_DIR="$LLVM_DIR" \
   -DZ3_DIR="$Z3_DIR" \
+  -DCMAKE_PREFIX_PATH="$PYBIND_DIR" \
   ..
 
 # 6) Build with make (or cmake --build)
@@ -109,7 +118,7 @@ rm -rf build pysvf/SVF
 #       bdist_wheel --plat-name manylinux2014_x86_64
 #     or if you want it local: linux_x86_64
 echo "Building Python wheel for $PLAT_NAME ..."
-SVF_DIR="$SOURCE_DIR/SVF" \
+SVF_DIR="$SVF_DIR" \
 LLVM_DIR="$LLVM_DIR" \
 Z3_DIR="$Z3_DIR" \
 VERSION="$VERSION" \

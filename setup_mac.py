@@ -8,7 +8,7 @@ from setuptools import setup, Extension
 import shutil
 from setuptools.command.install import install
 
-svf_dir = os.path.abspath(os.path.dirname(__file__))
+svf_python_dir = os.path.abspath(os.path.dirname(__file__))
 
 # get llvm include dir and lib dir
 llvm_include_dir = subprocess.check_output(["llvm-config", "--includedir"]).decode("utf-8").strip()
@@ -76,7 +76,7 @@ class CustomBuildExt(build_ext):
 
 if BUILD_TYPE == "Release":
     # dst
-    dst = os.path.join(svf_dir, "pysvf")
+    dst = os.path.join(svf_python_dir, "pysvf")
     # Copy all files in SVF_DIR to dst (including SVF_DIR itself)
     svf_dst = os.path.join(dst, "SVF")
     shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
@@ -117,7 +117,7 @@ if BUILD_TYPE == "Release":
     )
 elif BUILD_TYPE == "Debug":
     # dst
-    dst = os.path.join(svf_dir, "pysvf")
+    dst = os.path.join(svf_python_dir, "pysvf")
     # Copy all files in SVF_DIR to dst (including SVF_DIR itself)
     svf_dst = os.path.join(dst, "SVF")
     shutil.copytree(SVF_DIR, svf_dst, dirs_exist_ok=True)
