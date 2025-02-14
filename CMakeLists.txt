@@ -26,6 +26,11 @@ message(STATUS "LLVM STATUS:
   Dynamic lib   ${LLVM_LINK_LLVM_DYLIB}"
 )
 
+# Ensure that LLVM was built with RTTI enabled
+if(NOT LLVM_ENABLE_RTTI)
+    message(FATAL_ERROR "LLVM was not built with RTTI enabled. Please rebuild LLVM with -DLLVM_ENABLE_RTTI=ON.")
+endif()
+
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 set(CMAKE_BUILD_RPATH "$ORIGIN/SVF/z3.obj/bin;$ORIGIN/SVF/Release-build/lib;")
 # Check if building in Debug mode vs. LLVM's build type
@@ -70,13 +75,13 @@ target_link_directories(pysvf PRIVATE "${SVF_LIB_DIR}")
 # ------------------------------------------------------------------------------
 # 3) Link against SVF libraries and pybind11
 # ------------------------------------------------------------------------------
+set(SVF_LIB_EXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
 target_link_libraries(pysvf PRIVATE
         pybind11::module
-        -Wl,--no-as-needed
-        ${SVF_LIB_DIR}/libSvfLLVM.so
-        ${SVF_LIB_DIR}/libSvfCore.so
-	${Z3_DIR}/bin/libz3.so
-
+        -Wl, #--no-as-needed
+        ${SVF_LIB_DIR}/libSvfLLVM${SVF_LIB_EXT}
+        ${SVF_LIB_DIR}/libSvfCore${SVF_LIB_EXT}
+	${Z3_DIR}/bin/libz3${SVF_LIB_EXT}
 )
 # Set C++ standard to 17 (adjust as needed)
 set_target_properties(pysvf PROPERTIES CXX_STANDARD 17)
