@@ -34,6 +34,11 @@ class CMakeBuild(build_ext):
         if not os.path.exists(os.environ["Z3_DIR"]):
             raise RuntimeError("Z3_DIR not found")
 
+        # get PYBIND11_DIR from env, otherwise abort
+        if "PYBIND11_DIR" not in os.environ:
+            raise RuntimeError("PYBIND11_DIR not set")
+
+
         # Run CMake
         subprocess.run(
             [
@@ -44,6 +49,7 @@ class CMakeBuild(build_ext):
                 "-DSVF_DIR="+SVF_DIR,
                 "-DCMAKE_INSTALL_RPATH=$ORIGIN/SVF/Release-build/lib:$ORIGIN/z3/bin",
                 "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
+                "-DCMAKE_PREFIX_PATH="+os.environ["PYBIND11_DIR"],
             ],
             cwd=build_temp,
             check=True
