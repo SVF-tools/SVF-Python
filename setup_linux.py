@@ -6,6 +6,7 @@ from setuptools import setup
 from setuptools.command.build_ext import build_ext
 import shutil
 import glob
+import sysconfig
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -59,7 +60,11 @@ class CMakeBuild(build_ext):
             raise RuntimeError("Could not find built libpysvf.so")
 
         # Rename and move to expected location
-        so_target = os.path.join(self.build_lib, "pysvf", "pysvf.cpython-311-x86_64-linux-gnu.so")
+        # 获取当前 Python 版本的 .so 文件后缀（如 .cpython-38-x86_64-linux-gnu.so）
+        so_suffix = sysconfig.get_config_var("EXT_SUFFIX")
+
+        # 生成适配当前 Python 版本的目标路径
+        so_target = os.path.join(self.build_lib, "pysvf", "pysvf" + so_suffix)
         os.makedirs(os.path.dirname(so_target), exist_ok=True)
         shutil.copyfile(built_so[0], so_target)
 
