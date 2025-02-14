@@ -26,6 +26,8 @@ message(STATUS "LLVM STATUS:
   Dynamic lib   ${LLVM_LINK_LLVM_DYLIB}"
 )
 
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+set(CMAKE_BUILD_RPATH "$ORIGIN/SVF/z3.obj/bin;$ORIGIN/SVF/Release-build/lib;")
 # Check if building in Debug mode vs. LLVM's build type
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT ${LLVM_BUILD_TYPE} STREQUAL "Debug")
     message(NOTICE "Building SVF in debug-mode but LLVM was not built in debug-mode; "
@@ -73,6 +75,8 @@ target_link_libraries(pysvf PRIVATE
         -Wl,--no-as-needed
         ${SVF_LIB_DIR}/libSvfLLVM.so
         ${SVF_LIB_DIR}/libSvfCore.so
+	${Z3_DIR}/bin/libz3.so
+
 )
 # Set C++ standard to 17 (adjust as needed)
 set_target_properties(pysvf PROPERTIES CXX_STANDARD 17)

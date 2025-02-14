@@ -7,6 +7,7 @@ from setuptools.command.build_ext import build_ext
 import shutil
 import glob
 import sysconfig
+import platform
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -31,12 +32,19 @@ class CMakeBuild(build_ext):
         # get Z3_DIR from env, otherwise abort
         if "Z3_DIR" not in os.environ:
             raise RuntimeError("Z3_DIR not set")
+        Z3_DIR = os.environ["Z3_DIR"]
         if not os.path.exists(os.environ["Z3_DIR"]):
             raise RuntimeError("Z3_DIR not found")
 
         # get PYBIND11_DIR from env, otherwise abort
         if "PYBIND11_DIR" not in os.environ:
             raise RuntimeError("PYBIND11_DIR not set")
+
+        if platform.system() == "Darwin":  # macOS
+            rpath_flag = "-DCMAKE_INSTALL_RPATH=@loader_path/SVF/Release-build/lib"
+        else:  # Linux
+            rpath_flag = "-DCMAKE_INSTALL_RPATH=$ORIGIN/SVF/z3.obj/bin:$ORIGIN/SVF/Release-build/lib"
+
 
 
         # Run CMake
@@ -47,10 +55,12 @@ class CMakeBuild(build_ext):
                 "-DCMAKE_BUILD_TYPE=Release",
                 "-DLLVM_DIR="+LLVM_DIR,
                 "-DSVF_DIR="+SVF_DIR,
-                "-DCMAKE_INSTALL_RPATH=$ORIGIN/SVF/Release-build/lib:$ORIGIN/z3/bin",
+                "-DZ3_DIR="+Z3_DIR,
+                "-DCMAKE_INSTALL_RPATH="+rpath_flag,
                 "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
                 "-DCMAKE_PREFIX_PATH="+os.environ["PYBIND11_DIR"],
-            ],
+                "-Dpybind11_DIR="+os.environ["PYBIND11_DIR"],
+                ],
             cwd=build_temp,
             check=True
         )
@@ -94,7 +104,7 @@ class CMakeBuild(build_ext):
         shutil.copytree(os.path.join(SVF_DIR, "Release-build", "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "bin"),dirs_exist_ok=True)
 
         # cp -rf $GITHUB_WORKSPACE/z3/bin .build_lib/pysvf/z3/bin
-        shutil.copytree(os.path.join(os.environ["Z3_DIR"], "bin"), os.path.join(self.build_lib, "pysvf","z3", "bin"),dirs_exist_ok=True)
+        shutil.copytree(os.path.join(os.environ["Z3_DIR"], "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "z3.obj", "bin"),dirs_exist_ok=True)
 
 
 setup(
@@ -106,8 +116,9 @@ setup(
     ext_modules=[setuptools.Extension("pysvf.pysvf", sources=[])],  # Placeholder for CMake
     cmdclass={"build_ext": CMakeBuild},
     package_data={
-        "pysvf": ["SVF/Release-build/**/*"],  # 确保 Release-build 目录被打包
+        "pysvf": ["SVF/Release-build/**/*", "z3.obj/**/*"],  # 确保 Release-build 目录被打包
     },
     include_package_data=True,
     zip_safe=False,
 )
+
