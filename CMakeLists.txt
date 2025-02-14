@@ -36,9 +36,7 @@ endif()
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 
 # ------------------------------------------------------------------------------
-# 1) Decide where SVF headers/libraries come from:
-#    - If SVF_DIR environment variable is set, use that;
-#    - Otherwise, fallback to OS-specific default (SVF-npm/SVF-osx or SVF-npm/SVF-linux).
+# 1) Decide where SVF headers/libraries come from
 # ------------------------------------------------------------------------------
 if(SVF_DIR)
     message(STATUS "Detected SVF_DIR environment variable: ${SVF_DIR}")
@@ -47,7 +45,6 @@ if(SVF_DIR)
     set(SVF_LIB_DIR     "${SVF_CUSTOM_DIR}/Release-build/lib")
 else()
     message(STATUS "No SVF_DIR environment variable found; using OS-specific defaults.")
-
     if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(SVF_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/include")
         set(SVF_LIB_DIR     "${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/lib")
@@ -72,10 +69,10 @@ target_link_directories(pysvf PRIVATE "${SVF_LIB_DIR}")
 # 3) Link against SVF libraries and pybind11
 # ------------------------------------------------------------------------------
 target_link_libraries(pysvf PRIVATE
-        pybind11::module   # from pybind11
-        SvfLLVM
-        SvfCore
+        pybind11::module
+        -Wl,--no-as-needed
+        ${SVF_LIB_DIR}/libSvfLLVM.so
+        ${SVF_LIB_DIR}/libSvfCore.so
 )
-
 # Set C++ standard to 17 (adjust as needed)
 set_target_properties(pysvf PROPERTIES CXX_STANDARD 17)

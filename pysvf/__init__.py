@@ -59,11 +59,11 @@ def install_svf():
         exit(1)
 
 # 1️⃣ **Check if dependencies are already installed**
-if dependencies_exist():
-    print("SVF/Z3/LLVM dependencies exist.")
-else:
-    print("SVF/Z3/LLVM dependencies not found.")
-    install_svf()
+# if dependencies_exist():
+#     print("SVF/Z3/LLVM dependencies exist.")
+# else:
+#     print("SVF/Z3/LLVM dependencies not found.")
+#     install_svf()
 
 def force_update_deps():
     """Force update SVF dependencies by deleting the existing SVF folder and reinstalling"""

@@ -538,8 +538,6 @@ void bind_svf_value(py::module& m) {
             .def("get_type", &SVFLLVMValue::getType, py::return_value_policy::reference)
             .def("get_name", &SVFLLVMValue::getName)
             .def("set_name", &SVFLLVMValue::setName)
-            .def("is_null_ptr", &SVFLLVMValue::isNullPtr)
-            .def("is_black_hole", &SVFLLVMValue::isblackHole)
             .def("get_source_loc", &SVFLLVMValue::getSourceLoc)
             .def("set_source_loc", &SVFLLVMValue::setSourceLoc)
             .def("to_string", &SVFLLVMValue::toString);
