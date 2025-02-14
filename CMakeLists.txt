@@ -26,6 +26,13 @@ message(STATUS "LLVM STATUS:
   Dynamic lib   ${LLVM_LINK_LLVM_DYLIB}"
 )
 
+# Ensure that LLVM was built with RTTI enabled
+if(NOT LLVM_ENABLE_RTTI)
+    message(FATAL_ERROR "LLVM was not built with RTTI enabled. Please rebuild LLVM with -DLLVM_ENABLE_RTTI=ON.")
+endif()
+
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+set(CMAKE_BUILD_RPATH "$ORIGIN/SVF/z3.obj/bin;$ORIGIN/SVF/z3.obj/lib;$ORIGIN/SVF/Release-build/lib;")
 # Check if building in Debug mode vs. LLVM's build type
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT ${LLVM_BUILD_TYPE} STREQUAL "Debug")
     message(NOTICE "Building SVF in debug-mode but LLVM was not built in debug-mode; "
@@ -36,9 +43,7 @@ endif()
 include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 
 # ------------------------------------------------------------------------------
-# 1) Decide where SVF headers/libraries come from:
-#    - If SVF_DIR environment variable is set, use that;
-#    - Otherwise, fallback to OS-specific default (SVF-npm/SVF-osx or SVF-npm/SVF-linux).
+# 1) Decide where SVF headers/libraries come from
 # ------------------------------------------------------------------------------
 if(SVF_DIR)
     message(STATUS "Detected SVF_DIR environment variable: ${SVF_DIR}")
@@ -47,7 +52,6 @@ if(SVF_DIR)
     set(SVF_LIB_DIR     "${SVF_CUSTOM_DIR}/Release-build/lib")
 else()
     message(STATUS "No SVF_DIR environment variable found; using OS-specific defaults.")
-
     if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(SVF_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/include")
         set(SVF_LIB_DIR     "${CMAKE_SOURCE_DIR}/SVF-npm/SVF-osx/Release-build/lib")
@@ -71,10 +75,22 @@ target_link_directories(pysvf PRIVATE "${SVF_LIB_DIR}")
 # ------------------------------------------------------------------------------
 # 3) Link against SVF libraries and pybind11
 # ------------------------------------------------------------------------------
+
+set(SVF_LIB_EXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
+if(EXISTS "${Z3_DIR}/bin/libz3${SVF_LIB_EXT}")
+    set(Z3_LIB_FILE "${Z3_DIR}/bin/libz3${SVF_LIB_EXT}")
+elseif(EXISTS "${Z3_DIR}/lib/libz3${SVF_LIB_EXT}")
+    set(Z3_LIB_FILE "${Z3_DIR}/lib/libz3${SVF_LIB_EXT}")
+else()
+    message(FATAL_ERROR "Z3 library not found in expected locations.")
+endif()
+message("Z3_LIB_FILE: ${Z3_LIB_FILE}")
 target_link_libraries(pysvf PRIVATE
-        pybind11::module   # from pybind11
-        SvfLLVM
-        SvfCore
+        pybind11::module
+        -Wl, #--no-as-needed
+        ${SVF_LIB_DIR}/libSvfLLVM${SVF_LIB_EXT}
+        ${SVF_LIB_DIR}/libSvfCore${SVF_LIB_EXT}
+        ${Z3_LIB_FILE}
 )
 
 # Set C++ standard to 17 (adjust as needed)
