@@ -32,7 +32,7 @@ if(NOT LLVM_ENABLE_RTTI)
 endif()
 
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
-set(CMAKE_BUILD_RPATH "$ORIGIN/SVF/z3.obj/bin;$ORIGIN/SVF/Release-build/lib;")
+set(CMAKE_BUILD_RPATH "$ORIGIN/SVF/z3.obj/bin;$ORIGIN/SVF/z3.obj/lib;$ORIGIN/SVF/Release-build/lib;")
 # Check if building in Debug mode vs. LLVM's build type
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT ${LLVM_BUILD_TYPE} STREQUAL "Debug")
     message(NOTICE "Building SVF in debug-mode but LLVM was not built in debug-mode; "
@@ -75,13 +75,23 @@ target_link_directories(pysvf PRIVATE "${SVF_LIB_DIR}")
 # ------------------------------------------------------------------------------
 # 3) Link against SVF libraries and pybind11
 # ------------------------------------------------------------------------------
+
 set(SVF_LIB_EXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
+if(EXISTS "${Z3_DIR}/bin/libz3${SVF_LIB_EXT}")
+    set(Z3_LIB_FILE "${Z3_DIR}/bin/libz3${SVF_LIB_EXT}")
+elseif(EXISTS "${Z3_DIR}/lib/libz3${SVF_LIB_EXT}")
+    set(Z3_LIB_FILE "${Z3_DIR}/lib/libz3${SVF_LIB_EXT}")
+else()
+    message(FATAL_ERROR "Z3 library not found in expected locations.")
+endif()
+message("Z3_LIB_FILE: ${Z3_LIB_FILE}")
 target_link_libraries(pysvf PRIVATE
         pybind11::module
         -Wl, #--no-as-needed
         ${SVF_LIB_DIR}/libSvfLLVM${SVF_LIB_EXT}
         ${SVF_LIB_DIR}/libSvfCore${SVF_LIB_EXT}
-	${Z3_DIR}/bin/libz3${SVF_LIB_EXT}
+        ${Z3_LIB_FILE}
 )
+
 # Set C++ standard to 17 (adjust as needed)
 set_target_properties(pysvf PROPERTIES CXX_STANDARD 17)

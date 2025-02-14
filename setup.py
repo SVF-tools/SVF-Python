@@ -40,13 +40,6 @@ class CMakeBuild(build_ext):
         if "PYBIND11_DIR" not in os.environ:
             raise RuntimeError("PYBIND11_DIR not set")
 
-        if platform.system() == "Darwin":  # macOS
-            rpath_flag = "-DCMAKE_INSTALL_RPATH=@loader_path/SVF/Release-build/lib"
-        else:  # Linux
-            rpath_flag = "-DCMAKE_INSTALL_RPATH=$ORIGIN/SVF/z3.obj/bin:$ORIGIN/SVF/Release-build/lib"
-
-
-
         # Run CMake
         subprocess.run(
             [
@@ -56,7 +49,6 @@ class CMakeBuild(build_ext):
                 "-DLLVM_DIR="+LLVM_DIR,
                 "-DSVF_DIR="+SVF_DIR,
                 "-DZ3_DIR="+Z3_DIR,
-                "-DCMAKE_INSTALL_RPATH="+rpath_flag,
                 "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
                 "-DCMAKE_PREFIX_PATH="+os.environ["PYBIND11_DIR"],
                 "-Dpybind11_DIR="+os.environ["PYBIND11_DIR"],
@@ -104,7 +96,11 @@ class CMakeBuild(build_ext):
         shutil.copytree(os.path.join(SVF_DIR, "Release-build", "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "bin"),dirs_exist_ok=True)
 
         # cp -rf $GITHUB_WORKSPACE/z3/bin .build_lib/pysvf/z3/bin
-        shutil.copytree(os.path.join(os.environ["Z3_DIR"], "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "z3.obj", "bin"),dirs_exist_ok=True)
+        # if exist bin or lib
+        if os.path.exists(os.path.join(os.environ["Z3_DIR"], "bin")):
+            shutil.copytree(os.path.join(os.environ["Z3_DIR"], "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "z3.obj", "bin"),dirs_exist_ok=True)
+        if os.path.exists(os.path.join(os.environ["Z3_DIR"], "lib")):
+            shutil.copytree(os.path.join(os.environ["Z3_DIR"], "lib"), os.path.join(self.build_lib, "pysvf", "SVF", "z3.obj", "lib"),dirs_exist_ok=True)
 
 
 setup(
