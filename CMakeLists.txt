@@ -7,14 +7,13 @@ project(SVF-PYTHON
         LANGUAGES C CXX
 )
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 
 message(STATUS "Using Python3: ${Python3_EXECUTABLE}")
 message(STATUS "Python3 Include Dir: ${Python3_INCLUDE_DIRS}")
 message(STATUS "Python3 Library: ${Python3_LIBRARIES}")
 
 include_directories(${Python3_INCLUDE_DIRS})
-link_libraries(${Python3_LIBRARIES})
 
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 REQUIRED)
@@ -98,6 +97,7 @@ else()
 endif()
 message("Z3_LIB_FILE: ${Z3_LIB_FILE}")
 target_link_libraries(pysvf PRIVATE
+        Python3::Module
         pybind11::module
         ${SVF_LIB_DIR}/libSvfLLVM${SVF_LIB_EXT}
         ${SVF_LIB_DIR}/libSvfCore${SVF_LIB_EXT}

@@ -333,7 +333,8 @@ void bind_svf(py::module& m) {
                     callSites.push_back(callSite);
                 }
                 return callSites;
-                }, py::return_value_policy::reference);
+                }, py::return_value_policy::reference)
+            .def("get_pag_node_num", &SVFIR::getPAGNodeNum);
 
 }
 
