@@ -52,6 +52,7 @@ class CMakeBuild(build_ext):
                 "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
                 "-DCMAKE_PREFIX_PATH="+os.environ["PYBIND11_DIR"],
                 "-Dpybind11_DIR="+os.environ["PYBIND11_DIR"],
+                "-DPython3_EXECUTABLE=" + sys.executable,
                 ],
             cwd=build_temp,
             check=True
@@ -108,7 +109,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="pysvf",
-    version="0.1",
+    version="0.1.5-dev2",
     author="Your Name",
     description="SVF with Python bindings",
     packages=setuptools.find_packages(),

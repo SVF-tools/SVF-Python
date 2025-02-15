@@ -7,7 +7,14 @@ project(SVF-PYTHON
         LANGUAGES C CXX
 )
 
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+message(STATUS "Using Python3: ${Python3_EXECUTABLE}")
+message(STATUS "Python3 Include Dir: ${Python3_INCLUDE_DIRS}")
+message(STATUS "Python3 Library: ${Python3_LIBRARIES}")
+
+include_directories(${Python3_INCLUDE_DIRS})
+link_libraries(${Python3_LIBRARIES})
 
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 REQUIRED)
