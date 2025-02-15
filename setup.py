@@ -52,6 +52,7 @@ class CMakeBuild(build_ext):
                 "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
                 "-DCMAKE_PREFIX_PATH="+os.environ["PYBIND11_DIR"],
                 "-Dpybind11_DIR="+os.environ["PYBIND11_DIR"],
+                "-DPython3_EXECUTABLE=" + sys.executable,
                 ],
             cwd=build_temp,
             check=True
@@ -68,13 +69,16 @@ class CMakeBuild(build_ext):
             raise RuntimeError("Could not find built libpysvf.so")
 
         # Rename and move to expected location
-        # 获取当前 Python 版本的 .so 文件后缀（如 .cpython-38-x86_64-linux-gnu.so）
+        # get dylib suffix of current python version（e.g cpython-38-x86_64-linux-gnu.so）
         so_suffix = sysconfig.get_config_var("EXT_SUFFIX")
 
-        # 生成适配当前 Python 版本的目标路径
         so_target = os.path.join(self.build_lib, "pysvf", "pysvf" + so_suffix)
         os.makedirs(os.path.dirname(so_target), exist_ok=True)
         shutil.copyfile(built_so[0], so_target)
+        # if platform is darwin, we need to change the libz3.dylib path in pysvf.{$SO_SUFFIX}
+        # run  install_name_tool -change libz3.dylib @rpath/libz3.dylib pysvf.{$SO_SUFFIX}  to so_target
+        if platform.system() == "Darwin":
+            subprocess.run(["install_name_tool", "-change", "libz3.dylib", "@rpath/libz3.dylib", so_target], check=True)
 
         # if pysvf/SVF/Release-build exist, remove
         if os.path.exists(os.path.join(self.build_lib, "pysvf", "SVF")):
@@ -105,7 +109,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="pysvf",
-    version="0.1",
+    version="0.1.5-dev2",
     author="Your Name",
     description="SVF with Python bindings",
     packages=setuptools.find_packages(),

@@ -7,7 +7,13 @@ project(SVF-PYTHON
         LANGUAGES C CXX
 )
 
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+
+message(STATUS "Using Python3: ${Python3_EXECUTABLE}")
+message(STATUS "Python3 Include Dir: ${Python3_INCLUDE_DIRS}")
+message(STATUS "Python3 Library: ${Python3_LIBRARIES}")
+
+include_directories(${Python3_INCLUDE_DIRS})
 
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 REQUIRED)
@@ -31,8 +37,13 @@ if(NOT LLVM_ENABLE_RTTI)
     message(FATAL_ERROR "LLVM was not built with RTTI enabled. Please rebuild LLVM with -DLLVM_ENABLE_RTTI=ON.")
 endif()
 
-set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
-set(CMAKE_BUILD_RPATH "$ORIGIN/SVF/z3.obj/bin;$ORIGIN/SVF/z3.obj/lib;$ORIGIN/SVF/Release-build/lib;")
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+    set(CMAKE_BUILD_RPATH "@loader_path/SVF/z3.obj/bin;@loader_path/SVF/z3.obj/lib;@loader_path/SVF/Release-build/lib")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+    set(CMAKE_BUILD_RPATH "$ORIGIN/SVF/z3.obj/bin;$ORIGIN/SVF/z3.obj/lib;$ORIGIN/SVF/Release-build/lib;")
+endif ()
 # Check if building in Debug mode vs. LLVM's build type
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT ${LLVM_BUILD_TYPE} STREQUAL "Debug")
     message(NOTICE "Building SVF in debug-mode but LLVM was not built in debug-mode; "
@@ -86,8 +97,8 @@ else()
 endif()
 message("Z3_LIB_FILE: ${Z3_LIB_FILE}")
 target_link_libraries(pysvf PRIVATE
+        Python3::Module
         pybind11::module
-        -Wl, #--no-as-needed
         ${SVF_LIB_DIR}/libSvfLLVM${SVF_LIB_EXT}
         ${SVF_LIB_DIR}/libSvfCore${SVF_LIB_EXT}
         ${Z3_LIB_FILE}
