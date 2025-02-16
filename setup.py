@@ -40,6 +40,11 @@ class CMakeBuild(build_ext):
         if "PYBIND11_DIR" not in os.environ:
             raise RuntimeError("PYBIND11_DIR not set")
 
+        if "CMAKE_BUILD_TYPE" not in os.environ:
+            CMAKE_BUILD_TYPE = "Release"
+        else:
+            CMAKE_BUILD_TYPE = os.environ["CMAKE_BUILD_TYPE"]
+
         # Run CMake
         subprocess.run(
             [
@@ -52,6 +57,7 @@ class CMakeBuild(build_ext):
                 "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
                 "-DCMAKE_PREFIX_PATH="+os.environ["PYBIND11_DIR"],
                 "-Dpybind11_DIR="+os.environ["PYBIND11_DIR"],
+                "-DCMAKE_BUILD_TYPE=" + CMAKE_BUILD_TYPE,
                 "-DPython3_EXECUTABLE=" + sys.executable,
                 ],
             cwd=build_temp,
@@ -92,12 +98,12 @@ class CMakeBuild(build_ext):
         # cp -rf $GITHUB_WORKSPACE/svf-llvm/include SVF-${osVersion}/Release-build/
         # cp -rf $GITHUB_WORKSPACE/Release-build/lib SVF-${osVersion}/Release-build/
         # cp -rf $GITHUB_WORKSPACE/Release-build/bin SVF-${osVersion}/Release-build/
-        shutil.copytree(os.path.join(SVF_DIR, "Release-build", "include"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "include"),dirs_exist_ok=True)
+        shutil.copytree(os.path.join(SVF_DIR, CMAKE_BUILD_TYPE+"-build", "include"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "include"),dirs_exist_ok=True)
         shutil.copytree(os.path.join(SVF_DIR, "svf", "include"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "include"),dirs_exist_ok=True)
 
         shutil.copytree(os.path.join(SVF_DIR, "svf-llvm", "include"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "include"),dirs_exist_ok=True)
-        shutil.copytree(os.path.join(SVF_DIR, "Release-build", "lib"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "lib"),dirs_exist_ok=True)
-        shutil.copytree(os.path.join(SVF_DIR, "Release-build", "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "bin"),dirs_exist_ok=True)
+        shutil.copytree(os.path.join(SVF_DIR, CMAKE_BUILD_TYPE+"-build", "lib"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "lib"),dirs_exist_ok=True)
+        shutil.copytree(os.path.join(SVF_DIR, CMAKE_BUILD_TYPE+"-build", "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "bin"),dirs_exist_ok=True)
 
         # cp -rf $GITHUB_WORKSPACE/z3/bin .build_lib/pysvf/z3/bin
         # if exist bin or lib
@@ -109,7 +115,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="pysvf",
-    version="0.1.5-dev2",
+    version="0.1.5-dev3",
     author="Your Name",
     description="SVF with Python bindings",
     packages=setuptools.find_packages(),
