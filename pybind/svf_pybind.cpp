@@ -27,27 +27,27 @@ public:
 };
 
 void bind_icfg_node(py::module& m) {
-    py::class_<ICFGNode>(m, "ICFGNode")
+    py::class_<ICFGNode>(m, "ICFGNode", "Represents a node in the Interprocedural Control Flow Graph (ICFG)")
             .def("to_string", [](const ICFGNode& node) {
                 std::ostringstream oss;
                 oss << node.toString() << "\n";
                 return oss.str();
             })
             //get_id
-            .def("get_id", &ICFGNode::getId)
-            .def("get_fun", &ICFGNode::getFun, py::return_value_policy::reference)
-            .def("get_bb", &ICFGNode::getBB, py::return_value_policy::reference)
-            .def("get_svf_stmts", &ICFGNode::getSVFStmts, py::return_value_policy::reference)
+            .def("get_id", &ICFGNode::getId, "Get the ID of the ICFG node")
+            .def("get_fun", &ICFGNode::getFun, py::return_value_policy::reference, "Get the function that the ICFG node belongs to")
+            .def("get_bb", &ICFGNode::getBB, py::return_value_policy::reference, "Get the basic block that the ICFG node belongs to")
+            .def("get_svf_stmts", &ICFGNode::getSVFStmts, py::return_value_policy::reference, "Get the SVF statements associated with the ICFG node")
             // Downcast
-            .def("as_fun_entry", [](ICFGNode* node) { return dynamic_cast<FunEntryICFGNode*>(node); }, py::return_value_policy::reference)
-            .def("as_fun_exit", [](ICFGNode* node) { return dynamic_cast<FunExitICFGNode*>(node); }, py::return_value_policy::reference)
-            .def("as_call", [](ICFGNode* node) { return dynamic_cast<CallICFGNode*>(node); }, py::return_value_policy::reference)
-            .def("as_ret", [](ICFGNode* node) { return dynamic_cast<RetICFGNode*>(node); }, py::return_value_policy::reference)
+            .def("as_fun_entry", [](ICFGNode* node) { return SVFUtil::dyn_cast<FunEntryICFGNode>(node); }, py::return_value_policy::reference, "Downcast to FunEntryICFGNode")
+            .def("as_fun_exit", [](ICFGNode* node) { return SVFUtil::dyn_cast<FunExitICFGNode>(node); }, py::return_value_policy::reference, "Downcast to FunExitICFGNode")
+            .def("as_call", [](ICFGNode* node) { return SVFUtil::dyn_cast<CallICFGNode>(node); }, py::return_value_policy::reference, "Downcast to CallICFGNode")
+            .def("as_ret", [](ICFGNode* node) { return SVFUtil::dyn_cast<RetICFGNode>(node); }, py::return_value_policy::reference, "Downcast to RetICFGNode")
             // Type checking
-            .def("is_fun_entry", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunEntryBlock; })
-            .def("is_fun_exit", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunExitBlock; })
-            .def("is_call", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunCallBlock; })
-            .def("is_ret", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunRetBlock; })
+            .def("is_fun_entry", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunEntryBlock; }, "Check if the ICFG node is a function entry node")
+            .def("is_fun_exit", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunExitBlock; }, "Check if the ICFG node is a function exit node")
+            .def("is_call", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunCallBlock; }, "Check if the ICFG node is a function call node")
+            .def("is_ret", [](const ICFGNode* node) { return node->getNodeKind() == SVF::ICFGNode::FunRetBlock; }, "Check if the ICFG node is a function return node")
             // get out edges and get in edges. gather them in a list
             .def("get_out_edges", [](const ICFGNode *node) {
                 std::vector<ICFGEdge *> edges;
@@ -55,45 +55,48 @@ void bind_icfg_node(py::module& m) {
                     edges.push_back(edge);
                 }
                 return edges;
-            }, py::return_value_policy::reference)
+            }, py::return_value_policy::reference, "Get the out edges of the ICFG node")
             .def("get_in_edges", [](const ICFGNode *node) {
                 std::vector < ICFGEdge * > edges;
                 for (auto &edge: node->getInEdges()) {
                     edges.push_back(edge);
                 }
                 return edges;
-            }, py::return_value_policy::reference);
+            }, py::return_value_policy::reference, "Get the in edges of the ICFG node");
 
     // IntraICFGNode
     py::class_<IntraICFGNode, ICFGNode>(m, "IntraICFGNode")
-            .def("is_ret_inst", &IntraICFGNode::isRetInst);
+            .def("is_ret_inst", &IntraICFGNode::isRetInst, "Check if the ICFG node is a return instruction");
 
     // InterICFGNode
     py::class_<InterICFGNode, ICFGNode>(m, "InterICFGNode");
 
     // FunEntryICFGNode
     py::class_<FunEntryICFGNode, InterICFGNode>(m, "FunEntryICFGNode")
-            .def("get_formal_parms", &FunEntryICFGNode::getFormalParms, py::return_value_policy::reference)
-            .def("add_formal_parm", &FunEntryICFGNode::addFormalParms);
+            .def("get_formal_parms", &FunEntryICFGNode::getFormalParms, py::return_value_policy::reference,
+                 "Get the formal parameters of the function")
+            .def("add_formal_parm", &FunEntryICFGNode::addFormalParms, "Add a formal parameter to the function");
 
     // FunExitICFGNode
     py::class_<FunExitICFGNode, InterICFGNode>(m, "FunExitICFGNode")
-            .def("get_formal_ret", &FunExitICFGNode::getFormalRet, py::return_value_policy::reference)
-            .def("add_formal_ret", &FunExitICFGNode::addFormalRet);
+            .def("get_formal_ret", &FunExitICFGNode::getFormalRet, py::return_value_policy::reference, "Get the formal return value of the function")
+            .def("add_formal_ret", &FunExitICFGNode::addFormalRet, "Add a formal return value to the function");
 
     // CallICFGNode
     py::class_<CallICFGNode, InterICFGNode>(m, "CallICFGNode")
-            .def("get_caller", &CallICFGNode::getCaller, py::return_value_policy::reference)
-            .def("get_called_function", &CallICFGNode::getCalledFunction, py::return_value_policy::reference)
-            .def("get_actual_parms", &CallICFGNode::getActualParms, py::return_value_policy::reference)
-            .def("add_actual_parm", &CallICFGNode::addActualParms)
-            .def("is_vararg", &CallICFGNode::isVarArg)
-            .def("is_virtual_call", &CallICFGNode::isVirtualCall);
+            .def("get_caller", &CallICFGNode::getCaller, py::return_value_policy::reference, "Get the caller function")
+            .def("get_called_function", &CallICFGNode::getCalledFunction, py::return_value_policy::reference,
+                 "Get the called function")
+            .def("get_actual_parms", &CallICFGNode::getActualParms, py::return_value_policy::reference,
+                 "Get the actual parameters of the call")
+            .def("add_actual_parm", &CallICFGNode::addActualParms, "Add an actual parameter to the call")
+            .def("is_vararg", &CallICFGNode::isVarArg, "Check if the call is a vararg call")
+            .def("is_virtual_call", &CallICFGNode::isVirtualCall, "Check if the call is a virtual call");
 
     // === RetICFGNode ===
     py::class_<RetICFGNode, InterICFGNode>(m, "RetICFGNode")
-            .def("get_actual_ret", &RetICFGNode::getActualRet, py::return_value_policy::reference)
-            .def("add_actual_ret", &RetICFGNode::addActualRet);
+            .def("get_actual_ret", &RetICFGNode::getActualRet, py::return_value_policy::reference, "Get the actual return value")
+            .def("add_actual_ret", &RetICFGNode::addActualRet, "Add an actual return value");
 
     // GlobalICFGNode
     py::class_<GlobalICFGNode, ICFGNode>(m, "GlobalICFGNode");
@@ -103,33 +106,35 @@ void bind_icfg_edge(py::module& m) {
     using namespace SVF;
 
     py::class_<ICFGEdge, std::shared_ptr<ICFGEdge>>(m, "ICFGEdge")
-            .def("to_string", &ICFGEdge::toString)
-            .def("is_cfg_edge", &ICFGEdge::isCFGEdge)
-            .def("is_call_cfg_edge", &ICFGEdge::isCallCFGEdge)
-            .def("is_ret_cfg_edge", &ICFGEdge::isRetCFGEdge)
-            .def("is_intra_cfg_edge", &ICFGEdge::isIntraCFGEdge)
+            .def("to_string", &ICFGEdge::toString, "Get the string representation of the ICFG edge")
+            .def("is_cfg_edge", &ICFGEdge::isCFGEdge, "Check if the edge is a CFG edge")
+            .def("is_call_cfg_edge", &ICFGEdge::isCallCFGEdge, "Check if the edge is a call CFG edge")
+            .def("is_ret_cfg_edge", &ICFGEdge::isRetCFGEdge, "Check if the edge is a return CFG edge")
+            .def("is_intra_cfg_edge", &ICFGEdge::isIntraCFGEdge, "Check if the edge is an intra CFG edge")
             // get inedge and outedge
-            .def("get_src", &ICFGEdge::getSrcNode, py::return_value_policy::reference)
-            .def("get_dst", &ICFGEdge::getDstNode, py::return_value_policy::reference)
+            .def("get_src", &ICFGEdge::getSrcNode, py::return_value_policy::reference, "Get the source node of the edge")
+            .def("get_dst", &ICFGEdge::getDstNode, py::return_value_policy::reference, "Get the destination node of the edge")
             //downcast
-            .def("as_intra_cfg_edge", [](ICFGEdge *edge) { return dynamic_cast<IntraCFGEdge *>(edge); },
-                 py::return_value_policy::reference)
-            .def("as_call_cfg_edge", [](ICFGEdge *edge) { return dynamic_cast<CallCFGEdge *>(edge); },
-                 py::return_value_policy::reference)
-            .def("as_ret_cfg_edge", [](ICFGEdge *edge) { return dynamic_cast<RetCFGEdge *>(edge); },
-                 py::return_value_policy::reference);
+            .def("as_intra_cfg_edge", [](ICFGEdge *edge) { return SVFUtil::dyn_cast<IntraCFGEdge>(edge); },
+                 py::return_value_policy::reference, "Downcast to IntraCFGEdge")
+            .def("as_call_cfg_edge", [](ICFGEdge *edge) { return SVFUtil::dyn_cast<CallCFGEdge>(edge); },
+                 py::return_value_policy::reference, "Downcast to CallCFGEdge")
+            .def("as_ret_cfg_edge", [](ICFGEdge *edge) { return SVFUtil::dyn_cast<RetCFGEdge>(edge); },
+                 py::return_value_policy::reference, "Downcast to RetCFGEdge");
 
     py::class_<IntraCFGEdge, ICFGEdge, std::shared_ptr<IntraCFGEdge>>(m, "IntraCFGEdge")
-            .def("get_condition", &IntraCFGEdge::getCondition, py::return_value_policy::reference)
-            .def("get_successor_cond_value", &IntraCFGEdge::getSuccessorCondValue);
+            .def("get_condition", &IntraCFGEdge::getCondition, py::return_value_policy::reference,
+                 "Get the condition of the edge")
+            .def("get_successor_cond_value", &IntraCFGEdge::getSuccessorCondValue, py::return_value_policy::reference,
+                 "Get the successor condition value");
 
     py::class_<CallCFGEdge, ICFGEdge, std::shared_ptr<CallCFGEdge>>(m, "CallCFGEdge")
-            .def("get_call_site", &CallCFGEdge::getCallSite, py::return_value_policy::reference)
-            .def("get_call_pes", &CallCFGEdge::getCallPEs, py::return_value_policy::reference);
+            .def("get_call_site", &CallCFGEdge::getCallSite, py::return_value_policy::reference, "Get the call site")
+            .def("get_call_pes", &CallCFGEdge::getCallPEs, py::return_value_policy::reference, "Get the call PEs");
 
     py::class_<RetCFGEdge, ICFGEdge, std::shared_ptr<RetCFGEdge>>(m, "RetCFGEdge")
-            .def("get_call_site", &RetCFGEdge::getCallSite, py::return_value_policy::reference)
-            .def("get_ret_pe", &RetCFGEdge::getRetPE, py::return_value_policy::reference);
+            .def("get_call_site", &RetCFGEdge::getCallSite, py::return_value_policy::reference, "Get the call site")
+            .def("get_ret_pe", &RetCFGEdge::getRetPE, py::return_value_policy::reference, "Get the return PE");
 }
 
 
@@ -140,114 +145,127 @@ void bind_svf_stmt(py::module& m) {
                 std::ostringstream oss;
                 oss << stmt.toString();
                 return oss.str();
-            })
-            .def("get_edge_id", &SVFStmt::getEdgeID)
-            .def("get_icfg_node", &SVFStmt::getICFGNode, py::return_value_policy::reference_internal)
-            .def("get_value", &SVFStmt::getValue, py::return_value_policy::reference_internal)
-            .def("get_bb", &SVFStmt::getBB, py::return_value_policy::reference_internal)
+            }, "Get the string representation of the SVF statement")
+            .def("get_edge_id", &SVFStmt::getEdgeID, "Get the ID of the SVF statement")
+            .def("get_icfg_node", &SVFStmt::getICFGNode, py::return_value_policy::reference_internal, "Get the ICFG node that the SVF statement belongs to")
+            .def("get_value", &SVFStmt::getValue, py::return_value_policy::reference_internal, "Get the value of the SVF statement")
+            .def("get_bb", &SVFStmt::getBB, py::return_value_policy::reference_internal, "Get the basic block that the SVF statement belongs to")
                     // addr copy store load call ret gep phi select cmp binary unary branch
                     // TODO: may support threadFork threadJoin
-            .def("is_addr_stmt", [](const SVFStmt* stmt) { return dynamic_cast<const AddrStmt*>(stmt) != nullptr; })
-            .def("is_copy_stmt", [](const SVFStmt* stmt) { return dynamic_cast<const CopyStmt*>(stmt) != nullptr; })
-            .def("is_store_stmt", [](const SVFStmt* stmt) { return dynamic_cast<const StoreStmt*>(stmt) != nullptr; })
-            .def("is_load_stmt", [](const SVFStmt* stmt) { return dynamic_cast<const LoadStmt*>(stmt) != nullptr; })
-            .def("is_call_pe", [](const SVFStmt* stmt) { return dynamic_cast<const CallPE*>(stmt) != nullptr; })
-            .def("is_ret_pe", [](const SVFStmt* stmt) { return dynamic_cast<const RetPE*>(stmt) != nullptr; })
-            .def("is_gep_stmt", [](const SVFStmt* stmt) {return dynamic_cast<const GepStmt*>(stmt) != nullptr; })
-            .def("is_phi_stmt", [](const SVFStmt* stmt) { return dynamic_cast<const PhiStmt*>(stmt) != nullptr; })
+            .def("is_addr_stmt", [](const SVFStmt* stmt) { return SVFUtil::dyn_cast<const AddrStmt>(stmt) != nullptr; }, "Check if the SVF statement is an address statement")
+            .def("is_copy_stmt", [](const SVFStmt* stmt) { return SVFUtil::dyn_cast<const CopyStmt>(stmt) != nullptr; }, "Check if the SVF statement is a copy statement")
+            .def("is_store_stmt", [](const SVFStmt* stmt) { return SVFUtil::dyn_cast<const StoreStmt>(stmt) != nullptr; }, "Check if the SVF statement is a store statement")
+            .def("is_load_stmt", [](const SVFStmt* stmt) { return SVFUtil::dyn_cast<const LoadStmt>(stmt) != nullptr; }, "Check if the SVF statement is a load statement")
+            .def("is_call_pe", [](const SVFStmt* stmt) { return SVFUtil::dyn_cast<const CallPE>(stmt) != nullptr; }, "Check if the SVF statement is a call PE")
+            .def("is_ret_pe", [](const SVFStmt* stmt) { return SVFUtil::dyn_cast<const RetPE>(stmt) != nullptr; }, "Check if the SVF statement is a return PE")
+            .def("is_gep_stmt", [](const SVFStmt* stmt) {return SVFUtil::dyn_cast<const GepStmt>(stmt) != nullptr; }, "Check if the SVF statement is a GEP statement")
+            .def("is_phi_stmt", [](const SVFStmt* stmt) { return SVFUtil::dyn_cast<const PhiStmt>(stmt) != nullptr; },
+                 "Check if the SVF statement is a phi statement")
             .def("is_select_stmt", [](const SVFStmt* stmt) {
-                return dynamic_cast<const SelectStmt*>(stmt) != nullptr;})
+                return SVFUtil::dyn_cast<const SelectStmt>(stmt) != nullptr;}, "Check if the SVF statement is a select statement")
             .def("is_cmp_stmt", [](const SVFStmt* stmt) {
-                return dynamic_cast<const CmpStmt*>(stmt) != nullptr;})
+                return SVFUtil::dyn_cast<const CmpStmt>(stmt) != nullptr;}, "Check if the SVF statement is a compare statement")
             .def("is_binary_op_stmt", [](const SVFStmt* stmt) {
-                return dynamic_cast<const BinaryOPStmt*>(stmt) != nullptr;})
+                return SVFUtil::dyn_cast<const BinaryOPStmt>(stmt) != nullptr;}, "Check if the SVF statement is a binary operation statement")
             .def("is_unary_op_stmt", [](const SVFStmt* stmt) {
-                return dynamic_cast<const UnaryOPStmt*>(stmt) != nullptr;})
+                return SVFUtil::dyn_cast<const UnaryOPStmt>(stmt) != nullptr;}, "Check if the SVF statement is a unary operation statement")
             .def("is_branch_stmt", [](const SVFStmt* stmt) {
-                return dynamic_cast<const BranchStmt*>(stmt) != nullptr;})
+                return SVFUtil::dyn_cast<const BranchStmt>(stmt) != nullptr;}, "Check if the SVF statement is a branch statement")
              // downcast TODO: more downcast here
-            .def("as_addr_stmt", [](SVFStmt *stmt) { return dynamic_cast<AddrStmt *>(stmt); },
-                  py::return_value_policy::reference)
-            .def("as_copy_stmt", [](SVFStmt *stmt) { return dynamic_cast<CopyStmt *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_store_stmt", [](SVFStmt *stmt) { return dynamic_cast<StoreStmt *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_load_stmt", [](SVFStmt *stmt) { return dynamic_cast<LoadStmt *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_call_pe", [](SVFStmt *stmt) { return dynamic_cast<CallPE *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_ret_pe", [](SVFStmt *stmt) { return dynamic_cast<RetPE *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_gep_stmt", [](SVFStmt *stmt) { return dynamic_cast<GepStmt *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_phi_stmt", [](SVFStmt *stmt) { return dynamic_cast<PhiStmt *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_select_stmt", [](SVFStmt *stmt) { return dynamic_cast<SelectStmt *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_cmp_stmt", [](SVFStmt* stmt) { return dynamic_cast<CmpStmt*>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_binary_op_stmt", [](SVFStmt* stmt) { return dynamic_cast<BinaryOPStmt*>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_unary_op_stmt", [](SVFStmt *stmt) { return dynamic_cast<UnaryOPStmt *>(stmt); },
-                 py::return_value_policy::reference)
-            .def("as_branch_stmt", [](SVFStmt *stmt) { return dynamic_cast<BranchStmt *>(stmt); },
-                 py::return_value_policy::reference);
+            .def("as_addr_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<AddrStmt>(stmt); },
+                  py::return_value_policy::reference, "Downcast the SVF statement to an address statement")
+            .def("as_copy_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<CopyStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a copy statement")
+            .def("as_store_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<StoreStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a store statement")
+            .def("as_load_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<LoadStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a load statement")
+            .def("as_call_pe", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<CallPE>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a call PE")
+            .def("as_ret_pe", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<RetPE>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a return PE")
+            .def("as_gep_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<GepStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a GEP statement")
+            .def("as_phi_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<PhiStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a phi statement")
+            .def("as_select_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<SelectStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a select statement")
+            .def("as_cmp_stmt", [](SVFStmt* stmt) { return SVFUtil::dyn_cast<CmpStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a compare statement")
+            .def("as_binary_op_stmt", [](SVFStmt* stmt) { return SVFUtil::dyn_cast<BinaryOPStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a binary operation statement")
+            .def("as_unary_op_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<UnaryOPStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a unary operation statement")
+            .def("as_branch_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<BranchStmt>(stmt); },
+                 py::return_value_policy::reference, "Downcast the SVF statement to a branch statement");
 
     py::class_<AddrStmt, SVFStmt>(m, "AddrStmt")
-            .def("get_lhs_var", &AddrStmt::getLHSVar, py::return_value_policy::reference)
-            .def("get_lhs_id", &AddrStmt::getLHSVarID)
-            .def("get_rhs_var", &AddrStmt::getRHSVar, py::return_value_policy::reference)
-            .def("get_rhs_id", &AddrStmt::getRHSVarID)
-            .def("get_arr_size", &AddrStmt::getArrSize, py::return_value_policy::reference);
+            .def("get_lhs_var", &AddrStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the address statement")
+            .def("get_lhs_id", &AddrStmt::getLHSVarID, "Get the ID of the LHS variable of the address statement")
+            .def("get_rhs_var", &AddrStmt::getRHSVar, py::return_value_policy::reference, "Get the RHS variable of the address statement")
+            .def("get_rhs_id", &AddrStmt::getRHSVarID, "Get the ID of the RHS variable of the address statement")
+            .def("get_arr_size", &AddrStmt::getArrSize, py::return_value_policy::reference, "Get the array size of the address statement");
 
     py::class_<CopyStmt, SVFStmt>(m, "CopyStmt")
             // TODO: more API from CopyStmt
-            .def("get_lhs_var", &CopyStmt::getLHSVar, py::return_value_policy::reference)
-            .def("get_lhs_id", &CopyStmt::getLHSVarID)
-            .def("get_rhs_var", &CopyStmt::getRHSVar, py::return_value_policy::reference)
-            .def("get_rhs_id", &CopyStmt::getRHSVarID);
+            .def("get_lhs_var", &CopyStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the copy statement")
+            .def("get_lhs_id", &CopyStmt::getLHSVarID, "Get the ID of the LHS variable of the copy statement")
+            .def("get_rhs_var", &CopyStmt::getRHSVar, py::return_value_policy::reference, "Get the RHS variable of the copy statement")
+            .def("get_rhs_id", &CopyStmt::getRHSVarID, "Get the ID of the RHS variable of the copy statement");
 
 
     py::class_<StoreStmt, SVFStmt>(m, "StoreStmt")
-            .def("get_lhs_var", &StoreStmt::getLHSVar, py::return_value_policy::reference)
-            .def("get_lhs_id", &StoreStmt::getLHSVarID)
-            .def("get_rhs_var", &StoreStmt::getRHSVar, py::return_value_policy::reference)
-            .def("get_rhs_id", &StoreStmt::getRHSVarID);
+            .def("get_lhs_var", &StoreStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the store statement")
+            .def("get_lhs_id", &StoreStmt::getLHSVarID, "Get the ID of the LHS variable of the store statement")
+            .def("get_rhs_var", &StoreStmt::getRHSVar, py::return_value_policy::reference,
+                 "Get the RHS variable of the store statement")
+            .def("get_rhs_id", &StoreStmt::getRHSVarID, "Get the ID of the RHS variable of the store statement");
 
 
     py::class_<LoadStmt, SVFStmt>(m, "LoadStmt")
-            .def("get_lhs_var", &LoadStmt::getLHSVar, py::return_value_policy::reference)
-            .def("get_lhs_id", &LoadStmt::getLHSVarID)
-            .def("get_rhs_var", &LoadStmt::getRHSVar, py::return_value_policy::reference)
-            .def("get_rhs_id", &LoadStmt::getRHSVarID);
+            .def("get_lhs_var", &LoadStmt::getLHSVar, py::return_value_policy::reference,
+                 "Get the LHS variable of the load statement")
+            .def("get_lhs_id", &LoadStmt::getLHSVarID, "Get the ID of the LHS variable of the load statement")
+            .def("get_rhs_var", &LoadStmt::getRHSVar, py::return_value_policy::reference,
+                 "Get the RHS variable of the load statement")
+            .def("get_rhs_id", &LoadStmt::getRHSVarID, "Get the ID of the RHS variable of the load statement");
 
     py::class_<CallPE, SVFStmt>(m, "CallPE")
-            .def("get_callsite", &CallPE::getCallSite)
-            .def("get_lhs_var", &CallPE::getLHSVar, py::return_value_policy::reference)
-            .def("get_lhs_id", &CallPE::getLHSVarID)
-            .def("get_rhs_var", &CallPE::getRHSVar, py::return_value_policy::reference)
-            .def("get_rhs_id", &CallPE::getRHSVarID)
-            .def("get_fun_entry_icfg_node", &CallPE::getFunEntryICFGNode, py::return_value_policy::reference);
+            .def("get_callsite", &CallPE::getCallSite, "Get the call site")
+            .def("get_lhs_var", &CallPE::getLHSVar, py::return_value_policy::reference,
+                 "Get the LHS variable of the call PE")
+            .def("get_lhs_id", &CallPE::getLHSVarID, "Get the ID of the LHS variable of the call PE")
+            .def("get_rhs_var", &CallPE::getRHSVar, py::return_value_policy::reference,
+                 "Get the RHS variable of the call PE")
+            .def("get_rhs_id", &CallPE::getRHSVarID, "Get the ID of the RHS variable of the call PE")
+            .def("get_fun_entry_icfg_node", &CallPE::getFunEntryICFGNode, py::return_value_policy::reference,
+                 "Get the function entry ICFG node");
 
     py::class_<RetPE, SVFStmt>(m, "RetPE")
-            .def("get_callsite", &RetPE::getCallSite)
-            .def("get_lhs_var", &RetPE::getLHSVar, py::return_value_policy::reference)
-            .def("get_lhs_id", &RetPE::getLHSVarID)
-            .def("get_rhs_var", &RetPE::getRHSVar, py::return_value_policy::reference)
-            .def("get_rhs_id", &RetPE::getRHSVarID)
-            .def("get_fun_exit_icfg_node", &RetPE::getFunExitICFGNode, py::return_value_policy::reference);
+            .def("get_callsite", &RetPE::getCallSite, "Get the call site")
+            .def("get_lhs_var", &RetPE::getLHSVar, py::return_value_policy::reference,
+                 "Get the LHS variable of the return PE")
+            .def("get_lhs_id", &RetPE::getLHSVarID, "Get the ID of the LHS variable of the return PE")
+            .def("get_rhs_var", &RetPE::getRHSVar, py::return_value_policy::reference,
+                 "Get the RHS variable of the return PE")
+            .def("get_rhs_id", &RetPE::getRHSVarID, "Get the ID of the RHS variable of the return PE")
+            .def("get_fun_exit_icfg_node", &RetPE::getFunExitICFGNode, py::return_value_policy::reference,
+                 "Get the function exit ICFG node");
+
 
     py::class_<GepStmt, SVFStmt>(m, "GepStmt")
-            .def("get_lhs_var", &GepStmt::getLHSVar, py::return_value_policy::reference)
-            .def("get_lhs_id", &GepStmt::getLHSVarID)
-            .def("get_rhs_var", &GepStmt::getRHSVar, py::return_value_policy::reference)
-            .def("get_rhs_id", &GepStmt::getRHSVarID)
-            .def("is_constant_offset", &GepStmt::isConstantOffset)
-            .def("get_constant_offset", &GepStmt::accumulateConstantOffset)
-            .def("get_constant_byte_offset", &GepStmt::accumulateConstantByteOffset)
-            .def("get_constant_struct_fld_idx", &GepStmt::getConstantStructFldIdx)
-            //maybe change a name
-            .def("get_offset_var_and_gep_type_pair_vec", &GepStmt::getOffsetVarAndGepTypePairVec, py::return_value_policy::reference);
+            .def("get_lhs_var", &GepStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the GEP statement")
+            .def("get_lhs_id", &GepStmt::getLHSVarID, "Get the ID of the LHS variable of the GEP statement")
+            .def("get_rhs_var", &GepStmt::getRHSVar, py::return_value_policy::reference, "Get the RHS variable of the GEP statement")
+            .def("get_rhs_id", &GepStmt::getRHSVarID, "Get the ID of the RHS variable of the GEP statement")
+            .def("is_constant_offset", &GepStmt::isConstantOffset, "Check if the GEP statement has a constant offset")
+            .def("get_constant_offset", &GepStmt::accumulateConstantOffset, "Get the constant offset of the GEP statement")
+            .def("get_constant_byte_offset", &GepStmt::accumulateConstantByteOffset,
+                 "Get the constant byte offset of the GEP statement")
+            .def("get_constant_struct_fld_idx", &GepStmt::getConstantStructFldIdx,
+                      "Get the constant struct field index of the GEP statement")
+            .def("get_offset_var_and_gep_type_pair_vec", &GepStmt::getOffsetVarAndGepTypePairVec, py::return_value_policy::reference,
+                 "Get the offset variable and GEP type pair vector of the GEP statement");
 
     py::class_<PhiStmt, SVFStmt>(m, "PhiStmt")
             // TODO: may implement get_op_var and get_op_var_id
@@ -335,7 +353,6 @@ void bind_svf(py::module& m) {
                 return callSites;
                 }, py::return_value_policy::reference)
             .def("get_pag_node_num", &SVFIR::getPAGNodeNum);
-
 }
 
 // Bind SVFVar
@@ -490,7 +507,19 @@ void bind_svf_type(py::module& m) {
             .def("is_array_ty", &SVFType::isArrayTy)
             .def("is_struct_ty", &SVFType::isStructTy)
             .def("is_single_value_ty", &SVFType::isSingleValueType)
-            .def("to_string", &SVFType::toString);
+            .def("to_string", &SVFType::toString)
+            .def("as_pointer_type", [](SVFType* type) { return SVFUtil::dyn_cast<SVFPointerType>(type); }, py::return_value_policy::reference)
+            .def("as_integer_type", [](SVFType* type) { return SVFUtil::dyn_cast<SVFIntegerType>(type); }, py::return_value_policy::reference)
+            .def("as_function_type", [](SVFType* type) { return SVFUtil::dyn_cast<SVFFunctionType>(type); }, py::return_value_policy::reference)
+            .def("as_struct_type", [](SVFType* type) { return SVFUtil::dyn_cast<SVFStructType>(type); }, py::return_value_policy::reference)
+            .def("as_array_type", [](SVFType *type) { return SVFUtil::dyn_cast<SVFArrayType>(type); },py::return_value_policy::reference)
+            .def("as_other_type", [](SVFType *type) { return SVFUtil::dyn_cast<SVFOtherType>(type); },py::return_value_policy::reference)
+            .def("is_pointer_type", [](SVFType* type) { return SVFUtil::isa<SVFPointerType>(type); })
+            .def("is_integer_type", [](SVFType* type) { return SVFUtil::isa<SVFIntegerType>(type); })
+            .def("is_function_type", [](SVFType* type) { return SVFUtil::isa<SVFFunctionType>(type); })
+            .def("is_struct_type", [](SVFType* type) { return SVFUtil::isa<SVFStructType>(type); })
+            .def("is_array_type", [](SVFType* type) { return SVFUtil::isa<SVFArrayType>(type); })
+            .def("is_other_type", [](SVFType* type) { return SVFUtil::isa<SVFOtherType>(type); });
 
 
     py::class_<SVFPointerType, SVFType>(m, "SVFPointerType")
@@ -523,13 +552,7 @@ void bind_svf_type(py::module& m) {
             .def("set_repr", py::overload_cast<const std::string&>(&SVFOtherType::setRepr))
             .def("set_repr", py::overload_cast<std::string&&>(&SVFOtherType::setRepr));
 
-    // Downcasting utilities for polymorphic types
-    m.def("as_pointer_type", [](SVFType* type) { return dynamic_cast<SVFPointerType*>(type); }, py::return_value_policy::reference);
-    m.def("as_integer_type", [](SVFType* type) { return dynamic_cast<SVFIntegerType*>(type); }, py::return_value_policy::reference);
-    m.def("as_function_type", [](SVFType* type) { return dynamic_cast<SVFFunctionType*>(type); }, py::return_value_policy::reference);
-    m.def("as_struct_type", [](SVFType* type) { return dynamic_cast<SVFStructType*>(type); }, py::return_value_policy::reference);
-    m.def("as_array_type", [](SVFType* type) { return dynamic_cast<SVFArrayType*>(type); }, py::return_value_policy::reference);
-    m.def("as_other_type", [](SVFType* type) { return dynamic_cast<SVFOtherType*>(type); }, py::return_value_policy::reference);
+
 }
 
 void bind_svf_value(py::module& m) {
