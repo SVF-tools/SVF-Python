@@ -9,6 +9,10 @@ import glob
 import sysconfig
 import platform
 
+if 'VERSION' not in os.environ:
+    os.environ['VERSION'] = '0.0.0'
+version = os.environ['VERSION']
+
 class CMakeBuild(build_ext):
     def run(self):
         cmake_dir = os.path.abspath(os.path.dirname(__file__))
@@ -115,7 +119,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="pysvf",
-    version="0.1.5-dev3",
+    version=version,
     author="Your Name",
     description="SVF with Python bindings",
     packages=setuptools.find_packages(),
