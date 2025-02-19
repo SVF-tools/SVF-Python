@@ -57,7 +57,7 @@ jobs:
         run: |
           git clone https://github.com/SVF-tools/SVF.git
           cd SVF
-          bash build.sh shared  # 这里会编译 LLVM
+          bash build.sh shared  
           echo "SVF_DIR=$GITHUB_WORKSPACE/SVF" >> $GITHUB_ENV
           echo "LLVM_DIR=$GITHUB_WORKSPACE/SVF/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$GITHUB_WORKSPACE/SVF/z3.obj" >> $GITHUB_ENV
@@ -69,18 +69,35 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/SVF
           tar -czvf llvm-16.0.0-ubuntu.tar.gz llvm-16.0.0.obj
+          sync
           ls -lh llvm-16.0.0-ubuntu.tar.gz  
 
-      # Upload LLVM-16 Ubuntu (for test)
+  # Ensure LLVM tarball is in the correct location before upload
+      - name: Verify LLVM Archive Before Upload
+        if: runner.os == 'Linux'
+        run: |
+          echo "Checking file location..."
+          find $GITHUB_WORKSPACE -type f -name "llvm-16.0.0-ubuntu.tar.gz"
+          ls -lh $GITHUB_WORKSPACE/SVF/llvm-16.0.0-ubuntu.tar.gz || echo "File not found!"
+          file $GITHUB_WORKSPACE/SVF/llvm-16.0.0-ubuntu.tar.gz || echo "File type unknown!"
+          sync  # Ensure the file is fully written to disk
+
+      # Move LLVM tarball to a stable location
+      - name: Move LLVM Archive to Workspace Root
+        if: runner.os == 'Linux'
+        run: |
+          mv $GITHUB_WORKSPACE/SVF/llvm-16.0.0-ubuntu.tar.gz $GITHUB_WORKSPACE/
+          ls -lh $GITHUB_WORKSPACE/llvm-16.0.0-ubuntu.tar.gz  # Confirm file move
+
+      # Upload LLVM-16 Ubuntu build artifact
       - name: Upload LLVM Build Artifact (Ubuntu)
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: llvm-16.0.0-ubuntu
-          path: $GITHUB_WORKSPACE/SVF/llvm-16.0.0-ubuntu.tar.gz
+          path: "**/llvm-16.0.0-ubuntu.tar.gz"  # Use glob to find the file anywhere
           if-no-files-found: error
           retention-days: 3
-
 
         # set up Python
       - name: Set up Python
