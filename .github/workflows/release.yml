@@ -50,21 +50,39 @@ jobs:
       # calculate version
       - name: Set VERSION
         run: |
-          VERSION="0.0.0-dev$(date +'%Y%m%d%H%M%S')"
+          VERSION="0.0.0-dev$(expr ${{ github.run_id }} % 1000000)"  
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      # clone & build SVF
       - name: Clone and Build SVF
         run: |
           git clone https://github.com/SVF-tools/SVF.git
           cd SVF
-          bash build.sh shared
+          bash build.sh shared  # 这里会编译 LLVM
           echo "SVF_DIR=$GITHUB_WORKSPACE/SVF" >> $GITHUB_ENV
           echo "LLVM_DIR=$GITHUB_WORKSPACE/SVF/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$GITHUB_WORKSPACE/SVF/z3.obj" >> $GITHUB_ENV
           ls -lh $GITHUB_WORKSPACE/SVF/Release-build/lib
 
-      # set up Python
+      # Only Package LLVM(RTTI) on ubuntu
+      - name: Package LLVM Build (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          cd $GITHUB_WORKSPACE/SVF
+          tar -czvf llvm-16.0.0-ubuntu.tar.gz llvm-16.0.0.obj
+          ls -lh llvm-16.0.0-ubuntu.tar.gz  
+
+      # Upload LLVM-16 Ubuntu (for test)
+      - name: Upload LLVM Build Artifact (Ubuntu)
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: llvm-16.0.0-ubuntu
+          path: $GITHUB_WORKSPACE/SVF/llvm-16.0.0-ubuntu.tar.gz
+          if-no-files-found: error
+          retention-days: 3
+
+
+        # set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -80,7 +98,7 @@ jobs:
         run: |
           git clone https://github.com/SVF-tools/SVF-Python.git
           cd SVF-Python
-          rm -rf build dist pysvf.egg-info  # 清理旧构建
+          rm -rf build dist pysvf.egg-info  
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
           SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel
@@ -90,7 +108,7 @@ jobs:
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
         with:
-          name: python-wheels
+          name: python-wheels-${{ env.VERSION }}-${{ runner.os }}
           path: SVF-Python/dist/
 
   publish:
@@ -107,7 +125,7 @@ jobs:
       - name: Download built wheels
         uses: actions/download-artifact@v4
         with:
-          name: python-wheels
+          name: python-wheels-${{ env.VERSION }}-${{ runner.os }}
           path: dist/
 
       # upload to TestPyPI (not Pypi)
