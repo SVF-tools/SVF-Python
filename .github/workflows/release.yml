@@ -49,38 +49,21 @@ jobs:
 
       # calculate version
       - name: Set VERSION
+        id: set_version
         run: |
-          VERSION="0.0.0-dev$(expr ${{ github.run_id }} % 1000000)"  
+          VERSION="0.0.0-dev$(expr ${{ github.run_id }} % 1000000)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Clone and Build SVF
         run: |
           git clone https://github.com/SVF-tools/SVF.git
           cd SVF
-          bash build.sh shared  # 这里会编译 LLVM
+          bash build.sh shared  
           echo "SVF_DIR=$GITHUB_WORKSPACE/SVF" >> $GITHUB_ENV
           echo "LLVM_DIR=$GITHUB_WORKSPACE/SVF/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$GITHUB_WORKSPACE/SVF/z3.obj" >> $GITHUB_ENV
           ls -lh $GITHUB_WORKSPACE/SVF/Release-build/lib
-
-      # Only Package LLVM(RTTI) on ubuntu
-      - name: Package LLVM Build (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          cd $GITHUB_WORKSPACE/SVF
-          tar -czvf llvm-16.0.0-ubuntu.tar.gz llvm-16.0.0.obj
-          ls -lh llvm-16.0.0-ubuntu.tar.gz  
-
-      # Upload LLVM-16 Ubuntu (for test)
-      - name: Upload LLVM Build Artifact (Ubuntu)
-        if: runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: llvm-16.0.0-ubuntu
-          path: $GITHUB_WORKSPACE/SVF/llvm-16.0.0-ubuntu.tar.gz
-          if-no-files-found: error
-          retention-days: 3
-
 
         # set up Python
       - name: Set up Python
@@ -122,13 +105,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download built wheels
+      - name: Set VERSION from build job
+        run: |
+          echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
+
+      # download linux version
+      - name: Download Linux wheels
         uses: actions/download-artifact@v4
         with:
-          name: python-wheels-${{ env.VERSION }}-${{ runner.os }}
+          name: python-wheels-${{ env.VERSION }}-Linux
           path: dist/
 
-      # upload to TestPyPI (not Pypi)
+      # download mac version
+      - name: Download macOS wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: python-wheels-${{ env.VERSION }}-macOS
+          path: dist/
+
+      # double check files exist
+      - name: Verify wheel files
+        run: |
+          ls -lh dist/
+          if [ -z "$(ls -A dist/)" ]; then
+            echo "Error: No wheel files found in dist/!"
+            exit 1
+          fi
+
       - name: Publish to TestPyPI
         env:
           TWINE_USERNAME: __token__
