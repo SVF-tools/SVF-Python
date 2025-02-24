@@ -56,7 +56,11 @@ jobs:
       - name: Install svf-lib and set environment variables
         run: |
           npm install svf-lib
-          echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-osx" >> $GITHUB_ENV
+          fi
           echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
   
