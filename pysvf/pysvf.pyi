@@ -779,7 +779,7 @@ class SVFFunction(SVFLLVMValue):
     """Check if bb1 post dominates bb2"""
 
 
-class SVFIR(SVFLLVMValue):
+class SVFIR():
     def get_icfg(self) -> ICFG: ...
     """Get the ICFG of the SVFIR"""
 

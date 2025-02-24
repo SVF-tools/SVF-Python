@@ -55,15 +55,17 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Clone and Build SVF
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Specify the Node.js version you need
+      
+      - name: Install svf-lib
         run: |
-          git clone https://github.com/SVF-tools/SVF.git
-          cd SVF
-          bash build.sh shared  
-          echo "SVF_DIR=$GITHUB_WORKSPACE/SVF" >> $GITHUB_ENV
-          echo "LLVM_DIR=$GITHUB_WORKSPACE/SVF/llvm-16.0.0.obj" >> $GITHUB_ENV
-          echo "Z3_DIR=$GITHUB_WORKSPACE/SVF/z3.obj" >> $GITHUB_ENV
-          ls -lh $GITHUB_WORKSPACE/SVF/Release-build/lib
+          npm install svf-lib
+          echo "SVF_DIR=$(pwd)/node_modules/SVF" >> $GITHUB_ENV
+          echo "LLVM_DIR=$(pwd)/node_modules/llvm-16.0.0-obj" >> $GITHUB_ENV
+          echo "Z3_DIR=$(pwd)/node_modules/z3.obj" >> $GITHUB_ENV
 
         # set up Python
       - name: Set up Python
