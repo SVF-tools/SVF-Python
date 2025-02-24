@@ -58,6 +58,7 @@ jobs:
       - name: Install svf-lib and set environment variables
         run: |
           npm install svf-lib
+          ls $PWD/node_modules
           if [[ "$RUNNER_OS" == "Linux" ]]; then
             echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
