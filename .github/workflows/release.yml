@@ -151,4 +151,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
           pip install twine
-          twine upload --repository testpypi dist/*
+          twine upload --repository testpypi dist/* --verbose
