@@ -80,6 +80,9 @@ jobs:
       # clone & build SVF-Python
       - name: Clone and Build SVF-Python
         run: |
+          echo "SVFDIR:$SVF_DIR"
+          echo "LLVMDIR:$LLVM_DIR"
+          echo "Z3DIR:$Z3_DIR"
           git clone https://github.com/SVF-tools/SVF-Python.git
           cd SVF-Python
           rm -rf build dist pysvf.egg-info  
