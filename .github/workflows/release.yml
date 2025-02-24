@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -46,7 +48,7 @@ jobs:
         run: |
           VERSION="0.0.0-dev$(expr ${{ github.run_id }} % 1000000)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -56,7 +58,11 @@ jobs:
       - name: Install svf-lib and set environment variables
         run: |
           npm install svf-lib
-          echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-osx" >> $GITHUB_ENV
+          fi
           echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
   
@@ -85,14 +91,18 @@ jobs:
           rm -rf build dist pysvf.egg-info  
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
-          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name manylinux2014_x86_64
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name macosx-11.0-arm64
+          fi
           ls -lh dist/
-
+          
       # upload Python wheels
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
         with:
-          name: python-wheels-${{ env.VERSION }}-${{ runner.os }}
+          name: python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}
           path: SVF-Python/dist/
 
   publish:
@@ -109,6 +119,12 @@ jobs:
       - name: Set VERSION from build job
         run: |
           echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
+
+      # Debugging: Output the version and artifact name
+      - name: Debug version and artifact name
+        run: |
+          echo "VERSION=${{ env.VERSION }}"
+          echo "Artifact name: python-wheels-${{ env.VERSION }}-Linux"
 
       # download linux version
       - name: Download Linux wheels
@@ -139,4 +155,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
           pip install twine
-          twine upload --repository testpypi dist/*
+          twine upload --repository testpypi dist/* --verbose
