@@ -58,14 +58,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Specify the Node.js version you need
+          node-version: '16'
       
       - name: Install svf-lib
+        run: npm install svf-lib
+      
+      - name: Find directories
         run: |
-          npm install svf-lib
-          echo "SVF_DIR=$(pwd)/node_modules/SVF" >> $GITHUB_ENV
-          echo "LLVM_DIR=$(pwd)/node_modules/llvm-16.0.0-obj" >> $GITHUB_ENV
-          echo "Z3_DIR=$(pwd)/node_modules/z3.obj" >> $GITHUB_ENV
+          find ./node_modules -type d -name "SVF"
+          find ./node_modules -type d -name "llvm-16.0.0.obj"
+          find ./node_modules -type d -name "z3.obj"
+        shell: bash
 
         # set up Python
       - name: Set up Python
