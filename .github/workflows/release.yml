@@ -91,9 +91,13 @@ jobs:
           rm -rf build dist pysvf.egg-info  
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
-          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name manylinux2014_x86_64
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name macosx-11.0-arm64
+          fi
           ls -lh dist/
-
+          
       # upload Python wheels
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
