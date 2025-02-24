@@ -5,13 +5,6 @@ on:
     branches:
       - main  # only build on main branch
 
-env:
-  SVF_CTIR: 1
-  SVF_Z3: 1
-  SVF_DIR: $GITHUB_WORKSPACE/SVF
-  LLVM_DIR: $GITHUB_WORKSPACE/SVF/llvm-16.0.0.obj
-  Z3_DIR: $GITHUB_WORKSPACE/SVF/z3.obj
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -63,12 +56,18 @@ jobs:
       - name: Install svf-lib
         run: npm install svf-lib
       
-      - name: Find directories
+      - name: set SVF env
+        id: set env
         run: |
-          find ./node_modules -type d -name "SVF"
-          find ./node_modules -type d -name "llvm-16.0.0.obj"
-          find ./node_modules -type d -name "z3.obj"
-        shell: bash
+          echo "SVF_DIR=$PWD/node_modules/SVF" >> $GITHUB_ENV
+          echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
+          echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
+  
+      - name: Verify environment variables
+        run: |
+          echo "SVF_DIR=$SVF_DIR"
+          echo "LLVM_DIR=$LLVM_DIR"
+          echo "Z3_DIR=$Z3_DIR"
 
         # set up Python
       - name: Set up Python
