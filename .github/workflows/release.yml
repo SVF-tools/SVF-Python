@@ -5,6 +5,13 @@ on:
     branches:
       - main  # only build on main branch
 
+env:
+  SVF_CTIR: 1
+  SVF_Z3: 1
+  SVF_DIR: $GITHUB_WORKSPACE/node_modules/SVF
+  LLVM_DIR: $GITHUB_WORKSPACE/node_modules/llvm-16.0.0.obj
+  Z3_DIR: $GITHUB_WORKSPACE/node_modules/z3.obj
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -55,24 +62,10 @@ jobs:
         with:
           node-version: '16'
       
-      - name: Install svf-lib and set environment variables
+      - name: Install svf-lib 
         run: |
           npm install svf-lib
-          ls $PWD/node_modules
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-osx" >> $GITHUB_ENV
-          fi
-          echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
-          echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
   
-      - name: Verify environment variables
-        run: |
-          echo "SVF_DIR=$SVF_DIR"
-          echo "LLVM_DIR=$LLVM_DIR"
-          echo "Z3_DIR=$Z3_DIR"
-
         # set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
