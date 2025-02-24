@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -46,7 +48,7 @@ jobs:
         run: |
           VERSION="0.0.0-dev$(expr ${{ github.run_id }} % 1000000)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -96,7 +98,7 @@ jobs:
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
         with:
-          name: python-wheels-${{ env.VERSION }}-${{ runner.os }}
+          name: python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}
           path: SVF-Python/dist/
 
   publish:
