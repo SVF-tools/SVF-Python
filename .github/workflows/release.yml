@@ -114,6 +114,12 @@ jobs:
         run: |
           echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
 
+      # Debugging: Output the version and artifact name
+      - name: Debug version and artifact name
+        run: |
+          echo "VERSION=${{ env.VERSION }}"
+          echo "Artifact name: python-wheels-${{ env.VERSION }}-Linux"
+
       # download linux version
       - name: Download Linux wheels
         uses: actions/download-artifact@v4
