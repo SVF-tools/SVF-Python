@@ -53,13 +53,10 @@ jobs:
         with:
           node-version: '16'
       
-      - name: Install svf-lib
-        run: npm install svf-lib
-      
-      - name: set SVF env
-        id: set env
+      - name: Install svf-lib and set environment variables
         run: |
-          echo "SVF_DIR=$PWD/node_modules/SVF" >> $GITHUB_ENV
+          npm install svf-lib
+          echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
           echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
   
