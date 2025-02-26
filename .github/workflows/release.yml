@@ -132,6 +132,9 @@ jobs:
         run: |
           echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
 
+      - name: Extract release ID from VERSION
+        run: echo "RELEASE_ID=$(echo $VERSION | grep -oP '\d+$')" >> $GITHUB_ENV
+
       - name: Delete old release assets
         run: |
           RELEASE_ID=$(gh release view latest --json id -q .id)
@@ -160,11 +163,10 @@ jobs:
           for file in dist/*; do
             if [[ "$file" == *"${VERSION}"* ]]; then
               echo "Uploading: $file"
-              gh release upload ${{ needs.release.outputs.release_id }} "$file"
+              gh release upload "$RELEASE_ID" "$file"
             else
               echo "Skipping: $file (does not match VERSION)"
             fi
           done
         env:
-          VERSION: ${{ needs.build.outputs.version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
