@@ -10,6 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     outputs:
       version: ${{ steps.set_version.outputs.version }}
+      artifacts: ${{ join(steps.collect_artifacts.outputs.artifacts, ',') }}
     strategy:
       matrix:
         os: [ubuntu-24.04, macos-14, ubuntu-24.04-arm]
@@ -106,8 +107,13 @@ jobs:
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
         with:
-          name: python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}
+          #version -os - py version
+          name: python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-py${{ matrix.python-version }}
           path: SVF-Python/dist/
+
+      - name: Collect artifact names
+        id: collect_artifacts
+        run: echo "artifacts=python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-py${{ matrix.python-version }}" >> $GITHUB_OUTPUT
 
   publish:
     needs: build
@@ -124,25 +130,16 @@ jobs:
         run: |
           echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
 
-      # Debugging: Output the version and artifact name
-      - name: Debug version and artifact name
+      - name: Download all wheel artifacts
         run: |
-          echo "VERSION=${{ env.VERSION }}"
-          echo "Artifact name: python-wheels-${{ env.VERSION }}-Linux"
-
-      # download linux version
-      - name: Download Linux wheels
-        uses: actions/download-artifact@v4
-        with:
-          name: python-wheels-${{ env.VERSION }}-Linux
-          path: dist/
-
-      # download mac version
-      - name: Download macOS wheels
-        uses: actions/download-artifact@v4
-        with:
-          name: python-wheels-${{ env.VERSION }}-macOS
-          path: dist/
+          artifacts="${{ needs.build.outputs.artifacts }}"
+          IFS=',' read -ra artifact_list <<< "$artifacts"
+          for artifact in "${artifact_list[@]}"; do
+            echo "Downloading artifact: $artifact"
+            gh run download --name "$artifact" --dir dist/
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # double check files exist
       - name: Verify wheel files
