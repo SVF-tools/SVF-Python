@@ -120,7 +120,7 @@ jobs:
 
   publish:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
 
@@ -156,16 +156,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Move wheel files to dist/
+      - name: Move and Filter Wheel Files
         run: |
           find dist/ -mindepth 2 -type f -name "*.whl" -exec mv {} dist/ \;
           find dist/ -mindepth 1 -type d -exec rm -rf {} +
+          ls -lh dist/
+          echo "Filtering files matching version: $VERSION"
+          find dist/ -type f -name "*.whl" ! -name "*$VERSION*.whl" -delete
 
       - name: Verify wheel files
         run: |
           ls -lh dist/
           if [ -z "$(ls -A dist/)" ]; then
-            echo "Error: No wheel files found in dist/!"
+            echo "Error: No matching wheel files found in dist/!"
             exit 1
           fi
 
