@@ -59,7 +59,11 @@ jobs:
         run: |
           npm install svf-lib
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
+            if [[ "$(uname -m)" == "x86_64" ]]; then
+              echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-x86_64" >> $GITHUB_ENV
+            elif [[ "$(uname -m)" == "aarch64" ]]; then
+                echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-aarch64" >> $GITHUB_ENV
+            fi
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-osx" >> $GITHUB_ENV
           fi
