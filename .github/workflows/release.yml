@@ -122,7 +122,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write  # 允许创建 Release
 
     steps:
       - name: Checkout repository
@@ -136,14 +136,17 @@ jobs:
         run: |
           mkdir -p dist/
 
-          # get cur run id
+          # get run id
           RUN_ID=$(gh run list --workflow svf-python-build.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
 
           # download all artifacts from the latest run
           gh run download $RUN_ID --dir dist/
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Move wheel files to dist/
+        run: |
+          find dist/ -type f -name "*.whl" -exec mv {} dist/ \;
 
       - name: Verify wheel files
         run: |
@@ -163,3 +166,4 @@ jobs:
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
