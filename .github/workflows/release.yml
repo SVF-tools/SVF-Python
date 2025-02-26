@@ -150,11 +150,20 @@ jobs:
 
       - name: Download all wheel artifacts
         run: |
-          mkdir -p dist/
-          RUN_ID=$(gh run list --workflow svf-python-build.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
-          gh run download $RUN_ID --dir dist/
+          artifacts="${{ needs.build.outputs.artifacts }}"
+          IFS=',' read -ra artifact_list <<< "$artifacts"
+          for artifact in "${artifact_list[@]}"; do
+            if [[ "$artifact" == *"${VERSION}"* ]]; then  
+              echo "Downloading artifact: $artifact"
+              gh run download --name "$artifact" --dir dist/
+            else
+              echo "Skipping artifact: $artifact"
+            fi
+          done
         env:
+          VERSION: ${{ needs.build.outputs.version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Move wheel files to dist/
         run: |
