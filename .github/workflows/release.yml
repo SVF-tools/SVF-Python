@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, macos-14, ubuntu-24.04-arm]
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.10"]
 
     steps:
       - name: Checkout repository
@@ -148,41 +148,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download all wheel artifacts
+      - name: Download all artifacts
         run: |
-          artifacts="${{ needs.build.outputs.artifacts }}"
-          IFS=',' read -ra artifact_list <<< "$artifacts"
-          for artifact in "${artifact_list[@]}"; do
-            if [[ "$artifact" == *"${VERSION}"* ]]; then  
-              echo "Downloading artifact: $artifact"
-              gh run download --name "$artifact" --dir dist/
+          mkdir -p dist/
+          gh run download --dir dist/
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload only matching VERSION artifacts
+        run: |
+          for file in dist/*; do
+            if [[ "$file" == *"${VERSION}"* ]]; then
+              echo "Uploading: $file"
+              gh release upload ${{ needs.release.outputs.release_id }} "$file"
             else
-              echo "Skipping artifact: $artifact"
+              echo "Skipping: $file (does not match VERSION)"
             fi
           done
         env:
           VERSION: ${{ needs.build.outputs.version }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-      - name: Move wheel files to dist/
-        run: |
-          find dist/ -type f -name "*.whl" -exec mv {} dist/ \;
-
-      - name: Verify wheel files
-        run: |
-          ls -lh dist/
-          if [ -z "$(ls -A dist/)" ]; then
-            echo "Error: No wheel files found in dist/!"
-            exit 1
-          fi
-
-      - name: Create GitHub Release (latest)
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: latest
-          prerelease: true
-          files: dist/*
-          fail_on_unmatched_files: false
-        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
