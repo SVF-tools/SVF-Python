@@ -120,7 +120,8 @@ jobs:
 
       - name: Collect artifact names
         id: collect_artifacts
-        run: echo "artifacts=python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}" >> $GITHUB_OUTPUT
+        run: echo "artifacts=${{ steps.collect_artifacts.outputs.artifacts }},python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}" >> $GITHUB_OUTPUT
+
 
   publish:
     needs: build
