@@ -120,7 +120,15 @@ jobs:
 
       - name: Collect artifact names
         id: collect_artifacts
-        run: echo "artifacts=${{ steps.collect_artifacts.outputs.artifacts }},python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}" >> $GITHUB_OUTPUT
+        run: |
+          old_value="${{ steps.collect_artifacts.outputs.artifacts }}"
+          new_artifact="python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}"
+
+          if [ -n "$old_value" ]; then
+            echo "artifacts=$old_value,$new_artifact" >> $GITHUB_OUTPUT
+          else
+            echo "artifacts=$new_artifact" >> $GITHUB_OUTPUT
+          fi
 
 
   publish:
@@ -142,14 +150,16 @@ jobs:
         run: |
           artifacts="${{ needs.build.outputs.artifacts }}"
           IFS=',' read -ra artifact_list <<< "$artifacts"
+
           for artifact in "${artifact_list[@]}"; do
-            echo "Downloading artifact: $artifact"
-            gh run download --name "$artifact" --dir dist/
+            if [ -n "$artifact" ]; then
+              echo "Downloading artifact: $artifact"
+              gh run download --name "$artifact" --dir dist/
+            fi
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # double check files exist
       - name: Verify wheel files
         run: |
           ls -lh dist/
