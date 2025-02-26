@@ -120,9 +120,9 @@ jobs:
 
   publish:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
-      contents: write  # 允许创建 Release
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -132,14 +132,22 @@ jobs:
         run: |
           echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
 
+      - name: Delete old release assets
+        run: |
+          RELEASE_ID=$(gh release view latest --json id -q .id)
+          if [ -n "$RELEASE_ID" ]; then
+            echo "Deleting old assets from Release ID: $RELEASE_ID"
+            gh release delete-asset latest --yes
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Download all wheel artifacts
         run: |
           mkdir -p dist/
 
-          # get run id
           RUN_ID=$(gh run list --workflow svf-python-build.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
 
-          # download all artifacts from the latest run
           gh run download $RUN_ID --dir dist/
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -160,10 +168,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          release_name: "Development Build - latest"
           prerelease: true
           files: dist/*
-          overwrite: true
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
