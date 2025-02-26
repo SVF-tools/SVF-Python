@@ -19,8 +19,8 @@ jobs:
       version: ${{ steps.set_version.outputs.version }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ["3.10"]
+        os: [ubuntu-24.04, macos-14, ubuntu-24.04-arm]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - name: Checkout repository
@@ -65,6 +65,15 @@ jobs:
       - name: Install svf-lib 
         run: |
           npm install svf-lib
+          
+          echo "GIT_WORKSPACE:$GITHUB_WORKSPACE"
+          echo "SVF_DIR:$SVF_DIR"
+          echo "LLVM_DIR:$LLVM_DIR"
+          echo "Z3_DIR:$Z3_DIR"
+          # check if they exist
+          ls -lh $SVF_DIR
+          ls -lh $LLVM_DIR
+          ls -lh $Z3_DIR
   
         # set up Python
       - name: Set up Python
