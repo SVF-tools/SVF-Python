@@ -5,13 +5,6 @@ on:
     branches:
       - main  # only build on main branch
 
-env:
-  SVF_CTIR: 1
-  SVF_Z3: 1
-  SVF_DIR: $GITHUB_WORKSPACE/node_modules/SVF
-  LLVM_DIR: $GITHUB_WORKSPACE/node_modules/llvm-16.0.0.obj
-  Z3_DIR: $GITHUB_WORKSPACE/node_modules/z3.obj
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -61,20 +54,24 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-      
-      - name: Install svf-lib 
+
+      - name: Install svf-lib and set environment variables
         run: |
           npm install svf-lib
-          
-          echo "GIT_WORKSPACE:$GITHUB_WORKSPACE"
-          echo "SVF_DIR:$SVF_DIR"
-          echo "LLVM_DIR:$LLVM_DIR"
-          echo "Z3_DIR:$Z3_DIR"
-          # check if they exist
-          ls -lh $SVF_DIR
-          ls -lh $LLVM_DIR
-          ls -lh $Z3_DIR
-  
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux" >> $GITHUB_ENV
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-osx" >> $GITHUB_ENV
+          fi
+          echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
+          echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
+
+      - name: Verify environment variables
+        run: |
+          echo "SVF_DIR=$SVF_DIR"
+          echo "LLVM_DIR=$LLVM_DIR"
+          echo "Z3_DIR=$Z3_DIR"
+
         # set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -89,9 +86,6 @@ jobs:
       # clone & build SVF-Python
       - name: Clone and Build SVF-Python
         run: |
-          echo "SVFDIR:$SVF_DIR"
-          echo "LLVMDIR:$LLVM_DIR"
-          echo "Z3DIR:$Z3_DIR"
           git clone https://github.com/SVF-tools/SVF-Python.git
           cd SVF-Python
           rm -rf build dist pysvf.egg-info  
@@ -103,7 +97,7 @@ jobs:
             SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name macosx-11.0-arm64
           fi
           ls -lh dist/
-          
+
       # upload Python wheels
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
