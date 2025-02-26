@@ -12,8 +12,8 @@ jobs:
       version: ${{ steps.set_version.outputs.version }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ["3.10"]
+        os: [ubuntu-24.04, macos-14, ubuntu-24.04-arm]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - name: Checkout repository
@@ -54,7 +54,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-      
+
       - name: Install svf-lib and set environment variables
         run: |
           npm install svf-lib
@@ -65,7 +65,7 @@ jobs:
           fi
           echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
-  
+
       - name: Verify environment variables
         run: |
           echo "SVF_DIR=$SVF_DIR"
@@ -97,7 +97,7 @@ jobs:
             SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name macosx-11.0-arm64
           fi
           ls -lh dist/
-          
+
       # upload Python wheels
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
