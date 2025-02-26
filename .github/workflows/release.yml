@@ -88,6 +88,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install build wheel twine pybind11
 
+      - name: Get system architecture
+        id: get_arch
+        run: |
+          ARCH=$(uname -m)
+          echo "ARCH=$ARCH" >> $GITHUB_ENV
+          echo "arch=$ARCH" >> $GITHUB_OUTPUT
+
       # clone & build SVF-Python
       - name: Clone and Build SVF-Python
         run: |
@@ -97,7 +104,7 @@ jobs:
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name manylinux2014_x86_64
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name manylinux2014_${{ steps.get_arch.outputs.arch }}
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name macosx-11.0-arm64
           fi
@@ -107,13 +114,13 @@ jobs:
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
         with:
-          #version -os - py version
-          name: python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-py${{ matrix.python-version }}
+          #version -os - arch(x86_64 or aarch64) - python-version
+          name: python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}
           path: SVF-Python/dist/
 
       - name: Collect artifact names
         id: collect_artifacts
-        run: echo "artifacts=python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-py${{ matrix.python-version }}" >> $GITHUB_OUTPUT
+        run: echo "artifacts=python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}" >> $GITHUB_OUTPUT
 
   publish:
     needs: build
