@@ -158,29 +158,50 @@ jobs:
 
       - name: Move and Filter Wheel Files
         run: |
+          # Move all .whl files from subdirectories to dist/
           find dist/ -mindepth 2 -type f -name "*.whl" -exec mv {} dist/ \;
           find dist/ -mindepth 1 -type d -exec rm -rf {} +
           
-          echo "Current VERSION: $VERSION"
+          # Debug: Show all files in dist/
+          echo "Current VERSION: '$VERSION'"
           ls -lh dist/
           
+          # Ensure VERSION is not empty
           if [ -z "$VERSION" ]; then
             echo "Error: VERSION variable is empty!"
             exit 1
           fi
-
-          # Ensure files matching $VERSION exist
+          
+          # Sanitize VERSION (remove spaces, newlines)
+          VERSION=$(echo "$VERSION" | tr -d '[:space:]')
+          echo "Sanitized VERSION: '$VERSION'"
+          
+          # Find matching .whl files
           MATCHING_FILES=$(find dist/ -type f -name "*$VERSION*.whl")
+          
+          # Print matched files
+          echo "Matching files:"
+          echo "$MATCHING_FILES"
+          
+          # If no matching files, print error and exit
           if [ -z "$MATCHING_FILES" ]; then
             echo "Error: No files match VERSION ($VERSION)!"
+            ls -lh dist/
             exit 1
           fi
-
-          # Remove non-matching files
-          find dist/ -type f -name "*.whl" ! -name "*$VERSION*.whl" -delete
           
+          # Remove non-matching files safely
+          for file in dist/*.whl; do
+            case "$file" in
+              *"$VERSION"*) echo "Keeping: $file" ;;
+              *) echo "Deleting: $file" && rm "$file" ;;
+            esac
+          done
+          
+          # Show final files
           echo "Final files after filtering:"
           ls -lh dist/
+
 
       - name: Verify wheel files
         run: |
