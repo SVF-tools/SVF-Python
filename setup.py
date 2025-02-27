@@ -96,7 +96,8 @@ class CMakeBuild(build_ext):
         #e.g. patchelf --add-needed '$ORIGIN/SVF/z3.obj/bin/libz3.so' pysvf.cpython-310-aarch64-linux-gnu.so (pay attention to python vers)
         if platform.system() == "Linux":
             subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/z3.obj/bin/libz3.so", so_target], check=True)
-            subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/llvm-16.0.0.obj/lib/libLLVM.so", so_target], check=True)
+            if os.path.exists(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.so")):
+                subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/llvm-16.0.0.obj/lib/libLLVM.so", so_target], check=True)
         
 
 

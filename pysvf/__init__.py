@@ -37,3 +37,5 @@ def run_tool(tool_name, args):
         print(f"[ERROR] Execution failed: {e}")
         print(f"[ERROR] STDERR:\n{e.stderr}")
         sys.exit(e.returncode)
+
+from .pysvf import *
