@@ -168,39 +168,43 @@ jobs:
           
           # Ensure VERSION is not empty
           if [ -z "$VERSION" ]; then
-            echo "Error: VERSION variable is empty!"
+            echo "❌ Error: VERSION variable is empty!"
             exit 1
           fi
           
-          # Sanitize VERSION (remove spaces, newlines)
-          VERSION=$(echo "$VERSION" | tr -d '[:space:]')
-          echo "Sanitized VERSION: '$VERSION'"
+          # Extract only the dev number (e.g., 0.0.0.dev560065 → 560065)
+          DEV_NUMBER=$(echo "$VERSION" | grep -oP '(?<=dev)\d+')
+          echo "Extracted DEV NUMBER: '$DEV_NUMBER'"
           
-          # Find matching .whl files
-          MATCHING_FILES=$(find dist/ -type f -name "*$VERSION*.whl")
+          # Debug: Show available .whl versions
+          echo "Available .whl files:"
+          ls dist/
+          
+          # Find matching .whl files using only the dev number
+          MATCHING_FILES=$(find dist/ -type f -name "*.whl" | grep "$DEV_NUMBER")
           
           # Print matched files
-          echo "Matching files:"
+          echo "Found matching files:"
           echo "$MATCHING_FILES"
           
           # If no matching files, print error and exit
           if [ -z "$MATCHING_FILES" ]; then
-            echo "Error: No files match VERSION ($VERSION)!"
-            ls -lh dist/
+            echo "❌ Error: No files match DEV NUMBER ($DEV_NUMBER)!"
             exit 1
           fi
           
           # Remove non-matching files safely
           for file in dist/*.whl; do
             case "$file" in
-              *"$VERSION"*) echo "Keeping: $file" ;;
-              *) echo "Deleting: $file" && rm "$file" ;;
+              *"$DEV_NUMBER"*) echo "✅ Keeping: $file" ;;
+              *) echo "🗑️ Deleting: $file" && rm "$file" ;;
             esac
           done
           
           # Show final files
           echo "Final files after filtering:"
           ls -lh dist/
+
 
 
       - name: Verify wheel files
