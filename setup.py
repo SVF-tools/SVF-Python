@@ -85,10 +85,20 @@ class CMakeBuild(build_ext):
         so_target = os.path.join(self.build_lib, "pysvf", "pysvf" + so_suffix)
         os.makedirs(os.path.dirname(so_target), exist_ok=True)
         shutil.copyfile(built_so[0], so_target)
+
+
         # if platform is darwin, we need to change the libz3.dylib path in pysvf.{$SO_SUFFIX}
         # run  install_name_tool -change libz3.dylib @rpath/libz3.dylib pysvf.{$SO_SUFFIX}  to so_target
         if platform.system() == "Darwin":
             subprocess.run(["install_name_tool", "-change", "libz3.dylib", "@rpath/libz3.dylib", so_target], check=True)
+
+        # if the platform is linux, we need to change the rpath of libz3.so and libLLVM.so
+        #e.g. patchelf --add-needed '$ORIGIN/SVF/z3.obj/bin/libz3.so' pysvf.cpython-310-aarch64-linux-gnu.so (pay attention to python vers)
+        if platform.system() == "Linux":
+            subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/z3.obj/bin/libz3.so", so_target], check=True)
+            subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/llvm-16.0.0.obj/lib/libLLVM.so", so_target], check=True)
+        
+
 
         # if pysvf/SVF/Release-build exist, remove
         if os.path.exists(os.path.join(self.build_lib, "pysvf", "SVF")):
@@ -116,6 +126,13 @@ class CMakeBuild(build_ext):
             shutil.copytree(os.path.join(os.environ["Z3_DIR"], "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "z3.obj", "bin"),dirs_exist_ok=True)
         if os.path.exists(os.path.join(os.environ["Z3_DIR"], "lib")):
             shutil.copytree(os.path.join(os.environ["Z3_DIR"], "lib"), os.path.join(self.build_lib, "pysvf", "SVF", "z3.obj", "lib"),dirs_exist_ok=True)
+
+        # if exist  $LLVM_DIR/lib/libLLVM.so or libLLVM.dylib
+        os.makedirs(os.path.join(self.build_lib, "pysvf", "SVF", "llvm-16.0.0.obj", "lib"), exist_ok=True)
+        if os.path.exists(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.so")):
+            shutil.copyfile(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.so"), os.path.join(self.build_lib, "pysvf", "SVF", "llvm-16.0.0.obj", "lib", "libLLVM.so"))
+        if os.path.exists(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.dylib")):
+            shutil.copyfile(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.dylib"), os.path.join(self.build_lib, "pysvf", "SVF", "llvm-16.0.0.obj", "lib", "libLLVM.dylib"))
 
 
 setup(
