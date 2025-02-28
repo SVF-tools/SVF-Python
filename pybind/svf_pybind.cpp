@@ -13,7 +13,7 @@ using namespace SVF;
 
 class PySVF {
 public:
-    static SVFIR* analyze(const std::string& bitcodePath) {
+    static SVFIR* get_pag(const std::string& bitcodePath) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
 
         SVFModule* svfModule = LLVMModuleSet::buildSVFModule(moduleNameVec);
@@ -594,5 +594,5 @@ PYBIND11_MODULE(pysvf, m) {
     bind_svf_var(m);
     bind_svf_type(m);
     bind_svf_value(m);
-    m.def("analyze", &PySVF::analyze, py::return_value_policy::reference, "Analyze LLVM bitcode and return SVFIR");
+    m.def("get_pag", &PySVF::get_pag, py::return_value_policy::reference, "Analyze LLVM bitcode and return SVFIR");
 }

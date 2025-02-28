@@ -1,7 +1,7 @@
 
-SVF_DIR=""
-LLVM_DIR=""
-Z3_DIR=""
+SVF_DIR="$SVF_DIR"
+LLVM_DIR="$LLVM_DIR"
+Z3_DIR="$Z3_DIR"
 
 # if SVF_IR and LLVM_DIR and Z3_DIR not define
 if [ -z "$SVF_DIR" ] || [ -z "$LLVM_DIR" ] || [ -z "$Z3_DIR" ]; then
