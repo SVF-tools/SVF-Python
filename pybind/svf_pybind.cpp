@@ -24,6 +24,11 @@ public:
         pag->getICFG()->updateCallGraph(callgraph);
         return pag;  // Now we directly return SVFIR(pag)
     }
+
+    static void release_pag() {
+        SVF::LLVMModuleSet::releaseLLVMModuleSet();
+        SVF::SVFIR::releaseSVFIR();
+    }
 };
 
 void bind_icfg_node(py::module& m) {
@@ -595,4 +600,5 @@ PYBIND11_MODULE(pysvf, m) {
     bind_svf_type(m);
     bind_svf_value(m);
     m.def("get_pag", &PySVF::get_pag, py::return_value_policy::reference, "Analyze LLVM bitcode and return SVFIR");
+    m.def("release_pag", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
 }

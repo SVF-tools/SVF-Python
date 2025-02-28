@@ -40,6 +40,7 @@ def run_tool(tool_name, args):
 
 from .pysvf import (
     get_pag,
+    release_pag,
     ICFGNode,
     IntraICFGNode,
     InterICFGNode,
