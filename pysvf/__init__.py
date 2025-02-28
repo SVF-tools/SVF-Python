@@ -39,7 +39,7 @@ def run_tool(tool_name, args):
         sys.exit(e.returncode)
 
 from .pysvf import (
-    analyze,
+    get_pag,
     ICFGNode,
     IntraICFGNode,
     InterICFGNode,

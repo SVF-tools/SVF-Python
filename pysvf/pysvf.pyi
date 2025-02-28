@@ -791,5 +791,5 @@ class SVFIR():
 
 
 
-def analyze(bitcodePath: str) -> SVFIR: ...
+def get_pag(bitcodePath: str) -> SVFIR: ...
 """Analyze the bitcode file and return the SVFIR"""
