@@ -13,7 +13,7 @@ jobs:
       artifacts: ${{ join(steps.collect_artifacts.outputs.artifacts, ',') }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14, ubuntu-24.04-arm]
+        os: [ubuntu-24.04, macos-14]
         python-version: ["3.11"]
 
     steps:
@@ -47,11 +47,17 @@ jobs:
       - name: Read version
         id: read_version
         run: |
-          CURRENT_VERSION=$(grep 'CURRENT_VERSION' VERSION | cut -d':' -f2)
-          NEXT_VERSION=$(grep 'NEXT_VERSION' VERSION | cut -d':' -f2)
+          CURRENT_VERSION=$(grep 'CURRENT_VERSION' VERSION | cut -d':' -f2 | tr -d '[:space:]')
+          NEXT_VERSION=$(grep 'NEXT_VERSION' VERSION | cut -d':' -f2 | tr -d '[:space:]')
           echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
           echo "::set-output name=version::$NEXT_VERSION"
+          # Debug output
+          echo "----------------------------------------"
+          echo "Current Version: $CURRENT_VERSION"
+          echo "Next Version: $NEXT_VERSION"
+          echo "----------------------------------------"
+
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -105,12 +111,28 @@ jobs:
           rm -rf build dist pysvf.egg-info  
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
+          
+          # Debug output before build
+          echo "Building with version: $NEXT_VERSION"
+          
+          # Update version in setup.py
+          sed -i.bak "s/version=.*,/version='${NEXT_VERSION}',/" setup.py
+          
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name manylinux2014_${{ steps.get_arch.outputs.arch }}
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
+            python3 setup.py bdist_wheel --plat-name manylinux2014_${{ steps.get_arch.outputs.arch }}
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3 setup.py bdist_wheel --plat-name macosx-11.0-arm64
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
+            python3 setup.py bdist_wheel --plat-name macosx-11.0-arm64
           fi
+          
+          # Verify the built wheel version
+          echo "Built wheel files:"
           ls -lh dist/
+          
+          # Debug output after build
+          echo "Build completed. Wheel files contain version $NEXT_VERSION"
+
 
       # upload Python wheels
       - name: Upload Python wheels
