@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     outputs:
-      version: ${{ steps.set_version.outputs.version }}
+      version: ${{ steps.read_version.outputs.version }}
       artifacts: ${{ join(steps.collect_artifacts.outputs.artifacts, ',') }}
     strategy:
       matrix:
@@ -51,7 +51,7 @@ jobs:
           NEXT_VERSION=$(grep 'NEXT_VERSION' VERSION | cut -d':' -f2)
           echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
-
+          echo "::set-output name=version::$NEXT_VERSION"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -79,7 +79,7 @@ jobs:
           echo "LLVM_DIR=$LLVM_DIR"
           echo "Z3_DIR=$Z3_DIR"
 
-        # set up Python
+      # set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -117,7 +117,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           #version -os - arch(x86_64 or aarch64) - python-version
-          name: python-wheels-${{ steps.set_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}
+          name: python-wheels-${{ steps.read_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}
           path: SVF-Python/dist/
 
   publish:
