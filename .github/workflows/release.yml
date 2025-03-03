@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-24.04, macos-14]
-        python-version: ["3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - name: Checkout repository
@@ -133,104 +133,48 @@ jobs:
           # Debug output after build
           echo "Build completed. Wheel files contain version $NEXT_VERSION"
 
+      # Upload to TestPyPI
+      - name: Publish to TestPyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: |
+          cd SVF-Python
+          pip install twine
+          twine upload --repository testpypi dist/* --verbose
 
-      # upload Python wheels
+      # upload Python wheels (for GitHub release)
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
         with:
-          #version -os - arch(x86_64 or aarch64) - python-version
           name: python-wheels-${{ steps.read_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}
           path: SVF-Python/dist/
 
-  publish:
-    needs: build
+  update-version:
+    needs: build  # This ensures all builds are complete
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set VERSION from build job
+      - name: Update VERSION file
         run: |
-          echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
-
-      - name: Delete old release assets
-        run: |
-          RELEASE_ID=$(gh release view latest --json id -q .id)
-          if [ -n "$RELEASE_ID" ]; then
-            echo "Deleting old assets from Release ID: $RELEASE_ID"
-            ASSETS=$(gh release view latest --json assets -q '.assets[].name')
-            for ASSET in $ASSETS; do
-              echo "Deleting asset: $ASSET"
-              gh release delete-asset latest "$ASSET" --yes
-            done
-          else
-            echo "No existing 'latest' release found, skipping asset deletion."
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download all wheel artifacts
-        run: |
-          mkdir -p dist/
-          RUN_ID=$(gh run list --workflow svf-python-build.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
-          gh run download $RUN_ID --dir dist/
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Move and Filter Wheel Files
-        run: |
-          # Move all .whl files from subdirectories to dist/
-          find dist/ -mindepth 2 -type f -name "*.whl" -exec mv {} dist/ \;
-          find dist/ -mindepth 1 -type d -exec rm -rf {} +
-
-          # Debug: Show all files in dist/
-          echo "Current NEXT_VERSION: '$NEXT_VERSION'"
-          ls -lh dist/
-
-          # Ensure NEXT_VERSION is not empty
-          if [ -z "$NEXT_VERSION" ]; then
-            echo "❌ Error: NEXT_VERSION variable is empty!"
-            exit 1
-          fi
-
-          # Debug: Show available .whl versions
-          echo "Available .whl files:"
-          ls dist/
-          # Find matching .whl files using the NEXT_VERSION
-          MATCHING_FILES=$(find dist/ -type f -name "*$NEXT_VERSION*.whl")
-
-          # Print matched files
-          echo "Found matching files:"
-          echo "$MATCHING_FILES"
-
-          # If no matching files, print error and exit
-          if [ -z "$MATCHING_FILES" ]; then
-            echo "❌ Error: No files match NEXT_VERSION ($NEXT_VERSION)!"
-            exit 1
-          fi
-
-          # Remove non-matching files safely
-          for file in dist/*.whl; do
-            case "$file" in
-              *"$NEXT_VERSION"*) echo "✅ Keeping: $file" ;;
-              *) echo "🗑️ Deleting: $file" && rm "$file" ;;
-            esac
-          done
-
-          # Show final files
-          echo "Final files after filtering:"
-          ls -lh dist/
-
-
-      - name: Create GitHub Release (latest)
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: latest
-          prerelease: true
-          files: dist/*.whl
-          fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Read current versions
+          CURRENT_VERSION=$(grep 'CURRENT_VERSION' VERSION | cut -d':' -f2 | tr -d '[:space:]')
+          NEXT_VERSION=$(grep 'NEXT_VERSION' VERSION | cut -d':' -f2 | tr -d '[:space:]')
+          
+          # Calculate new next version (increment last digit)
+          NEW_NEXT_VERSION=$(echo $NEXT_VERSION | awk -F. '{$NF=$NF+1}1' OFS=.)
+          
+          # Update VERSION file
+          echo "CURRENT_VERSION:$NEXT_VERSION" > VERSION
+          echo "NEXT_VERSION:$NEW_NEXT_VERSION" >> VERSION
+          
+          # Commit and push changes
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "Update VERSION file after successful release $NEXT_VERSION"
+          git push
