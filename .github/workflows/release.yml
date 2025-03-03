@@ -1,6 +1,12 @@
 name: svf-python-build
 
 on:
+  workflow_dispatch:
+    inputs:
+      triggered_by:
+        description: 'Repository that triggered this workflow'
+        required: false
+        default: 'manual'
   push:
     branches:
       - main  # only build on main branch
