@@ -45,8 +45,8 @@ public:
     static SVFIR* get_pag(const std::string& bitcodePath) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
 
-        SVFModule* svfModule = LLVMModuleSet::buildSVFModule(moduleNameVec);
-        SVFIRBuilder builder(svfModule);
+        LLVMModuleSet::buildSVFModule(moduleNameVec);
+        SVFIRBuilder builder;
         SVFIR* pag = builder.build();  // TODO: maybe we need to split build() into more steps
         CallGraph* callgraph = AndersenWaveDiff::createAndersenWaveDiff(pag)->getCallGraph();
         builder.updateCallGraph(callgraph);
@@ -589,34 +589,6 @@ void bind_svf_type(py::module& m) {
 
 }
 
-void bind_svf_value(py::module& m) {
-
-    py::class_<SVFLLVMValue, std::shared_ptr<SVFLLVMValue>>(m, "SVFLLVMValue")
-            .def("get_kind", &SVFLLVMValue::getKind)
-            .def("get_type", &SVFLLVMValue::getType, py::return_value_policy::reference)
-            .def("get_name", &SVFLLVMValue::getName)
-            .def("set_name", &SVFLLVMValue::setName)
-            .def("get_source_loc", &SVFLLVMValue::getSourceLoc)
-            .def("set_source_loc", &SVFLLVMValue::setSourceLoc)
-            .def("to_string", &SVFLLVMValue::toString);
-
-    py::class_<SVFFunction, SVFLLVMValue, std::shared_ptr<SVFFunction>>(m, "SVFFunction")
-            .def("is_declaration", &SVFFunction::isDeclaration)
-            .def("is_intrinsic", &SVFFunction::isIntrinsic)
-            .def("has_address_taken", &SVFFunction::hasAddressTaken)
-            .def("get_function_type", &SVFFunction::getFunctionType, py::return_value_policy::reference)
-            .def("get_return_type", &SVFFunction::getReturnType, py::return_value_policy::reference)
-            .def("arg_size", &SVFFunction::arg_size)
-            .def("get_arg", &SVFFunction::getArg, py::return_value_policy::reference)
-            .def("get_entry_block", &SVFFunction::getEntryBlock, py::return_value_policy::reference)
-            .def("get_exit_bb", &SVFFunction::getExitBB, py::return_value_policy::reference)
-            .def("has_loop_info", &SVFFunction::hasLoopInfo)
-            .def("get_loop_info", &SVFFunction::getLoopInfo, py::return_value_policy::reference)
-            .def("dominate", &SVFFunction::dominate)
-            .def("post_dominate", &SVFFunction::postDominate);
-    /// TODO: add more subclass
-}
-
 
 
 PYBIND11_MODULE(pysvf, m) {
@@ -627,7 +599,6 @@ PYBIND11_MODULE(pysvf, m) {
     bind_svf_stmt(m);
     bind_svf_var(m);
     bind_svf_type(m);
-    bind_svf_value(m);
     m.def("get_pag", &PySVF::get_pag, py::return_value_policy::reference, "Analyze LLVM bitcode and return SVFIR");
     m.def("release_pag", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
 }

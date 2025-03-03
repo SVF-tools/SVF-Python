@@ -44,12 +44,14 @@ jobs:
               python3 python3-pip python3-venv patchelf
 
       # calculate version
-      - name: Set VERSION
-        id: set_version
+      - name: Read version
+        id: read_version
         run: |
-          VERSION="0.0.0-dev$(expr ${{ github.run_id }} % 1000000)"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          CURRENT_VERSION=$(grep 'CURRENT_VERSION' VERSION | cut -d':' -f2)
+          NEXT_VERSION=$(grep 'NEXT_VERSION' VERSION | cut -d':' -f2)
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -161,59 +163,45 @@ jobs:
           # Move all .whl files from subdirectories to dist/
           find dist/ -mindepth 2 -type f -name "*.whl" -exec mv {} dist/ \;
           find dist/ -mindepth 1 -type d -exec rm -rf {} +
-          
+
           # Debug: Show all files in dist/
-          echo "Current VERSION: '$VERSION'"
+          echo "Current NEXT_VERSION: '$NEXT_VERSION'"
           ls -lh dist/
-          
-          # Ensure VERSION is not empty
-          if [ -z "$VERSION" ]; then
-            echo "❌ Error: VERSION variable is empty!"
+
+          # Ensure NEXT_VERSION is not empty
+          if [ -z "$NEXT_VERSION" ]; then
+            echo "❌ Error: NEXT_VERSION variable is empty!"
             exit 1
           fi
-          
-          # Extract only the dev number (e.g., 0.0.0.dev560065 → 560065)
-          DEV_NUMBER=$(echo "$VERSION" | grep -oP '(?<=dev)\d+')
-          echo "Extracted DEV NUMBER: '$DEV_NUMBER'"
-          
+
           # Debug: Show available .whl versions
           echo "Available .whl files:"
           ls dist/
-          
-          # Find matching .whl files using only the dev number
-          MATCHING_FILES=$(find dist/ -type f -name "*.whl" | grep "$DEV_NUMBER")
-          
+          # Find matching .whl files using the NEXT_VERSION
+          MATCHING_FILES=$(find dist/ -type f -name "*$NEXT_VERSION*.whl")
+
           # Print matched files
           echo "Found matching files:"
           echo "$MATCHING_FILES"
-          
+
           # If no matching files, print error and exit
           if [ -z "$MATCHING_FILES" ]; then
-            echo "❌ Error: No files match DEV NUMBER ($DEV_NUMBER)!"
+            echo "❌ Error: No files match NEXT_VERSION ($NEXT_VERSION)!"
             exit 1
           fi
-          
+
           # Remove non-matching files safely
           for file in dist/*.whl; do
             case "$file" in
-              *"$DEV_NUMBER"*) echo "✅ Keeping: $file" ;;
+              *"$NEXT_VERSION"*) echo "✅ Keeping: $file" ;;
               *) echo "🗑️ Deleting: $file" && rm "$file" ;;
             esac
           done
-          
+
           # Show final files
           echo "Final files after filtering:"
           ls -lh dist/
 
-
-
-      - name: Verify wheel files
-        run: |
-          ls -lh dist/
-          if [ -z "$(ls -A dist/)" ]; then
-            echo "Error: No matching wheel files found in dist/!"
-            exit 1
-          fi
 
       - name: Create GitHub Release (latest)
         uses: softprops/action-gh-release@v1
