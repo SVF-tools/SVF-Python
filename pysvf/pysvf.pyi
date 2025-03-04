@@ -1,6 +1,4 @@
-
-
-from typing import List
+from typing import List, Set, Optional
 
 class ICFGNode:
     def to_string(self) -> str: ...
@@ -26,7 +24,6 @@ class ICFGNode:
 
     def as_call(self) -> "CallICFGNode": ...
     """Downcast to CallICFGNode"""
-
 
     def as_ret(self) -> "RetICFGNode": ...
     """Downcast to RetICFGNode"""
@@ -120,8 +117,6 @@ class ICFGEdge:
     def as_ret_cfg_edge(self) -> "RetCFGEdge": ...
     """Downcast to RetCFGEdge"""
 
-
-
 class IntraCFGEdge(ICFGEdge):
     def get_condition(self) -> "SVFStmt": ...
     """Get the condition of the edge"""
@@ -142,7 +137,6 @@ class RetCFGEdge(ICFGEdge):
 
     def get_ret_pe(self) -> "RetPE": ...
     """Get the return PE"""
-
 
 class SVFStmt:
     def to_string(self) -> str: ...
@@ -216,7 +210,6 @@ class SVFStmt:
 
     def as_ret_pe(self) -> "RetPE": ...
     """Downcast the SVF statement to a return PE"""
-
 
     def as_gep_stmt(self) -> "GepStmt":
         """Downcast the SVF statement to a GEP statement"""
@@ -428,7 +421,6 @@ class BranchStmt(SVFStmt):
     def get_branch_inst(self) -> "BranchInst": ...
     """Get the branch instruction"""
 
-
 class ICFG:
     def get_nodes(self) -> List[ICFGNode]: ...
     """Get the nodes of the ICFG"""
@@ -619,8 +611,6 @@ class ConstFPObjVar(ConstDataObjVar):
     def get_fp_value(self) -> float: ...
     """Get the floating point value"""
 
-
-
 class ConstIntObjVar(ConstDataObjVar):
     def get_sext_value(self) -> int: ...
     """Get the sign extended value"""
@@ -635,7 +625,6 @@ class RetValPN(ValVar):
 class VarArgValPN(ValVar):
     def get_function(self) -> "SVFFunction": ...
     """Get the function that the SVF variable belongs to"""
-
 
 class SVFType:
     def get_kind(self) -> int: ...
@@ -662,8 +651,6 @@ class SVFType:
 class SVFPointerType(SVFType):
     def print(self) -> None: ...
     """Print the SVF pointer type"""
-
-
 
 class SVFIntegerType(SVFType):
     def print(self) -> None: ...
@@ -714,7 +701,6 @@ class SVFOtherType(SVFType):
 
     def set_repr(self, repr: str) -> None: ...
     """Set the representation of the SVF other type"""
-
 
 class SVFLLVMValue:
     def get_kind(self) -> int: ...
@@ -778,10 +764,12 @@ class SVFFunction(SVFLLVMValue):
     def post_dominate(self, bb1: "SVFBasicBlock", bb2: "SVFBasicBlock") -> bool: ...
     """Check if bb1 post dominates bb2"""
 
-
 class SVFIR():
     def get_icfg(self) -> ICFG: ...
     """Get the ICFG of the SVFIR"""
+
+    def get_call_graph(self) -> CallGraph: ...
+    """Get the call graph of the SVFIR"""
 
     def get_call_sites(self) -> List[CallICFGNode]: ...
     """Get the call sites of the SVFIR"""
@@ -789,7 +777,80 @@ class SVFIR():
     def get_pag_node_num(self) -> int: ...
     """Get the number of PAG nodes"""
 
-
-
 def get_pag(bitcodePath: str) -> SVFIR: ...
 """Analyze the bitcode file and return the SVFIR"""
+
+class CallGraphNode:
+    def to_string(self) -> str: ...
+    """Get the string representation of the CallGraph node"""
+
+    def get_id(self) -> int: ...
+    """Get the ID of the CallGraph node"""
+
+    def get_function(self) -> "SVFFunction": ...
+    """Get the function of this call node"""
+
+    def get_name(self) -> str: ...
+    """Get the name of the function"""
+
+    def is_reachable_from_prog_entry(self) -> bool: ...
+    """Check if this function can be reached from main"""
+
+    def get_out_edges(self) -> List["CallGraphEdge"]: ...
+    """Get the out edges of the CallGraph node"""
+
+    def get_in_edges(self) -> List["CallGraphEdge"]: ...
+    """Get the in edges of the CallGraph node"""
+
+class CallGraphEdge:
+    def to_string(self) -> str: ...
+    """Get the string representation of the CallGraph edge"""
+
+    def get_call_site_id(self) -> int: ...
+    """Get the call site ID"""
+
+    def is_direct_call_edge(self) -> bool: ...
+    """Check if this is a direct call edge"""
+
+    def is_indirect_call_edge(self) -> bool: ...
+    """Check if this is an indirect call edge"""
+
+    def get_direct_calls(self) -> Set["CallICFGNode"]: ...
+    """Get the direct calls"""
+
+    def get_indirect_calls(self) -> Set["CallICFGNode"]: ...
+    """Get the indirect calls"""
+
+    def get_src_node(self) -> CallGraphNode: ...
+    """Get the source node"""
+
+    def get_dst_node(self) -> CallGraphNode: ...
+    """Get the destination node"""
+
+    def get_src_id(self) -> int: ...
+    """Get the source node ID"""
+
+    def get_dst_id(self) -> int: ...
+    """Get the destination node ID"""
+
+class CallGraph:
+    def get_nodes(self) -> List[CallGraphNode]: ...
+    """Get all nodes in the call graph"""
+
+    def get_call_graph_node(self, function: "SVFFunction") -> CallGraphNode: ...
+    """Get a call graph node by function"""
+    
+    def get_call_graph_node_by_name(self, name: str) -> Optional[CallGraphNode]: ...
+    """Get a call graph node by function name"""
+
+    def get_call_graph_node_by_id(self, id: int) -> CallGraphNode: ...
+    """Get a call graph node by ID"""
+
+    def is_reachable_between_functions(self, srcFn: "SVFFunction", dstFn: "SVFFunction") -> bool: ...
+    """Check if there's a path between two functions"""
+
+    def dump(self, filename: str) -> None: ...
+    """Dump the call graph to a DOT file"""
+
+    def view(self) -> None: ...
+    """View the call graph"""

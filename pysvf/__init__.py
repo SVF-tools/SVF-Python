@@ -103,6 +103,7 @@ from .pysvf import (
     SVFStructType,
     SVFArrayType,
     SVFOtherType,
-    SVFLLVMValue,
-    SVFFunction
+    CallGraphNode,
+    CallGraphEdge,
+    CallGraph
 )

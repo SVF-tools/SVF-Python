@@ -378,6 +378,7 @@ void bind_icfg_graph(py::module& m) {
 void bind_svf(py::module& m) {
     py::class_<SVFIR>(m, "SVFIR")
             .def("get_icfg", [](SVFIR* pag) { return pag->getICFG(); }, py::return_value_policy::reference)
+            .def("get_call_graph", [](SVFIR* pag) { return pag->getCallGraph(); }, py::return_value_policy::reference)
             .def("get_call_sites", [](SVFIR *pag) {
                 // move  pag->getCallSiteSet() to vector
                 std::vector<const CallICFGNode*> callSites;
@@ -589,7 +590,85 @@ void bind_svf_type(py::module& m) {
 
 }
 
+// Add these bindings for CallGraph classes
 
+void bind_callgraph_node(py::module& m) {
+    py::class_<CallGraphNode>(m, "CallGraphNode", "Represents a node in the Call Graph")
+        .def("to_string", [](const CallGraphNode& node) {
+            std::ostringstream oss;
+            oss << node.toString();
+            return oss.str();
+        }, "Get the string representation of the CallGraph node")
+        .def("get_id", &CallGraphNode::getId, "Get the ID of the CallGraph node")
+        .def("get_function", &CallGraphNode::getFunction, py::return_value_policy::reference, "Get the function of this call node")
+        .def("get_name", &CallGraphNode::getName, "Get the name of the function")
+        .def("is_reachable_from_prog_entry", &CallGraphNode::isReachableFromProgEntry, "Check if this function can be reached from main")
+        // Get out edges and in edges
+        .def("get_out_edges", [](const CallGraphNode *node) {
+            std::vector<CallGraphEdge *> edges;
+            for (auto it = node->OutEdgeBegin(); it != node->OutEdgeEnd(); ++it) {
+                edges.push_back(*it);
+            }
+            return edges;
+        }, py::return_value_policy::reference, "Get the out edges of the CallGraph node")
+        .def("get_in_edges", [](const CallGraphNode *node) {
+            std::vector<CallGraphEdge *> edges;
+            for (auto it = node->InEdgeBegin(); it != node->InEdgeEnd(); ++it) {
+                edges.push_back(*it);
+            }
+            return edges;
+        }, py::return_value_policy::reference, "Get the in edges of the CallGraph node");
+}
+
+void bind_callgraph_edge(py::module& m) {
+    py::class_<CallGraphEdge>(m, "CallGraphEdge", "Represents an edge in the Call Graph")
+        .def("to_string", [](const CallGraphEdge& edge) {
+            std::ostringstream oss;
+            oss << edge.toString();
+            return oss.str();
+        }, "Get the string representation of the CallGraph edge")
+        .def("get_call_site_id", &CallGraphEdge::getCallSiteID, "Get the call site ID")
+        .def("is_direct_call_edge", &CallGraphEdge::isDirectCallEdge, "Check if this is a direct call edge")
+        .def("is_indirect_call_edge", &CallGraphEdge::isIndirectCallEdge, "Check if this is an indirect call edge")
+        .def("get_direct_calls", [](const CallGraphEdge& edge) {
+            return edge.getDirectCalls();
+        }, py::return_value_policy::reference, "Get the direct calls")
+        .def("get_indirect_calls", [](const CallGraphEdge& edge) {
+            return edge.getIndirectCalls();
+        }, py::return_value_policy::reference, "Get the indirect calls")
+        // Get source and destination nodes
+        .def("get_src_node", &CallGraphEdge::getSrcNode, py::return_value_policy::reference, "Get the source node")
+        .def("get_dst_node", &CallGraphEdge::getDstNode, py::return_value_policy::reference, "Get the destination node")
+        .def("get_src_id", &CallGraphEdge::getSrcID, "Get the source node ID")
+        .def("get_dst_id", &CallGraphEdge::getDstID, "Get the destination node ID");
+}
+
+void bind_callgraph(py::module& m) {
+    py::class_<CallGraph>(m, "CallGraph", "Call Graph used internally for various pointer analyses")
+        .def("get_nodes", [](const CallGraph& cg) {
+            std::vector<CallGraphNode*> nodes;
+            for (auto& node : cg) {
+                nodes.push_back(node.second);
+            }
+            return nodes;
+        }, py::return_value_policy::reference, "Get all nodes in the call graph")
+        .def("get_call_graph_node", [](CallGraph& cg, const FunObjVar* fun) {
+            return cg.getCallGraphNode(fun);
+        }, py::return_value_policy::reference, "Get a call graph node by function")
+        .def("get_call_graph_node_by_name", [](CallGraph& cg, const std::string& name) {
+            return cg.getCallGraphNode(name);
+        }, py::return_value_policy::reference, "Get a call graph node by function name")
+        .def("get_call_graph_node_by_id", [](CallGraph& cg, NodeID id) -> CallGraphNode* {
+            CallGraphNode* node = cg.getGNode(id);
+            if (!node) {
+                throw std::runtime_error("CallGraphNode with given ID not found.");
+            }
+            return node;
+        }, py::arg("id"), py::return_value_policy::reference, "Get a call graph node by ID")
+        .def("is_reachable_between_functions", &CallGraph::isReachableBetweenFunctions, "Check if there's a path between two functions")
+        .def("dump", &CallGraph::dump, "Dump the call graph to a DOT file")
+        .def("view", &CallGraph::view, "View the call graph");
+}
 
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
@@ -601,4 +680,7 @@ PYBIND11_MODULE(pysvf, m) {
     bind_svf_type(m);
     m.def("get_pag", &PySVF::get_pag, py::return_value_policy::reference, "Analyze LLVM bitcode and return SVFIR");
     m.def("release_pag", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
+    bind_callgraph_node(m);
+    bind_callgraph_edge(m);
+    bind_callgraph(m);
 }
