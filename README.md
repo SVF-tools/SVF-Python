@@ -14,7 +14,7 @@ This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF).
 
 ### Pre-requisite
 
-- Python 3.8 - 3.13
+- Python 3.8 - 3.11
 
 ### Install
 
@@ -30,21 +30,6 @@ Then you can use the pysvf in your python3 code.
 git clone https://github.com/SVF-tools/SVF-Python.git
 cd SVF-Python/test_cases
 python3 test.py
-```
-
-If you are using pysvf for the first time after installation. you will see the following output. If you are using it again, you won't see this output.
-```angular2html
-SVF/Z3/LLVM dependencies not found.
-Running dependency installation process...
-Starting SVF/Z3/LLVM dependency installation...
-[1/5] Checking and removing existing SVF directory...
-[2/5] Cloning SVF repository...
-....[Dependency configuration output]
-[4/5] Building SVF...
-[5/5] Finalizing installation...
-SVF_DIR: ~/.pyenv/versions/3.11.5/lib/python3.11/site-packages/pysvf/SVF
-LLVM_DIR: ~/.pyenv/versions/3.11.5/lib/python3.11/site-packages/pysvf/SVF/llvm-16.0.0.obj
-Z3_DIR: ~/.pyenv/versions/3.11.5/lib/python3.11/site-packages/pysvf/SVF/z3.obj
 ```
 
 Then you should see a bunch of output from ICFGNode from the bitcodes.

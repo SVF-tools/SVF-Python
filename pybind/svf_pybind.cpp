@@ -57,6 +57,7 @@ public:
     static void release_pag() {
         SVF::LLVMModuleSet::releaseLLVMModuleSet();
         SVF::SVFIR::releaseSVFIR();
+        NodeIDAllocator::unset();
     }
 };
 
@@ -387,6 +388,13 @@ void bind_svf(py::module& m) {
                 }
                 return callSites;
                 }, py::return_value_policy::reference)
+            .def("get_base_object", [&](SVFIR* pag, NodeID id) {
+                const BaseObjVar* baseObj = pag->getBaseObject(id);
+                if (!baseObj) {
+                    throw std::runtime_error("Base object with given ID not found.");
+                }
+                return baseObj;
+            }, py::arg("id"), py::return_value_policy::reference)
             .def("get_pag_node_num", &SVFIR::getPAGNodeNum);
 }
 
@@ -402,9 +410,163 @@ void bind_svf_var(py::module &m) {
             .def("get_function", &SVF::SVFVar::getFunction, py::return_value_policy::reference)
             .def("ptr_in_uncalled_function", &SVF::SVFVar::ptrInUncalledFunction)
             .def("is_const_data_or_agg_data", &SVF::SVFVar::isConstDataOrAggData)
+            // Type checking methods (like isa<>)
+            .def("is_val_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::ValVar>(node);
+            })
+            .def("is_obj_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::ObjVar>(node);
+            })
+            .def("is_gep_val_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::GepValVar>(node);
+            })
+            .def("is_gep_obj_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::GepObjVar>(node);
+            })
+            .def("is_fun_obj_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::FunObjVar>(node);
+            })
+            .def("is_fun_val_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::FunValVar>(node);
+            })
+            .def("is_arg_val_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::ArgValVar>(node);
+            })
+            .def("is_ret_val_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::RetValPN>(node);
+            })
+            .def("is_dummy_val_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::DummyValVar>(node);
+            })
+            .def("is_dummy_obj_var", [](const SVF::SVFVar* node) {
+                return SVFUtil::isa<SVF::DummyObjVar>(node);
+            })
+
+            // Type casting methods (like dynamic_cast<>)
+            .def("as_val_var", [](SVF::SVFVar* node) -> SVF::ValVar* {
+                return SVFUtil::dyn_cast<SVF::ValVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_obj_var", [](SVF::SVFVar* node) -> SVF::ObjVar* {
+                return SVFUtil::dyn_cast<SVF::ObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_gep_val_var", [](SVF::SVFVar* node) -> SVF::GepValVar* {
+                return SVFUtil::dyn_cast<SVF::GepValVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_gep_obj_var", [](SVF::SVFVar* node) -> SVF::GepObjVar* {
+                return SVFUtil::dyn_cast<SVF::GepObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_fun_obj_var", [](SVF::SVFVar* node) -> SVF::FunObjVar* {
+                return SVFUtil::dyn_cast<SVF::FunObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_fun_val_var", [](SVF::SVFVar* node) -> SVF::FunValVar* {
+                return SVFUtil::dyn_cast<SVF::FunValVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_arg_val_var", [](SVF::SVFVar* node) -> SVF::ArgValVar* {
+                return SVFUtil::dyn_cast<SVF::ArgValVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_ret_val_var", [](SVF::SVFVar* node) -> SVF::RetValPN* {
+                return SVFUtil::dyn_cast<SVF::RetValPN>(node);
+            }, py::return_value_policy::reference)
+            .def("as_dummy_val_var", [](SVF::SVFVar* node) -> SVF::DummyValVar* {
+                return SVFUtil::dyn_cast<SVF::DummyValVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_dummy_obj_var", [](SVF::SVFVar* node) -> SVF::DummyObjVar* {
+                return SVFUtil::dyn_cast<SVF::DummyObjVar>(node);
+            }, py::return_value_policy::reference)
             .def("to_string", &SVF::SVFVar::toString);
 
     py::class_<SVF::ValVar, SVF::SVFVar>(m, "ValVar")
+            // For ValVar conversion functions
+            .def("is_fun_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::FunValVar>(node);
+            })
+            .def("as_fun_val_var", [](SVF::ValVar* node) -> SVF::FunValVar* {
+                return SVFUtil::dyn_cast<SVF::FunValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_arg_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::ArgValVar>(node);
+            })
+            .def("as_arg_val_var", [](SVF::ValVar* node) -> SVF::ArgValVar* {
+                return SVFUtil::dyn_cast<SVF::ArgValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_global_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::GlobalValVar>(node);
+            })
+            .def("as_global_val_var", [](SVF::ValVar* node) -> SVF::GlobalValVar* {
+                return SVFUtil::dyn_cast<SVF::GlobalValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_const_agg_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstAggValVar>(node);
+            })
+            .def("as_const_agg_val_var", [](SVF::ValVar* node) -> SVF::ConstAggValVar* {
+                return SVFUtil::dyn_cast<SVF::ConstAggValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_const_data_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstDataValVar>(node);
+            })
+            .def("as_const_data_val_var", [](SVF::ValVar* node) -> SVF::ConstDataValVar* {
+                return SVFUtil::dyn_cast<SVF::ConstDataValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_const_fp_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstFPValVar>(node);
+            })
+            .def("as_const_fp_val_var", [](SVF::ValVar* node) -> SVF::ConstFPValVar* {
+                return SVFUtil::dyn_cast<SVF::ConstFPValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_const_int_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstIntValVar>(node);
+            })
+            .def("as_const_int_val_var", [](SVF::ValVar* node) -> SVF::ConstIntValVar* {
+                return SVFUtil::dyn_cast<SVF::ConstIntValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_const_null_ptr_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstNullPtrValVar>(node);
+            })
+            .def("as_const_null_ptr_val_var", [](SVF::ValVar* node) -> SVF::ConstNullPtrValVar* {
+                return SVFUtil::dyn_cast<SVF::ConstNullPtrValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_black_hole_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::BlackHoleValVar>(node);
+            })
+            .def("as_black_hole_val_var", [](SVF::ValVar* node) -> SVF::BlackHoleValVar* {
+                return SVFUtil::dyn_cast<SVF::BlackHoleValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_gep_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::GepValVar>(node);
+            })
+            .def("as_gep_val_var", [](SVF::ValVar* node) -> SVF::GepValVar* {
+                return SVFUtil::dyn_cast<SVF::GepValVar>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_ret_val_pn", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::RetValPN>(node);
+            })
+            .def("as_ret_val_pn", [](SVF::ValVar* node) -> SVF::RetValPN* {
+                return SVFUtil::dyn_cast<SVF::RetValPN>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_var_arg_val_pn", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::VarArgValPN>(node);
+            })
+            .def("as_var_arg_val_pn", [](SVF::ValVar* node) -> SVF::VarArgValPN* {
+                return SVFUtil::dyn_cast<SVF::VarArgValPN>(node);
+            }, py::return_value_policy::reference)
+
+            .def("is_dummy_val_var", [](SVF::ValVar* node) -> bool {
+                return SVFUtil::isa<SVF::DummyValVar>(node);
+            })
+            .def("as_dummy_val_var", [](SVF::ValVar* node) -> SVF::DummyValVar* {
+                return SVFUtil::dyn_cast<SVF::DummyValVar>(node);
+            }, py::return_value_policy::reference)
             .def("get_icfg_node", &SVF::ValVar::getICFGNode, py::return_value_policy::reference)
             .def("get_value_name", &SVF::ValVar::getValueName)
             .def("get_function", &SVF::ValVar::getFunction, py::return_value_policy::reference)
@@ -412,6 +574,85 @@ void bind_svf_var(py::module &m) {
 
     py::class_<SVF::ObjVar, SVF::SVFVar>(m, "ObjVar")
             .def("get_value_name", &SVF::ObjVar::getValueName)
+                    // For ObjVar conversion functions
+            .def("is_obj_var", [](SVF::SVFVar* node) -> bool {
+                return SVFUtil::isa<SVF::ObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_obj_var", [](SVF::SVFVar* node) -> SVF::ObjVar* {
+                return SVFUtil::dyn_cast<SVF::ObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_base_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::BaseObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_base_obj_var", [](SVF::ObjVar* node) -> SVF::BaseObjVar* {
+                return SVFUtil::dyn_cast<SVF::BaseObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_gep_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::GepObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_gep_obj_var", [](SVF::ObjVar* node) -> SVF::GepObjVar* {
+                return SVFUtil::dyn_cast<SVF::GepObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_fun_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::FunObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_fun_obj_var", [](SVF::ObjVar* node) -> SVF::FunObjVar* {
+                return SVFUtil::dyn_cast<SVF::FunObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_global_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::GlobalObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_global_obj_var", [](SVF::ObjVar* node) -> SVF::GlobalObjVar* {
+                return SVFUtil::dyn_cast<SVF::GlobalObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_heap_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::HeapObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_heap_obj_var", [](SVF::ObjVar* node) -> SVF::HeapObjVar* {
+                return SVFUtil::dyn_cast<SVF::HeapObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_stack_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::StackObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_stack_obj_var", [](SVF::ObjVar* node) -> SVF::StackObjVar* {
+                return SVFUtil::dyn_cast<SVF::StackObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_agg_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstAggObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_agg_obj_var", [](SVF::ObjVar* node) -> SVF::ConstAggObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstAggObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_data_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstDataObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_data_obj_var", [](SVF::ObjVar* node) -> SVF::ConstDataObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstDataObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_fp_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstFPObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_fp_obj_var", [](SVF::ObjVar* node) -> SVF::ConstFPObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstFPObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_int_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstIntObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_int_obj_var", [](SVF::ObjVar* node) -> SVF::ConstIntObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstIntObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_null_ptr_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstNullPtrObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_null_ptr_obj_var", [](SVF::ObjVar* node) -> SVF::ConstNullPtrObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstNullPtrObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_dummy_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::DummyObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_dummy_obj_var", [](SVF::ObjVar* node) -> SVF::DummyObjVar* {
+                return SVFUtil::dyn_cast<SVF::DummyObjVar>(node);
+            }, py::return_value_policy::reference)
             .def("to_string", &SVF::ObjVar::toString);
 
     py::class_<SVF::ArgValVar, SVF::ValVar>(m, "ArgValVar")
@@ -419,6 +660,22 @@ void bind_svf_var(py::module &m) {
             .def("get_parent", &SVF::ArgValVar::getParent, py::return_value_policy::reference)
             .def("get_arg_no", &SVF::ArgValVar::getArgNo)
             .def("is_pointer", &SVF::ArgValVar::isPointer)
+            // For ArgValVar conversion functions
+            .def("is_arg_val_var", [](SVF::SVFVar* node) -> bool {
+                return SVFUtil::isa<SVF::ArgValVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_arg_val_var", [](SVF::ValVar* node) -> SVF::ArgValVar* {
+                return SVFUtil::dyn_cast<SVF::ArgValVar>(node);
+            }, py::return_value_policy::reference)
+            .def("get_arg_no", [](SVF::ArgValVar* node) -> u32_t {
+                return node->getArgNo();
+            }, py::return_value_policy::reference)
+            .def("get_parent", [](SVF::ArgValVar* node) -> const SVF::FunObjVar* {
+                return node->getParent();
+            }, py::return_value_policy::reference)
+            .def("is_arg_of_uncalled_function", [](SVF::ArgValVar* node) -> bool {
+                return node->isArgOfUncalledFunction();
+            }, py::return_value_policy::reference)
             .def("to_string", &SVF::ArgValVar::toString);
 
     py::class_<SVF::GepValVar, SVF::ValVar>(m, "GepValVar")
@@ -434,7 +691,108 @@ void bind_svf_var(py::module &m) {
     //// BaseObjVar
     py::class_<SVF::BaseObjVar, SVF::ObjVar>(m, "BaseObjVar")
             .def("get_type", &SVF::BaseObjVar::getType, py::return_value_policy::reference)
-            .def("get_byte_size_of_obj", &SVF::BaseObjVar::getByteSizeOfObj);
+            .def("get_byte_size_of_obj", &SVF::BaseObjVar::getByteSizeOfObj)
+            .def("get_icfg_node", &SVF::BaseObjVar::getICFGNode, py::return_value_policy::reference)
+            .def("get_value_name", &SVF::BaseObjVar::getValueName)
+            .def("to_string", &SVF::BaseObjVar::toString)
+            .def("get_id", &SVF::BaseObjVar::getId)
+            .def("get_type", &SVF::BaseObjVar::getType, py::return_value_policy::reference)
+            .def("get_num_of_elements", &SVF::BaseObjVar::getNumOfElements)
+            .def("set_num_of_elements", &SVF::BaseObjVar::setNumOfElements)
+            .def("get_max_field_offset_limit", &SVF::BaseObjVar::getMaxFieldOffsetLimit)
+            .def("is_field_insensitive", &SVF::BaseObjVar::isFieldInsensitive)
+            .def("set_field_insensitive", &SVF::BaseObjVar::setFieldInsensitive)
+            .def("set_field_sensitive", &SVF::BaseObjVar::setFieldSensitive)
+            .def("is_black_hole_obj", &SVF::BaseObjVar::isBlackHoleObj)
+            .def("get_byte_size_of_obj", &SVF::BaseObjVar::getByteSizeOfObj)
+            .def("is_constant_byte_size", &SVF::BaseObjVar::isConstantByteSize)
+            .def("is_function", &SVF::BaseObjVar::isFunction)
+            .def("is_global_obj", &SVF::BaseObjVar::isGlobalObj)
+            .def("is_static_obj", &SVF::BaseObjVar::isStaticObj)
+            .def("is_stack", &SVF::BaseObjVar::isStack)
+            .def("is_heap", &SVF::BaseObjVar::isHeap)
+            .def("is_struct", &SVF::BaseObjVar::isStruct)
+            .def("is_array", &SVF::BaseObjVar::isArray)
+            .def("is_var_struct", &SVF::BaseObjVar::isVarStruct)
+            .def("is_var_array", &SVF::BaseObjVar::isVarArray)
+            .def("is_constant_struct", &SVF::BaseObjVar::isConstantStruct)
+            .def("is_constant_array", &SVF::BaseObjVar::isConstantArray)
+            .def("is_const_data_or_const_global", &SVF::BaseObjVar::isConstDataOrConstGlobal)
+            .def("is_const_data_or_agg_data", &SVF::BaseObjVar::isConstDataOrAggData)
+            .def("get_function", &SVF::BaseObjVar::getFunction, py::return_value_policy::reference)
+            .def("get_base_mem_obj", &SVF::BaseObjVar::getBaseMemObj, py::return_value_policy::reference)
+            .def("is_base_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::BaseObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_base_obj_var", [](SVF::ObjVar* node) -> SVF::BaseObjVar* {
+                return SVFUtil::dyn_cast<SVF::BaseObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_gep_obj_var", [](SVF::ObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::GepObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_gep_obj_var", [](SVF::ObjVar* node) -> SVF::GepObjVar* {
+                return SVFUtil::dyn_cast<SVF::GepObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_fun_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::FunObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_fun_obj_var", [](SVF::BaseObjVar* node) -> SVF::FunObjVar* {
+                return SVFUtil::dyn_cast<SVF::FunObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_global_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::GlobalObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_global_obj_var", [](SVF::BaseObjVar* node) -> SVF::GlobalObjVar* {
+                return SVFUtil::dyn_cast<SVF::GlobalObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_heap_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::HeapObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_heap_obj_var", [](SVF::BaseObjVar* node) -> SVF::HeapObjVar* {
+                return SVFUtil::dyn_cast<SVF::HeapObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_stack_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::StackObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_stack_obj_var", [](SVF::BaseObjVar* node) -> SVF::StackObjVar* {
+                return SVFUtil::dyn_cast<SVF::StackObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_agg_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstAggObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_agg_obj_var", [](SVF::BaseObjVar* node) -> SVF::ConstAggObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstAggObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_data_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstDataObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_data_obj_var", [](SVF::BaseObjVar* node) -> SVF::ConstDataObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstDataObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_fp_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstFPObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_fp_obj_var", [](SVF::BaseObjVar* node) -> SVF::ConstFPObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstFPObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_int_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstIntObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_int_obj_var", [](SVF::BaseObjVar* node) -> SVF::ConstIntObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstIntObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_const_null_ptr_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::ConstNullPtrObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_const_null_ptr_obj_var", [](SVF::BaseObjVar* node) -> SVF::ConstNullPtrObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstNullPtrObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("is_dummy_obj_var", [](SVF::BaseObjVar* node) -> bool {
+                return SVFUtil::isa<SVF::DummyObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("as_dummy_obj_var", [](SVF::BaseObjVar* node) -> SVF::DummyObjVar* {
+                return SVFUtil::dyn_cast<SVF::DummyObjVar>(node);
+            }, py::return_value_policy::reference);
 
     /// GepObjVar
     py::class_<SVF::GepObjVar, SVF::ObjVar>(m, "GepObjVar")
