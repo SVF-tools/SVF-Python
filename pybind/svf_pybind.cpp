@@ -42,8 +42,23 @@ using namespace SVF;
 
 class PySVF {
 public:
-    static SVFIR* get_pag(const std::string& bitcodePath) {
+    static SVFIR* get_pag(std::string bitcodePath) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
+
+        // Convert Python string options to C-style char** arguments
+        char** argv = new char*[5];
+        argv[0] = ((char*)"-model-arrays=true");
+        argv[1] = ((char*)"-pre-field-sensitive=false");
+        argv[2] = ((char*)"-model-consts=true");
+        argv[3] = ((char*)"-stat=false");
+        argv[4] = (bitcodePath.data());
+
+
+        moduleNameVec = OptionBase::parseOptions(5,
+                                                 argv,
+                                                 "PySVF",
+                                                 "[options] <input-bitcode...>");
+
 
         LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder;
@@ -64,6 +79,11 @@ public:
 void bind_icfg_node(py::module& m) {
     py::class_<ICFGNode>(m, "ICFGNode", "Represents a node in the Interprocedural Control Flow Graph (ICFG)")
             .def("to_string", [](const ICFGNode& node) {
+                std::ostringstream oss;
+                oss << node.toString() << "\n";
+                return oss.str();
+            })
+            .def("__str__", [](const ICFGNode& node) {
                 std::ostringstream oss;
                 oss << node.toString() << "\n";
                 return oss.str();
@@ -131,7 +151,8 @@ void bind_icfg_node(py::module& m) {
     // === RetICFGNode ===
     py::class_<RetICFGNode, InterICFGNode>(m, "RetICFGNode")
             .def("get_actual_ret", &RetICFGNode::getActualRet, py::return_value_policy::reference, "Get the actual return value")
-            .def("add_actual_ret", &RetICFGNode::addActualRet, "Add an actual return value");
+            .def("add_actual_ret", &RetICFGNode::addActualRet, "Add an actual return value")
+            .def("get_call_node", &RetICFGNode::getCallICFGNode, py::return_value_policy::reference, "Get the call node") ;
 
     // GlobalICFGNode
     py::class_<GlobalICFGNode, ICFGNode>(m, "GlobalICFGNode");
@@ -142,6 +163,7 @@ void bind_icfg_edge(py::module& m) {
 
     py::class_<ICFGEdge, std::shared_ptr<ICFGEdge>>(m, "ICFGEdge")
             .def("to_string", &ICFGEdge::toString, "Get the string representation of the ICFG edge")
+            .def("__str__", &ICFGEdge::toString, "Get the string representation of the ICFG edge")
             .def("is_cfg_edge", &ICFGEdge::isCFGEdge, "Check if the edge is a CFG edge")
             .def("is_call_cfg_edge", &ICFGEdge::isCallCFGEdge, "Check if the edge is a call CFG edge")
             .def("is_ret_cfg_edge", &ICFGEdge::isRetCFGEdge, "Check if the edge is a return CFG edge")
@@ -158,6 +180,10 @@ void bind_icfg_edge(py::module& m) {
                  py::return_value_policy::reference, "Downcast to RetCFGEdge");
 
     py::class_<IntraCFGEdge, ICFGEdge, std::shared_ptr<IntraCFGEdge>>(m, "IntraCFGEdge")
+            // constructor  (const ICFGNode*, const ICFGNode*), const cast and create a new instance
+            .def(py::init([](const ICFGNode *src, const ICFGNode *dst) {
+                return std::make_shared<IntraCFGEdge>(const_cast<ICFGNode*>(src), const_cast<ICFGNode*>(dst));
+            }))
             .def("get_condition", &IntraCFGEdge::getCondition, py::return_value_policy::reference,
                  "Get the condition of the edge")
             .def("get_successor_cond_value", &IntraCFGEdge::getSuccessorCondValue, py::return_value_policy::reference,
@@ -177,6 +203,11 @@ void bind_icfg_edge(py::module& m) {
 void bind_svf_stmt(py::module& m) {
     py::class_<SVFStmt>(m, "SVFStmt")
             .def("to_string", [](const SVFStmt& stmt) {
+                std::ostringstream oss;
+                oss << stmt.toString();
+                return oss.str();
+            }, "Get the string representation of the SVF statement")
+            .def("__str__", [](const SVFStmt& stmt) {
                 std::ostringstream oss;
                 oss << stmt.toString();
                 return oss.str();
@@ -300,14 +331,20 @@ void bind_svf_stmt(py::module& m) {
             .def("get_constant_struct_fld_idx", &GepStmt::getConstantStructFldIdx,
                       "Get the constant struct field index of the GEP statement")
             .def("get_offset_var_and_gep_type_pair_vec", &GepStmt::getOffsetVarAndGepTypePairVec, py::return_value_policy::reference,
-                 "Get the offset variable and GEP type pair vector of the GEP statement");
+                 "Get the offset variable and GEP type pair vector of the GEP statement")
+            .def("get_src_pointee_type", [](GepStmt& stmt) { return stmt.getAccessPath().gepSrcPointeeType(); },
+                 py::return_value_policy::reference);
 
     py::class_<PhiStmt, SVFStmt>(m, "PhiStmt")
             // TODO: may implement get_op_var and get_op_var_id
             .def("get_res_var", &PhiStmt::getRes, py::return_value_policy::reference)
             .def("get_res_id", &PhiStmt::getResID)
-            .def("get_op_icfg_node", [](PhiStmt& stmt, int idx) { return stmt.getOpVar(idx); },
-                 py::return_value_policy::reference);
+            .def("get_op_icfg_node", [](PhiStmt& stmt, int idx) { return stmt.getOpICFGNode(idx); },
+                 py::return_value_policy::reference)
+            .def("get_op_var", [](PhiStmt& stmt, int ID) { return stmt.getOpVar(ID); },
+                 py::return_value_policy::reference)
+                 //get varnums
+            .def("get_op_var_num", &PhiStmt::getOpVarNum, "Get the number of operands of the phi statement");
 
    // TODO: selectStmt
 
@@ -318,7 +355,8 @@ void bind_svf_stmt(py::module& m) {
             .def("get_res_id", &CmpStmt::getResID)
             // TODO: implement SVFVar
             .def("get_op_var", [](CmpStmt& stmt, int ID) { return stmt.getOpVar(ID); },
-                 py::return_value_policy::reference);
+                 py::return_value_policy::reference)
+            .def("get_op_var_num", &CmpStmt::getOpVarNum, "Get the number of operands of the phi statement");
 
     py::class_<BinaryOPStmt, SVFStmt>(m, "BinaryOPStmt")
             //TODO: enum of get_op
@@ -346,6 +384,7 @@ void bind_svf_stmt(py::module& m) {
 
 
 }
+
 
 // Bind class ICFG
 void bind_icfg_graph(py::module& m) {
@@ -388,14 +427,33 @@ void bind_svf(py::module& m) {
                 }
                 return callSites;
                 }, py::return_value_policy::reference)
-            .def("get_base_object", [&](SVFIR* pag, NodeID id) {
+            .def("get_base_object", [&](SVFIR* pag, NodeID id) { //TODO: get_base_obj
                 const BaseObjVar* baseObj = pag->getBaseObject(id);
                 if (!baseObj) {
                     throw std::runtime_error("Base object with given ID not found.");
                 }
                 return baseObj;
             }, py::arg("id"), py::return_value_policy::reference)
-            .def("get_pag_node_num", &SVFIR::getPAGNodeNum);
+            .def("get_pag_node_num", &SVFIR::getPAGNodeNum)
+            .def("get_gnode", [](SVFIR* pag, NodeID id) {
+                const SVF::PAGNode* node = pag->getGNode(id);
+                if (!node) {
+                    throw std::runtime_error("PAGNode with given ID not found.");
+                }
+                return node;
+            }, py::arg("id"), py::return_value_policy::reference)
+            .def("get_gep_obj_var", [](SVFIR* pag, NodeID id, const APOffset& offset) {
+                NodeID gepObjVarID = pag->getGepObjVar(id, offset);
+                return gepObjVarID;
+            }, py::arg("id"), py::arg("offset"), py::return_value_policy::reference)
+            //u32_t getNumOfFlattenElements(const SVFType* T);
+            .def("get_num_of_flatten_elements", [](SVFIR* pag, const SVFType* T) {
+                return pag->getNumOfFlattenElements(T);
+            }, py::arg("T"), py::return_value_policy::reference)
+            //u32_t getFlattenedElemIdx(const SVFType* T, u32_t origId);
+            .def("get_flattened_elem_idx", [](SVFIR* pag, const SVFType* T, u32_t origId) {
+                return pag->getFlattenedElemIdx(T, origId);
+            }, py::arg("T"), py::arg("origId"), py::return_value_policy::reference);
 }
 
 // Bind SVFVar
@@ -473,7 +531,8 @@ void bind_svf_var(py::module &m) {
             .def("as_dummy_obj_var", [](SVF::SVFVar* node) -> SVF::DummyObjVar* {
                 return SVFUtil::dyn_cast<SVF::DummyObjVar>(node);
             }, py::return_value_policy::reference)
-            .def("to_string", &SVF::SVFVar::toString);
+            .def("to_string", &SVF::SVFVar::toString)
+            .def("__str__", &SVF::SVFVar::toString);
 
     py::class_<SVF::ValVar, SVF::SVFVar>(m, "ValVar")
             // For ValVar conversion functions
@@ -820,7 +879,14 @@ void bind_svf_var(py::module &m) {
             .def("has_return", &SVF::FunObjVar::hasReturn)
             .def("get_function_type", &SVF::FunObjVar::getFunctionType, py::return_value_policy::reference)
             .def("get_return_type", &SVF::FunObjVar::getReturnType, py::return_value_policy::reference)
-            .def("to_string", &SVF::FunObjVar::toString);
+            .def("to_string", &SVF::FunObjVar::toString)
+
+            .def("dominates", [](SVF::FunObjVar* node, SVF::SVFBasicBlock* bbKey, SVF::SVFBasicBlock* bbValue) -> bool {
+                return node->dominate(bbKey, bbValue);
+            })
+            .def("post_dominates", [](SVF::FunObjVar* node, SVF::SVFBasicBlock* bbKey, SVF::SVFBasicBlock* bbValue) -> bool {
+                return node->postDominate(bbKey, bbValue);
+            });
 
     py::class_<SVF::FunValVar, SVF::ValVar>(m, "FunValVar")
             .def("get_function", &SVF::FunValVar::getFunction, py::return_value_policy::reference)
@@ -889,6 +955,7 @@ void bind_svf_var(py::module &m) {
     ///DummyObjVar
     py::class_<SVF::DummyObjVar, SVF::BaseObjVar>(m, "DummyObjVar");
 }
+
 
 
 // Bind SVFType
@@ -1028,6 +1095,36 @@ void bind_callgraph(py::module& m) {
         .def("view", &CallGraph::view, "View the call graph");
 }
 
+// Add this to svf_pybind.cpp
+void bind_basic_block(py::module& m) {
+    py::class_<SVF::SVFBasicBlock, std::shared_ptr<SVF::SVFBasicBlock>>(m, "SVFBasicBlock")
+            .def("get_id", &SVF::SVFBasicBlock::getId)
+            .def("get_name", &SVF::SVFBasicBlock::getName)
+                    // Access ICFGNodes in the basic block
+            .def("get_icfg_node_list", &SVF::SVFBasicBlock::getICFGNodeList, py::return_value_policy::reference)
+            .def("front", &SVF::SVFBasicBlock::front, py::return_value_policy::reference)
+            .def("back", &SVF::SVFBasicBlock::back, py::return_value_policy::reference)
+                    // Iteration support
+            .def("__iter__", [](const SVF::SVFBasicBlock& bb) {
+                return py::make_iterator(bb.begin(), bb.end());
+            }, py::keep_alive<0, 1>())
+                    // Function/parent information
+            .def("get_parent", &SVF::SVFBasicBlock::getParent, py::return_value_policy::reference)
+            .def("get_function", &SVF::SVFBasicBlock::getFunction, py::return_value_policy::reference)
+                    // CFG navigation
+            .def("get_successors", &SVF::SVFBasicBlock::getSuccessors, py::return_value_policy::reference)
+            .def("get_predecessors", &SVF::SVFBasicBlock::getPredecessors, py::return_value_policy::reference)
+            .def("get_num_successors", &SVF::SVFBasicBlock::getNumSuccessors)
+                    // Position queries
+            .def("get_bb_successor_pos", static_cast<u32_t (SVF::SVFBasicBlock::*)(const SVF::SVFBasicBlock*) const>(&SVF::SVFBasicBlock::getBBSuccessorPos))
+            .def("get_bb_predecessor_pos", static_cast<u32_t (SVF::SVFBasicBlock::*)(const SVF::SVFBasicBlock*) const>(&SVF::SVFBasicBlock::getBBPredecessorPos))
+                    // String representation
+            .def("__repr__", &SVF::SVFBasicBlock::toString)
+            .def("__str__", &SVF::SVFBasicBlock::toString);
+}
+
+
+
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
     bind_icfg_node(m);
@@ -1040,5 +1137,7 @@ PYBIND11_MODULE(pysvf, m) {
     m.def("release_pag", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
     bind_callgraph_node(m);
     bind_callgraph_edge(m);
+    bind_basic_block(m);
     bind_callgraph(m);
+
 }

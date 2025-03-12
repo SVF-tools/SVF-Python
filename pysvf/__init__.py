@@ -107,3 +107,4 @@ from .pysvf import (
     CallGraphEdge,
     CallGraph
 )
+from .enums import Predicate, OpCode
