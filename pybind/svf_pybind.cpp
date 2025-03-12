@@ -44,25 +44,9 @@ class PySVF {
 public:
     static SVFIR* get_pag(std::string bitcodePath) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
-
-        // Convert Python string options to C-style char** arguments
-        char** argv = new char*[5];
-        argv[0] = ((char*)"-model-arrays=true");
-        argv[1] = ((char*)"-pre-field-sensitive=false");
-        argv[2] = ((char*)"-model-consts=true");
-        argv[3] = ((char*)"-stat=false");
-        argv[4] = (bitcodePath.data());
-
-
-        moduleNameVec = OptionBase::parseOptions(5,
-                                                 argv,
-                                                 "PySVF",
-                                                 "[options] <input-bitcode...>");
-
-
         LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder;
-        SVFIR* pag = builder.build();  // TODO: maybe we need to split build() into more steps
+        SVFIR* pag = builder.build();
         CallGraph* callgraph = AndersenWaveDiff::createAndersenWaveDiff(pag)->getCallGraph();
         builder.updateCallGraph(callgraph);
         pag->getICFG()->updateCallGraph(callgraph);
