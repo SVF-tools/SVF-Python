@@ -1,15 +1,37 @@
 
 
-from typing import List
+from typing import List, Iterator, Any
+
+BIN_DIR: str
+CURRENT_DIR: str
+SVF_DIR: str
+LLVM_DIR: str
+EXTAPI_BC_PATH: str
+Z3_DIR: str
+
+def run_tool(tool_name: str, args: List[str]) -> None: ...
+
+SVFFunction = Any
+SVFValue = Any
+SVFLLVMValue = Any
+SVFLoop = Any
+SVFLoopInfo = Any
+BranchInst = Any
+MemObj = Any
+OffsetVarAndGepTypePair = Any
+SelectStmt = Any
 
 class ICFGNode:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
     def to_string(self) -> str: ...
     """Get the string representation of the ICFG node"""
 
     def get_id(self) -> int: ...
     """Get the id of the ICFG node"""
 
-    def get_fun(self) -> "SVFFunction": ...
+    def get_fun(self) -> SVFFunction: ...
     """Get the function that the ICFG node belongs to"""
 
     def get_bb(self) -> "SVFBasicBlock": ...
@@ -26,7 +48,6 @@ class ICFGNode:
 
     def as_call(self) -> "CallICFGNode": ...
     """Downcast to CallICFGNode"""
-
 
     def as_ret(self) -> "RetICFGNode": ...
     """Downcast to RetICFGNode"""
@@ -49,7 +70,115 @@ class ICFGNode:
     def get_in_edges(self) -> List["ICFGEdge"]: ...
     """Get the in edges of the ICFG node"""
 
+class IntraICFGNode(ICFGNode):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
+    def is_ret_inst(self) -> bool: ...
+    """Check if this is a return instruction"""
+
+class InterICFGNode(ICFGNode):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
+class GlobalICFGNode(ICFGNode):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
+class CallGraphNode:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
+    def get_function(self) -> SVFFunction: ...
+    """Get the function of the call graph node"""
+    
+    def get_id(self) -> int: ...
+    """Get the ID of the call graph node"""
+
+    def get_name(self) -> str: ...
+    """Get the name of the function"""
+    
+    def get_in_edges(self) -> List[CallGraphEdge]: ...
+    """Get incoming edges of this node"""
+    
+    def get_out_edges(self) -> List[CallGraphEdge]: ...
+    """Get outgoing edges of this node"""
+    
+    def is_reachable_from_prog_entry(self) -> bool: ...
+    """Check if this function is reachable from program entry"""
+    
+    def to_string(self) -> str: ...
+    """Get string representation of this node"""
+
+    
+
+class CallGraphEdge:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
+    def get_src_node(self) -> CallGraphNode: ...
+    """Get the source node of the call graph edge"""
+    
+    def get_dst_node(self) -> CallGraphNode: ...
+    """Get the destination node of the call graph edge"""
+    
+    def get_call_site(self) -> CallICFGNode: ...
+    """Get the call site of the call graph edge"""
+
+    def get_call_site_id(self) -> int: ...
+    """Get the call site ID"""
+    
+    def get_src_id(self) -> int: ...
+    """Get source node ID"""
+    
+    def get_dst_id(self) -> int: ...
+    """Get destination node ID"""
+
+    def get_direct_calls(self) -> List[CallICFGNode]: ...
+    """Get direct call ICFG nodes"""
+    
+    def get_indirect_calls(self) -> List[CallICFGNode]: ...
+    """Get indirect call ICFG nodes"""
+    
+    def is_direct_call_edge(self) -> bool: ...
+    """Check if this is a direct call edge"""
+    
+    def is_indirect_call_edge(self) -> bool: ...
+    """Check if this is an indirect call edge"""
+    
+    def to_string(self) -> str: ...
+    """Get string representation"""
+
+
+class CallGraph:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
+    def dump(self) -> None: ...
+    """Dump the call graph to console"""
+    
+    def view(self) -> None: ...
+    """View the call graph (opens visualization)"""
+    
+    def get_call_graph_node(self, fun: "SVFFunction") -> CallGraphNode: ...
+    """Get the call graph node for the given function"""
+    
+    def get_call_graph_node_by_id(self, id: int) -> CallGraphNode: ...
+    """Get the call graph node by ID"""
+    
+    def get_call_graph_node_by_name(self, name: str) -> CallGraphNode: ...
+    """Get the call graph node by function name"""
+    
+    def get_nodes(self) -> List[CallGraphNode]: ...
+    """Get all nodes in this call graph"""
+    
+    def is_reachable_between_functions(self, src: "SVFFunction", dst: "SVFFunction") -> bool: ...
+    """Check if there's a path between two functions"""
+
 class FunEntryICFGNode(ICFGNode):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
     def get_formal_parms(self) -> List["SVFVar"]: ...
     """Get the formal parameters of the function"""
 
@@ -57,6 +186,9 @@ class FunEntryICFGNode(ICFGNode):
     """Add a formal parameter to the function"""
 
 class FunExitICFGNode(ICFGNode):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
     def get_formal_ret(self) -> "SVFVar": ...
     """Get the formal return value of the function"""
 
@@ -64,10 +196,13 @@ class FunExitICFGNode(ICFGNode):
     """Add a formal return value to the function"""
 
 class CallICFGNode(ICFGNode):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_caller(self) -> "FunEntryICFGNode": ...
     """Get the caller function"""
 
-    def get_called_function(self) -> "SVFFunction": ...
+    def get_called_function(self) -> SVFFunction: ...
     """Get the called function"""
 
     def get_actual_parms(self) -> List["SVFVar"]: ...
@@ -83,13 +218,22 @@ class CallICFGNode(ICFGNode):
     """Check if the call is a virtual call"""
 
 class RetICFGNode(ICFGNode):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_actual_ret(self) -> "SVFVar": ...
     """Get the actual return value"""
 
     def add_actual_ret(self, ret: "SVFVar") -> None: ...
     """Add an actual return value"""
 
+    def get_call_node(self) -> "CallICFGNode": ...
+    """Get the call node"""
+
 class ICFGEdge:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def to_string(self) -> str: ...
     """Get the string representation of the ICFG edge"""
 
@@ -123,13 +267,19 @@ class ICFGEdge:
 
 
 class IntraCFGEdge(ICFGEdge):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_condition(self) -> "SVFStmt": ...
     """Get the condition of the edge"""
 
-    def get_successor_cond_value(self) -> "SVFValue": ...
+    def get_successor_cond_value(self) -> SVFValue: ...
     """Get the successor condition value"""
 
 class CallCFGEdge(ICFGEdge):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_call_site(self) -> "CallICFGNode": ...
     """Get the call site"""
 
@@ -137,6 +287,9 @@ class CallCFGEdge(ICFGEdge):
     """Get the call PEs"""
 
 class RetCFGEdge(ICFGEdge):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_call_site(self) -> "CallICFGNode": ...
     """Get the call site"""
 
@@ -145,6 +298,9 @@ class RetCFGEdge(ICFGEdge):
 
 
 class SVFStmt:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def to_string(self) -> str: ...
     """Get the string representation of the SVF statement"""
 
@@ -154,7 +310,7 @@ class SVFStmt:
     def get_icfg_node(self) -> ICFGNode: ...
     """Get the ICFG node that the SVF statement belongs to"""
 
-    def get_value(self) -> "SVFValue": ...
+    def get_value(self) -> SVFValue: ...
     """Get the value of the SVF statement"""
 
     def get_bb(self) -> "SVFBasicBlock": ...
@@ -240,6 +396,9 @@ class SVFStmt:
     """Downcast the SVF statement to a branch statement"""
 
 class AddrStmt(SVFStmt):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_lhs_var(self) -> "SVFVar": ...
     """Get the LHS variable of the address statement"""
 
@@ -252,10 +411,13 @@ class AddrStmt(SVFStmt):
     def get_rhs_id(self) -> int: ...
     """Get the ID of the RHS variable of the address statement"""
 
-    def get_arr_size(self) -> "SVFValue": ...
+    def get_arr_size(self) -> SVFValue: ...
     """Get the array size of the address statement"""
 
 class CopyStmt(SVFStmt):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_lhs_var(self) -> "SVFVar": ...
     """Get the LHS variable of the copy statement"""
 
@@ -269,6 +431,9 @@ class CopyStmt(SVFStmt):
     """Get the ID of the RHS variable of the copy statement"""
 
 class StoreStmt(SVFStmt):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_lhs_var(self) -> "SVFVar": ...
     """Get the LHS variable of the store statement"""
 
@@ -282,6 +447,9 @@ class StoreStmt(SVFStmt):
     """Get the ID of the RHS variable of the store statement"""
 
 class LoadStmt(SVFStmt):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_lhs_var(self) -> "SVFVar": ...
     """Get the LHS variable of the load statement"""
 
@@ -295,6 +463,9 @@ class LoadStmt(SVFStmt):
     """Get the ID of the RHS variable of the load statement"""
 
 class CallPE(SVFStmt):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_callsite(self) -> "CallICFGNode": ...
     """Get the call site"""
 
@@ -314,6 +485,9 @@ class CallPE(SVFStmt):
     """Get the function entry ICFG node"""
 
 class RetPE(SVFStmt):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_callsite(self) -> "CallICFGNode": ...
     """Get the call site"""
 
@@ -333,6 +507,9 @@ class RetPE(SVFStmt):
     """Get the function exit ICFG node"""
 
 class GepStmt(SVFStmt):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_lhs_var(self) -> "SVFVar": ...
     """Get the LHS variable of the GEP statement"""
 
@@ -348,10 +525,10 @@ class GepStmt(SVFStmt):
     def is_constant_offset(self) -> bool: ...
     """Check if the GEP statement has a constant offset"""
 
-    def accumulate_constant_offset(self) -> int: ...
+    def get_constant_offset(self) -> int: ...
     """Get the constant offset"""
 
-    def accumulate_constant_byte_offset(self) -> int: ...
+    def get_constant_byte_offset(self) -> int: ...
     """Get the constant byte offset"""
 
     def get_constant_struct_fld_idx(self) -> int: ...
@@ -360,8 +537,13 @@ class GepStmt(SVFStmt):
     def get_offset_var_and_gep_type_pair_vec(self) -> List["OffsetVarAndGepTypePair"]: ...
     """Get the offset variable and GEP type pair vector"""
 
+    def get_src_pointee_type(self) -> "SVFType": ...
+
 class PhiStmt(SVFStmt):
-    def get_res(self) -> "SVFVar": ...
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+    def get_res_var(self) -> "SVFVar": ...
     """Get the result variable"""
 
     def get_res_id(self) -> int: ...
@@ -370,7 +552,14 @@ class PhiStmt(SVFStmt):
     def get_op_var(self, idx: int) -> "SVFVar": ...
     """Get the operand variable"""
 
+    def get_op_icfg_node(self, idx: int) -> ICFGNode: ...
+
+    def get_op_var_num(self) -> int: ...
+
 class CmpStmt(SVFStmt):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_predicate(self) -> int: ...
     """Get the predicate"""
 
@@ -383,8 +572,15 @@ class CmpStmt(SVFStmt):
     def get_op_var(self, ID: int) -> "SVFVar": ...
     """Get the operand variable"""
 
+    def get_op_var_num(self) -> int: ...
+    """Get the number of operands of the compare statement"""
+    
+
 class BinaryOPStmt(SVFStmt):
-    def get_opcode(self) -> int: ...
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+    def get_op(self) -> int: ...
     """Get the opcode"""
 
     def get_res(self) -> "SVFVar": ...
@@ -396,8 +592,12 @@ class BinaryOPStmt(SVFStmt):
     def get_op_var(self, ID: int) -> "SVFVar": ...
     """Get the operand variable"""
 
+
 class UnaryOPStmt(SVFStmt):
-    def get_opcode(self) -> int: ...
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+    def get_op(self) -> int: ...
     """Get the opcode"""
 
     def get_res(self) -> "SVFVar": ...
@@ -409,9 +609,13 @@ class UnaryOPStmt(SVFStmt):
     def get_op_var(self) -> "SVFVar": ...
     """Get the operand variable"""
 
+
 class BranchStmt(SVFStmt):
-    def get_successors(self) -> List["ICFGNode"]: ...
-    """Get the successors"""
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
+    def get_successors(self) -> List[ICFGNode]: ...
+    """Get the successors of the branch statement"""
 
     def get_num_successors(self) -> int: ...
     """Get the number of successors"""
@@ -422,14 +626,18 @@ class BranchStmt(SVFStmt):
     def is_unconditional(self) -> bool: ...
     """Check if the branch statement is unconditional"""
 
-    def get_condition(self) -> "SVFStmt": ...
-    """Get the condition"""
+    def get_condition(self) -> "SVFVar": ...
+    """Get the condition variable"""
 
     def get_branch_inst(self) -> "BranchInst": ...
     """Get the branch instruction"""
 
 
+
 class ICFG:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_nodes(self) -> List[ICFGNode]: ...
     """Get the nodes of the ICFG"""
 
@@ -443,6 +651,9 @@ class ICFG:
     """Dump the ICFG to a file"""
 
 class SVFVar:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_name(self) -> str: ...
     """Get the name of the SVF variable"""
 
@@ -461,7 +672,7 @@ class SVFVar:
     def get_value_name(self) -> str: ...
     """Get the value name of the SVF variable"""
 
-    def get_function(self) -> "SVFFunction": ...
+    def get_function(self) -> SVFFunction: ...
     """Get the function that the SVF variable belongs to"""
 
     def ptr_in_uncalled_function(self) -> bool: ...
@@ -515,13 +726,16 @@ class SVFVar:
     """Downcast the SVF variable to a DummyObjVar"""
 
 class ValVar(SVFVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_icfg_node(self) -> ICFGNode: ...
     """Get the ICFG node that the SVF variable belongs to"""
 
     def get_value_name(self) -> str: ...
     """Get the value name of the SVF variable"""
 
-    def get_function(self) -> "SVFFunction": ...
+    def get_function(self) -> SVFFunction: ...
     """Get the function that the SVF variable belongs to"""
 
     def to_string(self) -> str: ...
@@ -581,6 +795,9 @@ class ValVar(SVFVar):
     """Downcast the SVF variable to a DummyValVar"""
 
 class ObjVar(SVFVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_value_name(self) -> str: ...
     """Get the value name of the SVF variable"""
 
@@ -599,8 +816,59 @@ class ObjVar(SVFVar):
     def as_base_obj_var(node: ObjVar) -> BaseObjVar: ...
     """Downcast the SVF variable to a BaseObjVar"""
 
+    def is_const_agg_obj_var(self) -> bool: ...
+    """Check if this is a constant aggregate object variable"""
+    
+    def is_const_data_obj_var(self) -> bool: ...
+    """Check if this is a constant data object variable"""
+    
+    def is_const_fp_obj_var(self) -> bool: ...
+    """Check if this is a constant floating point object variable"""
+    
+    def is_const_int_obj_var(self) -> bool: ...
+    """Check if this is a constant integer object variable"""
+    
+    def is_const_null_ptr_obj_var(self) -> bool: ...
+    """Check if this is a constant null pointer object variable"""
+    
+    def is_global_obj_var(self) -> bool: ...
+    """Check if this is a global object variable"""
+    
+    def is_heap_obj_var(self) -> bool: ...
+    """Check if this is a heap object variable"""
+    
+    def is_stack_obj_var(self) -> bool: ...
+    """Check if this is a stack object variable"""
+    
+    def as_const_agg_obj_var(self) -> "ConstAggObjVar": ...
+    """Cast to ConstAggObjVar if possible"""
+    
+    def as_const_data_obj_var(self) -> "ConstDataObjVar": ...
+    """Cast to ConstDataObjVar if possible"""
+    
+    def as_const_fp_obj_var(self) -> "ConstFPObjVar": ...
+    """Cast to ConstFPObjVar if possible"""
+    
+    def as_const_int_obj_var(self) -> "ConstIntObjVar": ...
+    """Cast to ConstIntObjVar if possible"""
+    
+    def as_const_null_ptr_obj_var(self) -> "ConstNullPtrObjVar": ...
+    """Cast to ConstNullPtrObjVar if possible"""
+    
+    def as_global_obj_var(self) -> "GlobalObjVar": ...
+    """Cast to GlobalObjVar if possible"""
+    
+    def as_heap_obj_var(self) -> "HeapObjVar": ...
+    """Cast to HeapObjVar if possible"""
+    
+    def as_stack_obj_var(self) -> "StackObjVar": ...
+    """Cast to StackObjVar if possible"""
+
 class ArgValVar(ValVar):
-    def get_function(self) -> "SVFFunction": ...
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+    def get_function(self) -> SVFFunction: ...
     """Get the function that the SVF variable belongs to"""
 
     def get_parent(self) -> "SVFVar": ...
@@ -615,7 +883,13 @@ class ArgValVar(ValVar):
     def to_string(self) -> str: ...
     """Get the string representation of the SVF variable"""
 
+    def is_arg_of_uncalled_function(self) -> bool: ...
+    """Check if this is an argument of an uncalled function"""
+
 class GepValVar(ValVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_constant_field_idx(self) -> int: ...
     """Get the constant field index"""
 
@@ -631,13 +905,16 @@ class GepValVar(ValVar):
     def get_type(self) -> SVFType: ...
     """Get the type of the SVF variable"""
 
-    def get_function(self) -> "SVFFunction": ...
+    def get_function(self) -> SVFFunction: ...
     """Get the function that the SVF variable belongs to"""
 
     def to_string(self) -> str: ...
     """Get the string representation of the SVF variable"""
 
 class BaseObjVar(ObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_type(self) -> SVFType: ...
     """Get the type of the SVF variable"""
 
@@ -675,7 +952,73 @@ class BaseObjVar(ObjVar):
     def get_base_mem_obj(self) -> "MemObj": ...
     """Get the base memory object"""
 
+    def get_icfg_node(self) -> ICFGNode: ...
+    """Get the ICFG node associated with this object variable"""
+    
+    def get_max_field_offset_limit(self) -> int: ...
+    """Get the maximum field offset limit"""
+    
+    def get_num_of_elements(self) -> int: ...
+    """Get the number of elements"""
+    
+    def set_num_of_elements(self, num: int) -> None: ...
+    """Set the number of elements"""
+    
+    def is_array(self) -> bool: ...
+    """Check if this is an array"""
+    
+    def is_black_hole_obj(self) -> bool: ...
+    """Check if this is a black hole object"""
+    
+    def is_const_data_or_const_global(self) -> bool: ...
+    """Check if this is constant data or constant global"""
+    
+    def is_constant_array(self) -> bool: ...
+    """Check if this is a constant array"""
+    
+    def is_constant_byte_size(self) -> bool: ...
+    """Check if this has constant byte size"""
+    
+    def is_constant_struct(self) -> bool: ...
+    """Check if this is a constant struct"""
+    
+    def is_field_insensitive(self) -> bool: ...
+    """Check if this is field insensitive"""
+    
+    def is_function(self) -> bool: ...
+    """Check if this is a function"""
+    
+    def is_global_obj(self) -> bool: ...
+    """Check if this is a global object"""
+    
+    def is_heap(self) -> bool: ...
+    """Check if this is on the heap"""
+    
+    def is_stack(self) -> bool: ...
+    """Check if this is on the stack"""
+    
+    def is_static_obj(self) -> bool: ...
+    """Check if this is a static object"""
+    
+    def is_struct(self) -> bool: ...
+    """Check if this is a struct"""
+    
+    def is_var_array(self) -> bool: ...
+    """Check if this is a variable array"""
+    
+    def is_var_struct(self) -> bool: ...
+    """Check if this is a variable struct"""
+    
+    def set_field_insensitive(self) -> None: ...
+    """Set as field insensitive"""
+    
+    def set_field_sensitive(self) -> None: ...
+    """Set as field sensitive"""
+
 class GepObjVar(ObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_constant_field_idx(self) -> int: ...
     """Get the constant field index"""
 
@@ -695,6 +1038,9 @@ class GepObjVar(ObjVar):
     """Get the string representation of the SVF variable"""
 
 class FunObjVar(BaseObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def is_declaration(self) -> bool: ...
     """Check if the function is a declaration"""
 
@@ -721,8 +1067,17 @@ class FunObjVar(BaseObjVar):
 
     def to_string(self) -> str: ...
     """Get the string representation of the SVF variable"""
+    
+    def dominates(self, bbKey: SVFBasicBlock, bbValue: SVFBasicBlock) -> bool: ...
+    """Check if one basic block dominates another"""
+    
+    def post_dominates(self, bbKey: SVFBasicBlock, bbValue: SVFBasicBlock) -> bool: ...
+    """Check if one basic block post-dominates another"""
 
 class FunValVar(ValVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_function(self) -> SVFFunction: ...
     """Get the function that the SVF variable belongs to"""
 
@@ -733,9 +1088,14 @@ class FunValVar(ValVar):
     """Get the string representation of the SVF variable"""
 
 class ConstDataValVar(ValVar):
-    pass
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
 
 class ConstFPValVar(ConstDataValVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_fp_value(self) -> float: ...
     """Get the floating point value"""
 
@@ -747,9 +1107,14 @@ class ConstIntValVar(ConstDataValVar):
     """Get the zero extended value"""
 
 class ConstNullPtrValVar(ConstDataValVar):
-    pass
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
 
 class ConstDataObjVar(BaseObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def is_const_fp_obj_var(self) -> bool: ...
     """Check if the SVF variable is a ConstFPObjVar"""
     def as_const_fp_obj_var(self) -> ConstFPObjVar: ...
@@ -764,12 +1129,18 @@ class ConstDataObjVar(BaseObjVar):
     """Downcast the SVF variable to a ConstNullPtrObjVar"""
 
 class ConstFPObjVar(ConstDataObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_fp_value(self) -> float: ...
     """Get the floating point value"""
 
 
 
 class ConstIntObjVar(ConstDataObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_sext_value(self) -> int: ...
     """Get the sign extended value"""
 
@@ -777,15 +1148,24 @@ class ConstIntObjVar(ConstDataObjVar):
     """Get the zero extended value"""
 
 class RetValPN(ValVar):
-    def get_function(self) -> "SVFFunction": ...
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+    def get_function(self) -> SVFFunction: ...
     """Get the function that the SVF variable belongs to"""
 
 class VarArgValPN(ValVar):
-    def get_function(self) -> "SVFFunction": ...
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+    def get_function(self) -> SVFFunction: ...
     """Get the function that the SVF variable belongs to"""
 
 
 class SVFType:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_kind(self) -> int: ...
     """Get the kind of the SVF type"""
 
@@ -833,12 +1213,18 @@ class SVFType:
     """Check if the SVF type is an other type"""
 
 class SVFPointerType(SVFType):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def print(self) -> None: ...
     """Print the SVF pointer type"""
 
 
 
 class SVFIntegerType(SVFType):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def print(self) -> None: ...
     """Print the SVF integer type"""
 
@@ -849,6 +1235,9 @@ class SVFIntegerType(SVFType):
     """Check if the SVF integer type is signed"""
 
 class SVFFunctionType(SVFType):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def print(self) -> None: ...
     """Print the SVF function type"""
 
@@ -856,6 +1245,9 @@ class SVFFunctionType(SVFType):
     """Get the return type of the SVF function type"""
 
 class SVFStructType(SVFType):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def print(self) -> None: ...
     """Print the SVF struct type"""
 
@@ -866,6 +1258,9 @@ class SVFStructType(SVFType):
     """Set the name of the SVF struct type"""
 
 class SVFArrayType(SVFType):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def print(self) -> None: ...
     """Print the SVF array type"""
 
@@ -879,6 +1274,9 @@ class SVFArrayType(SVFType):
     """Set the number of elements"""
 
 class SVFOtherType(SVFType):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def print(self) -> None: ...
     """Print the SVF other type"""
 
@@ -889,70 +1287,10 @@ class SVFOtherType(SVFType):
     """Set the representation of the SVF other type"""
 
 
-class SVFLLVMValue:
-    def get_kind(self) -> int: ...
-    """Get the kind of the SVF LLVM value"""
-
-    def get_type(self) -> SVFType: ...
-    """Get the type of the SVF LLVM value"""
-
-    def get_name(self) -> str: ...
-    """Get the name of the SVF LLVM value"""
-
-    def set_name(self, name: str) -> None: ...
-    """Set the name of the SVF LLVM value"""
-
-    def get_source_loc(self) -> str: ...
-    """Get the source location of the SVF LLVM value"""
-
-    def set_source_loc(self, loc: str) -> None: ...
-    """Set the source location of the SVF LLVM value"""
-
-    def to_string(self) -> str: ...
-    """Get the string representation of the SVF LLVM value"""
-
-class SVFFunction(SVFLLVMValue):
-    def is_declaration(self) -> bool: ...
-    """Check if the function is a declaration"""
-
-    def is_intrinsic(self) -> bool: ...
-    """Check if the function is an intrinsic"""
-
-    def has_address_taken(self) -> bool: ...
-    """Check if the function has its address taken"""
-
-    def get_function_type(self) -> SVFType: ...
-    """Get the function type"""
-
-    def get_return_type(self) -> SVFType: ...
-    """Get the return type"""
-
-    def arg_size(self) -> int: ...
-    """Get the number of arguments"""
-
-    def get_arg(self, idx: int) -> SVFVar: ...
-    """Get the argument at the given index"""
-
-    def get_entry_block(self) -> "SVFBasicBlock": ...
-    """Get the entry block"""
-
-    def get_exit_bb(self) -> "SVFBasicBlock": ...
-    """Get the exit basic block"""
-
-    def has_loop_info(self) -> bool: ...
-    """Check if the function has loop info"""
-
-    def get_loop_info(self) -> "SVFLoopInfo": ...
-    """Get the loop info"""
-
-    def dominate(self, bb1: "SVFBasicBlock", bb2: "SVFBasicBlock") -> bool: ...
-    """Check if bb1 dominates bb2"""
-
-    def post_dominate(self, bb1: "SVFBasicBlock", bb2: "SVFBasicBlock") -> bool: ...
-    """Check if bb1 post dominates bb2"""
-
-
 class SVFIR(SVFLLVMValue):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
     def get_icfg(self) -> ICFG: ...
     """Get the ICFG of the SVFIR"""
 
@@ -961,6 +1299,129 @@ class SVFIR(SVFLLVMValue):
 
     def get_pag_node_num(self) -> int: ...
     """Get the number of PAG nodes"""
+    
+    def get_call_graph(self) -> "CallGraph": ...
+    """Get the call graph of the SVFIR"""
+    
+    def get_base_object(self, id: int) -> BaseObjVar: ...
+    """Get the base object with the given ID"""
+    
+    def get_gnode(self, id: int) -> SVFVar: ...
+    """Get the SVFVar with the given ID"""
+    
+    def get_gep_obj_var(self, id: int, offset: int) -> int: ...
+    """Get the GEP object variable ID"""
+    
+    def get_num_of_flatten_elements(self, T: SVFType) -> int: ...
+    """Get the number of flattened elements"""
+    
+    def get_flattened_elem_idx(self, T: SVFType, origId: int) -> int: ...
+    """Get the flattened element index"""
+
+
+# Add these definitions to pysvf.pyi
+
+class SVFBasicBlock:
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+    def get_id(self) -> int: ...
+    """Get the ID of the basic block"""
+    
+    def get_name(self) -> str: ...
+    """Get the name of the basic block"""
+    
+    def get_icfg_node_list(self) -> List[ICFGNode]: ...
+    """Get the list of ICFG nodes in the basic block"""
+    
+    def front(self) -> ICFGNode: ...
+    """Get the first ICFG node in the basic block"""
+    
+    def back(self) -> ICFGNode: ...
+    """Get the last ICFG node in the basic block"""
+    
+    def __iter__(self) -> Iterator[ICFGNode]: ...
+    """Iterate through ICFG nodes in the basic block"""
+    
+    def get_parent(self) -> SVFFunction: ...
+    """Get the parent function of the basic block"""
+    
+    def get_function(self) -> SVFFunction: ...
+    """Get the function that contains this basic block"""
+    
+    def get_successors(self) -> List["SVFBasicBlock"]: ...
+    """Get the successor basic blocks"""
+    
+    def get_predecessors(self) -> List["SVFBasicBlock"]: ...
+    """Get the predecessor basic blocks"""
+    
+    def get_num_successors(self) -> int: ...
+    """Get the number of successor basic blocks"""
+    
+    def get_bb_successor_pos(self, bb: "SVFBasicBlock") -> int: ...
+    """Get the position of a successor basic block"""
+    
+    def get_bb_predecessor_pos(self, bb: "SVFBasicBlock") -> int: ...
+    """Get the position of a predecessor basic block"""
+    
+    def __repr__(self) -> str: ...
+    """Get the string representation of the basic block"""
+    
+    def __str__(self) -> str: ...
+    """Get the string representation of the basic block"""
+
+
+# Classes inheriting from ValVar
+class DummyValVar(ValVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+
+class GlobalValVar(ValVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+
+
+class ConstAggValVar(ValVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+
+class BlackHoleValVar(ValVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+
+# Classes inheriting from ObjVar/BaseObjVar
+class DummyObjVar(BaseObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+
+class GlobalObjVar(BaseObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+
+class HeapObjVar(BaseObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+
+class StackObjVar(BaseObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+
+class ConstAggObjVar(BaseObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
+
+class ConstNullPtrObjVar(ConstDataObjVar):
+    def __init__(self, *args, **kwargs) -> None: ...
+    """Not intended for direct instantiation."""
+    
 
 
 

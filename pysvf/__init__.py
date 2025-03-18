@@ -18,10 +18,19 @@ os.environ["SVF_DIR"] = SVF_DIR
 os.environ["LLVM_DIR"] = LLVM_DIR
 os.environ["SVF_EXTAPI_DIR"] = os.path.join(SVF_DIR, "Release-build/lib")
 
-# Debugging print statements
-print(f"SVF_DIR: {SVF_DIR}")
-print(f"BIN_DIR: {BIN_DIR}")
+# Tool definitions
+TOOL_NAMES = {
+    "ae": "ae",
+    "cfl": "cfl", 
+    "dvf": "dvf",
+    "llvm2svf": "llvm2svf",
+    "mta": "mta",
+    "saber": "saber",
+    "svf_ex": "svf-ex",
+    "wpa": "wpa"
+}
 
+# Original run_tool function
 def run_tool(tool_name, args):
     tool_path = os.path.join(BIN_DIR, tool_name)
 
@@ -38,6 +47,41 @@ def run_tool(tool_name, args):
         print(f"[ERROR] STDERR:\n{e.stderr}")
         sys.exit(e.returncode)
 
+# Enhanced unified tool function
+def run_svf_tool(tool_name, args=None):
+    """
+    Run a specified SVF tool.
+    
+    Args:
+        tool_name (str): The name of the tool to run.
+        args (list, optional): The arguments to pass to the tool. Defaults to sys.argv[1:].
+    """
+    if args is None:
+        args = sys.argv[1:]
+    
+    if tool_name in TOOL_NAMES:
+        run_tool(TOOL_NAMES[tool_name], args)
+    else:
+        print(f"[ERROR] Unknown tool: {tool_name}", file=sys.stderr)
+        print(f"[INFO] Available tools: {', '.join(TOOL_NAMES.keys())}", file=sys.stderr)
+        sys.exit(1)
+
+# Main entry point when module is executed directly
+def main():
+    """
+    Main entry point when the module is executed directly.
+    Example: python -m pysvf ae [arguments]
+    """
+    if len(sys.argv) < 2:
+        print("[ERROR] Usage: python -m pysvf <tool_name> [arguments]", file=sys.stderr)
+        print(f"[INFO] Available tools: {', '.join(TOOL_NAMES.keys())}", file=sys.stderr)
+        sys.exit(1)
+    
+    tool_name = sys.argv[1]
+    args = sys.argv[2:]
+    run_svf_tool(tool_name, args)
+
+# Import all the module classes and functions
 from .pysvf import (
     get_pag,
     release_pag,
@@ -108,3 +152,7 @@ from .pysvf import (
     CallGraph
 )
 from .enums import Predicate, OpCode
+
+# Enable direct module execution
+if __name__ == "__main__":
+    main()

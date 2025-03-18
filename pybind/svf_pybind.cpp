@@ -28,9 +28,9 @@
  */
 
 #include <pybind11/pybind11.h>
+#include "Util/Options.h"
 #include <pybind11/stl.h>
 #include "SVF-LLVM/SVFIRBuilder.h"
-#include "Util/CommandLine.h"
 #include "Graphs/ICFG.h"
 #include "SVFIR/SVFType.h"
 #include "SVFIR/SVFStatements.h"
@@ -44,6 +44,9 @@ class PySVF {
 public:
     static SVFIR* get_pag(std::string bitcodePath) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
+        Options::UsePreCompFieldSensitive.setValue(false);
+        Options::ModelConsts.setValue(true);
+        Options::ModelArrays.setValue(true);
         LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder;
         SVFIR* pag = builder.build();
@@ -1081,7 +1084,7 @@ void bind_callgraph(py::module& m) {
 
 // Add this to svf_pybind.cpp
 void bind_basic_block(py::module& m) {
-    py::class_<SVF::SVFBasicBlock, std::shared_ptr<SVF::SVFBasicBlock>>(m, "SVFBasicBlock")
+    py::class_<SVF::SVFBasicBlock>(m, "SVFBasicBlock")
             .def("get_id", &SVF::SVFBasicBlock::getId)
             .def("get_name", &SVF::SVFBasicBlock::getName)
                     // Access ICFGNodes in the basic block
