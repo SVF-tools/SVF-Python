@@ -12,7 +12,40 @@ on:
       - main  # only build on main branch
 
 jobs:
+  stubtest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9']
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mypy typing-extensions wheel setuptools
+
+    - name: Build SVF-Python
+      run: |
+        bash build.sh
+        python -m pip install dist/pysvf-*.whl
+
+    - name: Run stubtest
+      run: |
+        mkdir -p pysvf/__pycache__
+        python -m mypy.stubtest pysvf --allowlist stubtest_allowlist.txt
+
   build:
+    needs: stubtest
     runs-on: ${{ matrix.os }}
     outputs:
       version: ${{ steps.read_version.outputs.version }}
