@@ -1099,6 +1099,13 @@ void bind_callgraph(py::module& m) {
             }
             return nodes;
         }, py::return_value_policy::reference, "Get all nodes in the call graph")
+        .def("get_gnode", [](CallGraph& callg, NodeID id) -> CallGraphNode* {
+            CallGraphNode* node = callg.getGNode(id);
+            if (!node) {
+                throw std::runtime_error("CallGraphNode with given ID not found.");
+            }
+            return node;
+        }, py::arg("id"), py::return_value_policy::reference, "Get a VFG node by ID")
         .def("get_call_graph_node", [](CallGraph& cg, const FunObjVar* fun) {
             return cg.getCallGraphNode(fun);
         }, py::return_value_policy::reference, "Get a call graph node by function")
