@@ -41,8 +41,14 @@ namespace py = pybind11;
 using namespace SVF;
 
 class PySVF {
+static SVFIR* currentSVFIR;
+static SVFG* currentSVFG;
+static CallGraph* currentCallGraph;
+static ICFG* currentICFG;
+static std::string lastAnalyzedModule;
+
 public:
-    static SVFIR* get_pag(std::string bitcodePath) {
+    static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
         Options::UsePreCompFieldSensitive.setValue(false);
         Options::ModelConsts.setValue(true);
@@ -50,9 +56,22 @@ public:
         LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder;
         SVFIR* pag = builder.build();
-        CallGraph* callgraph = AndersenWaveDiff::createAndersenWaveDiff(pag)->getCallGraph();
+        AndersenWaveDiff* ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
+        CallGraph* callgraph = ander->getCallGraph();
         builder.updateCallGraph(callgraph);
         pag->getICFG()->updateCallGraph(callgraph);
+        
+
+        currentSVFIR = pag;
+        currentCallGraph = callgraph;
+        currentICFG = pag->getICFG();
+        if (buildSVFG) {
+            SVFGBuilder* svfgBuilder = new SVFGBuilder(pag);
+            SVFG* svfg = svfgBuilder->buildFullSVFG(ander);
+            currentSVFG = svfg;
+        }
+        lastAnalyzedModule = bitcodePath;
+
         return pag;  // Now we directly return SVFIR(pag)
     }
 
@@ -60,6 +79,22 @@ public:
         SVF::LLVMModuleSet::releaseLLVMModuleSet();
         SVF::SVFIR::releaseSVFIR();
         NodeIDAllocator::unset();
+    }
+
+    static SVFIR* get_current_pag() {
+        return currentSVFIR;
+    }
+    static SVFG* get_current_svfg() {
+        return currentSVFG;
+    }
+    static CallGraph* get_current_call_graph() {
+        return currentCallGraph;
+    }
+    static ICFG* get_current_icfg() {
+        return currentICFG;
+    }
+    static std::string get_last_analyzed_module() {
+        return lastAnalyzedModule;
     }
 };
 
@@ -133,7 +168,8 @@ void bind_icfg_node(py::module& m) {
                  "Get the actual parameters of the call")
             .def("add_actual_parm", &CallICFGNode::addActualParms, "Add an actual parameter to the call")
             .def("is_vararg", &CallICFGNode::isVarArg, "Check if the call is a vararg call")
-            .def("is_virtual_call", &CallICFGNode::isVirtualCall, "Check if the call is a virtual call");
+            .def("is_virtual_call", &CallICFGNode::isVirtualCall, "Check if the call is a virtual call")
+            .def("get_ret_node", &CallICFGNode::getRetICFGNode, py::return_value_policy::reference, "Get the return node");
 
     // === RetICFGNode ===
     py::class_<RetICFGNode, InterICFGNode>(m, "RetICFGNode")
@@ -486,7 +522,6 @@ void bind_svf_var(py::module &m) {
             .def("is_dummy_obj_var", [](const SVF::SVFVar* node) {
                 return SVFUtil::isa<SVF::DummyObjVar>(node);
             })
-
             // Type casting methods (like dynamic_cast<>)
             .def("as_val_var", [](SVF::SVFVar* node) -> SVF::ValVar* {
                 return SVFUtil::dyn_cast<SVF::ValVar>(node);
@@ -1049,8 +1084,8 @@ void bind_callgraph_edge(py::module& m) {
             return edge.getIndirectCalls();
         }, py::return_value_policy::reference, "Get the indirect calls")
         // Get source and destination nodes
-        .def("get_src_node", &CallGraphEdge::getSrcNode, py::return_value_policy::reference, "Get the source node")
-        .def("get_dst_node", &CallGraphEdge::getDstNode, py::return_value_policy::reference, "Get the destination node")
+        .def("get_src", &CallGraphEdge::getSrcNode, py::return_value_policy::reference, "Get the source node")
+        .def("get_dst", &CallGraphEdge::getDstNode, py::return_value_policy::reference, "Get the destination node")
         .def("get_src_id", &CallGraphEdge::getSrcID, "Get the source node ID")
         .def("get_dst_id", &CallGraphEdge::getDstID, "Get the destination node ID");
 }
@@ -1078,7 +1113,9 @@ void bind_callgraph(py::module& m) {
             return node;
         }, py::arg("id"), py::return_value_policy::reference, "Get a call graph node by ID")
         .def("is_reachable_between_functions", &CallGraph::isReachableBetweenFunctions, "Check if there's a path between two functions")
-        .def("dump", &CallGraph::dump, "Dump the call graph to a DOT file")
+        .def("dump", [](CallGraph &icfg, std::string file) {
+            icfg.dump(file);
+        })
         .def("view", &CallGraph::view, "View the call graph");
 }
 
@@ -1111,6 +1148,414 @@ void bind_basic_block(py::module& m) {
 }
 
 
+// Bind SVFGEdge classes
+void bind_svfg_edge(py::module& m) {
+    // Base VFGEdge class
+    py::class_<VFGEdge, std::shared_ptr<VFGEdge>>(m, "VFGEdge", "Base class for Value-Flow Graph edges")
+        .def("to_string", &VFGEdge::toString, "Get the string representation of the edge")
+        .def("__str__", &VFGEdge::toString, "Get the string representation of the edge")
+        .def("is_direct_vfg_edge", &VFGEdge::isDirectVFGEdge, "Check if this is a direct VFG edge")
+        .def("is_indirect_vfg_edge", &VFGEdge::isIndirectVFGEdge, "Check if this is an indirect VFG edge")
+        .def("is_call_vfg_edge", &VFGEdge::isCallVFGEdge, "Check if this is a call VFG edge")
+        .def("is_ret_vfg_edge", &VFGEdge::isRetVFGEdge, "Check if this is a return VFG edge")
+        .def("is_call_direct_vfg_edge", &VFGEdge::isCallDirectVFGEdge, "Check if this is a direct call VFG edge")
+        .def("is_ret_direct_vfg_edge", &VFGEdge::isRetDirectVFGEdge, "Check if this is a direct return VFG edge")
+        .def("is_call_indirect_vfg_edge", &VFGEdge::isCallIndirectVFGEdge, "Check if this is an indirect call VFG edge")
+        .def("is_ret_indirect_vfg_edge", &VFGEdge::isRetIndirectVFGEdge, "Check if this is an indirect return VFG edge")
+        .def("is_intra_vfg_edge", &VFGEdge::isIntraVFGEdge, "Check if this is an intra-procedural VFG edge")
+        .def("is_thread_mhp_indirect_vfg_edge", &VFGEdge::isThreadMHPIndirectVFGEdge, "Check if this is a thread MHP indirect VFG edge")
+        .def("get_src", [](const VFGEdge *edge) { return edge->getSrcNode(); }, py::return_value_policy::reference, "Get the source node")
+        .def("get_dst", [](const VFGEdge *edge) { return edge->getDstNode(); }, py::return_value_policy::reference, "Get the destination node")
+        .def("as_direct_svfg_edge", [](VFGEdge *edge) -> DirectSVFGEdge* {
+            if (DirectSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<DirectSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to DirectSVFGEdge")
+        .def("as_indirect_svfg_edge", [](VFGEdge *edge) -> IndirectSVFGEdge* {
+            if (IndirectSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<IndirectSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to IndirectSVFGEdge")
+        .def("as_call_dir_svfg_edge", [](VFGEdge *edge) -> CallDirSVFGEdge* {
+            if (CallDirSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<CallDirSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to CallDirVFGEdge")
+        .def("as_ret_dir_svfg_edge", [](VFGEdge *edge) -> RetDirSVFGEdge* {
+            if (RetDirSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<RetDirSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to RetDirSVFGEdge")
+        .def("as_call_ind_svfg_edge", [](VFGEdge *edge) -> CallIndSVFGEdge* {
+            if (CallIndSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<CallIndSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to CallIndSVFGEdge")
+        .def("as_ret_ind_svfg_edge", [](VFGEdge *edge) -> RetIndSVFGEdge* {
+            if (RetIndSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<RetIndSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to RetIndSVFGEdge");
+
+
+    // DirectSVFGEdge - direct value flow edge
+    py::class_<DirectSVFGEdge, VFGEdge, std::shared_ptr<DirectSVFGEdge>>(m, "DirectSVFGEdge", "Direct SVF Graph Edge")
+        .def("to_string", &DirectSVFGEdge::toString, "Get the string representation of the edge")
+        .def("as_intra_dir_svfg_edge", [](DirectSVFGEdge *edge) -> IntraDirSVFGEdge* {
+            if (IntraDirSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<IntraDirSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to IntraDirSVFGEdge")
+        .def("as_call_dir_svfg_edge", [](DirectSVFGEdge *edge) -> CallDirSVFGEdge* {
+            if (CallDirSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<CallDirSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to CallDirSVFGEdge")
+        .def("as_ret_dir_svfg_edge", [](DirectSVFGEdge *edge) -> RetDirSVFGEdge* {
+            if (RetDirSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<RetDirSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to RetDirSVFGEdge");
+
+    // IntraDirSVFGEdge - Intraprocedural direct SVF edge
+    py::class_<IntraDirSVFGEdge, DirectSVFGEdge, std::shared_ptr<IntraDirSVFGEdge>>(m, "IntraDirSVFGEdge", "Intraprocedural direct SVF edge")
+        .def("to_string", &IntraDirSVFGEdge::toString, "Get the string representation of the edge");
+
+    // CallDirSVFGEdge - Call direct SVF edge
+    py::class_<CallDirSVFGEdge, DirectSVFGEdge, std::shared_ptr<CallDirSVFGEdge>>(m, "CallDirSVFGEdge", "Call direct SVF edge")
+        .def("get_call_site_id", &CallDirSVFGEdge::getCallSiteId, "Get the call site ID")
+        .def("to_string", &CallDirSVFGEdge::toString, "Get the string representation of the edge");
+
+    // RetDirSVFGEdge - Return direct SVF edge
+    py::class_<RetDirSVFGEdge, DirectSVFGEdge, std::shared_ptr<RetDirSVFGEdge>>(m, "RetDirSVFGEdge", "Return direct SVF edge")
+        .def("get_call_site_id", &RetDirSVFGEdge::getCallSiteId, "Get the call site ID")
+        .def("to_string", &RetDirSVFGEdge::toString, "Get the string representation of the edge");
+
+    // IndirectSVFGEdge - Indirect value flow edge
+    py::class_<IndirectSVFGEdge, VFGEdge, std::shared_ptr<IndirectSVFGEdge>>(m, "IndirectSVFGEdge", "Indirect SVF Graph Edge")
+        .def("get_points_to", &IndirectSVFGEdge::getPointsTo, py::return_value_policy::reference, "Get the points-to set")
+        .def("add_points_to", &IndirectSVFGEdge::addPointsTo, "Add to the points-to set")
+        .def("to_string", &IndirectSVFGEdge::toString, "Get the string representation of the edge")
+        .def("as_intra_ind_svfg_edge", [](IndirectSVFGEdge *edge) -> IntraIndSVFGEdge* {
+            if (IntraIndSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<IntraIndSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to IntraIndSVFGEdge")
+        .def("as_call_ind_svfg_edge", [](IndirectSVFGEdge *edge) -> CallIndSVFGEdge* {
+            if (CallIndSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<CallIndSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to CallIndSVFGEdge")
+        .def("as_ret_ind_svfg_edge", [](IndirectSVFGEdge *edge) -> RetIndSVFGEdge* {
+            if (RetIndSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<RetIndSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to RetIndSVFGEdge")
+        .def("as_thread_mhp_ind_svfg_edge", [](IndirectSVFGEdge *edge) -> ThreadMHPIndSVFGEdge* {
+            if (ThreadMHPIndSVFGEdge::classof(edge))
+                return SVFUtil::dyn_cast<ThreadMHPIndSVFGEdge>(edge);
+            return nullptr;
+        }, py::return_value_policy::reference, "Downcast to ThreadMHPIndSVFGEdge");
+
+    // IntraIndSVFGEdge - Intraprocedural indirect SVF edge
+    py::class_<IntraIndSVFGEdge, IndirectSVFGEdge, std::shared_ptr<IntraIndSVFGEdge>>(m, "IntraIndSVFGEdge", "Intraprocedural indirect SVF edge")
+        .def("to_string", &IntraIndSVFGEdge::toString, "Get the string representation of the edge");
+
+    // CallIndSVFGEdge - Call indirect SVF edge
+    py::class_<CallIndSVFGEdge, IndirectSVFGEdge, std::shared_ptr<CallIndSVFGEdge>>(m, "CallIndSVFGEdge", "Call indirect SVF edge")
+        .def("get_call_site_id", &CallIndSVFGEdge::getCallSiteId, "Get the call site ID")
+        .def("to_string", &CallIndSVFGEdge::toString, "Get the string representation of the edge");
+
+    // RetIndSVFGEdge - Return indirect SVF edge
+    py::class_<RetIndSVFGEdge, IndirectSVFGEdge, std::shared_ptr<RetIndSVFGEdge>>(m, "RetIndSVFGEdge", "Return indirect SVF edge")
+        .def("get_call_site_id", &RetIndSVFGEdge::getCallSiteId, "Get the call site ID")
+        .def("to_string", &RetIndSVFGEdge::toString, "Get the string representation of the edge");
+
+    // ThreadMHPIndSVFGEdge - Thread MHP indirect SVF edge
+    py::class_<ThreadMHPIndSVFGEdge, IndirectSVFGEdge, std::shared_ptr<ThreadMHPIndSVFGEdge>>(m, "ThreadMHPIndSVFGEdge", "Thread MHP indirect SVF edge")
+        .def("to_string", &ThreadMHPIndSVFGEdge::toString, "Get the string representation of the edge");
+}
+
+
+// Bind VFGNode classes
+void bind_vfg_node(py::module& m) {
+    // Base VFGNode class
+    py::class_<VFGNode, std::shared_ptr<VFGNode>>(m, "VFGNode", "Base class for Value-Flow Graph nodes")
+        .def("to_string", &VFGNode::toString, "Get the string representation of the node")
+        .def("__str__", &VFGNode::toString, "Get the string representation of the node")
+        .def("get_id", &VFGNode::getId, "Get the ID of this VFG node")
+        .def("get_value", &VFGNode::getValue, py::return_value_policy::reference, "Get the SVF variable value")
+        .def("get_icfg_node", &VFGNode::getICFGNode, py::return_value_policy::reference, "Get the corresponding ICFG node")
+        .def("get_def_svf_vars", &VFGNode::getDefSVFVars, "Get the defined SVF variables")
+        .def("get_out_edges", [](const VFGNode *node) {
+            std::vector<VFGEdge *> edges;
+            for (auto it = node->OutEdgeBegin(); it != node->OutEdgeEnd(); ++it) {
+                edges.push_back(*it);
+            }
+            return edges;
+        }, py::return_value_policy::reference, "Get the out edges of the VFG node")
+        .def("get_in_edges", [](const VFGNode *node) {
+            std::vector<VFGEdge *> edges;
+            for (auto it = node->InEdgeBegin(); it != node->InEdgeEnd(); ++it) {
+                edges.push_back(*it);
+            }
+            return edges;
+        }, py::return_value_policy::reference, "Get the in edges of the VFG node")
+        // Type checking methods
+        .def("is_stmt_vfg_node", [](const VFGNode* node) { return SVFUtil::isa<StmtVFGNode>(node); }, "Check if this is a statement VFG node")
+        .def("is_phi_vfg_node", [](const VFGNode* node) { return SVFUtil::isa<PHIVFGNode>(node); }, "Check if this is a phi VFG node")
+        .def("is_argument_vfg_node", [](const VFGNode* node) { return SVFUtil::isa<ArgumentVFGNode>(node); }, "Check if this is an argument VFG node")
+        .def("is_cmp_vfg_node", [](const VFGNode* node) { return SVFUtil::isa<CmpVFGNode>(node); }, "Check if this is a compare VFG node")
+        .def("is_binary_op_vfg_node", [](const VFGNode* node) { return SVFUtil::isa<BinaryOPVFGNode>(node); }, "Check if this is a binary operation VFG node")
+        .def("is_unary_op_vfg_node", [](const VFGNode* node) { return SVFUtil::isa<UnaryOPVFGNode>(node); }, "Check if this is a unary operation VFG node")
+        .def("is_branch_vfg_node", [](const VFGNode* node) { return SVFUtil::isa<BranchVFGNode>(node); }, "Check if this is a branch VFG node")
+        // Downcasting methods
+        .def("as_stmt_vfg_node", [](VFGNode* node) { return SVFUtil::dyn_cast<StmtVFGNode>(node); }, py::return_value_policy::reference, "Downcast to StmtVFGNode")
+        .def("as_phi_vfg_node", [](VFGNode* node) { return SVFUtil::dyn_cast<PHIVFGNode>(node); }, py::return_value_policy::reference, "Downcast to PHIVFGNode")
+        .def("as_argument_vfg_node", [](VFGNode* node) { return SVFUtil::dyn_cast<ArgumentVFGNode>(node); }, py::return_value_policy::reference, "Downcast to ArgumentVFGNode")
+        .def("as_cmp_vfg_node", [](VFGNode* node) { return SVFUtil::dyn_cast<CmpVFGNode>(node); }, py::return_value_policy::reference, "Downcast to CmpVFGNode")
+        .def("as_binary_op_vfg_node", [](VFGNode* node) { return SVFUtil::dyn_cast<BinaryOPVFGNode>(node); }, py::return_value_policy::reference, "Downcast to BinaryOPVFGNode")
+        .def("as_unary_op_vfg_node", [](VFGNode* node) { return SVFUtil::dyn_cast<UnaryOPVFGNode>(node); }, py::return_value_policy::reference, "Downcast to UnaryOPVFGNode")
+        .def("as_branch_vfg_node", [](VFGNode* node) { return SVFUtil::dyn_cast<BranchVFGNode>(node); }, py::return_value_policy::reference, "Downcast to BranchVFGNode");
+
+    // StmtVFGNode - Statement VFG node
+    py::class_<StmtVFGNode, VFGNode, std::shared_ptr<StmtVFGNode>>(m, "StmtVFGNode", "Statement VFG node")
+        .def("get_value", &StmtVFGNode::getValue, py::return_value_policy::reference, "Get the SVF variable value")
+        .def("to_string", &StmtVFGNode::toString, "Get string representation")
+        // Type checking
+        .def("is_load_vfg_node", [](const StmtVFGNode* node) { return SVFUtil::isa<LoadVFGNode>(node); }, "Check if this is a load VFG node")
+        .def("is_store_vfg_node", [](const StmtVFGNode* node) { return SVFUtil::isa<StoreVFGNode>(node); }, "Check if this is a store VFG node") 
+        .def("is_copy_vfg_node", [](const StmtVFGNode* node) { return SVFUtil::isa<CopyVFGNode>(node); }, "Check if this is a copy VFG node")
+        .def("is_gep_vfg_node", [](const StmtVFGNode* node) { return SVFUtil::isa<GepVFGNode>(node); }, "Check if this is a gep VFG node")
+        .def("is_addr_vfg_node", [](const StmtVFGNode* node) { return SVFUtil::isa<AddrVFGNode>(node); }, "Check if this is an addr VFG node")
+        // Downcasting
+        .def("as_load_vfg_node", [](StmtVFGNode* node) { return SVFUtil::dyn_cast<LoadVFGNode>(node); }, py::return_value_policy::reference, "Downcast to LoadVFGNode")
+        .def("as_store_vfg_node", [](StmtVFGNode* node) { return SVFUtil::dyn_cast<StoreVFGNode>(node); }, py::return_value_policy::reference, "Downcast to StoreVFGNode")
+        .def("as_copy_vfg_node", [](StmtVFGNode* node) { return SVFUtil::dyn_cast<CopyVFGNode>(node); }, py::return_value_policy::reference, "Downcast to CopyVFGNode")
+        .def("as_gep_vfg_node", [](StmtVFGNode* node) { return SVFUtil::dyn_cast<GepVFGNode>(node); }, py::return_value_policy::reference, "Downcast to GepVFGNode")
+        .def("as_addr_vfg_node", [](StmtVFGNode* node) { return SVFUtil::dyn_cast<AddrVFGNode>(node); }, py::return_value_policy::reference, "Downcast to AddrVFGNode");
+
+    // LoadVFGNode - Load statement VFG node
+    py::class_<LoadVFGNode, StmtVFGNode, std::shared_ptr<LoadVFGNode>>(m, "LoadVFGNode", "Load VFG node")
+        .def("get_def_svf_vars", &LoadVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &LoadVFGNode::toString, "Get string representation");
+
+    // StoreVFGNode - Store statement VFG node
+    py::class_<StoreVFGNode, StmtVFGNode, std::shared_ptr<StoreVFGNode>>(m, "StoreVFGNode", "Store VFG node")
+        .def("get_def_svf_vars", &StoreVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &StoreVFGNode::toString, "Get string representation");
+
+    // CopyVFGNode - Copy statement VFG node
+    py::class_<CopyVFGNode, StmtVFGNode, std::shared_ptr<CopyVFGNode>>(m, "CopyVFGNode", "Copy VFG node")
+        .def("get_def_svf_vars", &CopyVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &CopyVFGNode::toString, "Get string representation");
+
+    // GepVFGNode - GetElementPtr VFG node
+    py::class_<GepVFGNode, StmtVFGNode, std::shared_ptr<GepVFGNode>>(m, "GepVFGNode", "Gep VFG node")
+        .def("get_def_svf_vars", &GepVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &GepVFGNode::toString, "Get string representation");
+
+    // AddrVFGNode - Address-of VFG node
+    py::class_<AddrVFGNode, StmtVFGNode, std::shared_ptr<AddrVFGNode>>(m, "AddrVFGNode", "Address VFG node")
+        .def("get_def_svf_vars", &AddrVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &AddrVFGNode::toString, "Get string representation");
+
+    // PHIVFGNode - PHI VFG node
+    py::class_<PHIVFGNode, VFGNode, std::shared_ptr<PHIVFGNode>>(m, "PHIVFGNode", "PHI VFG node")
+        .def("get_def_svf_vars", &PHIVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("get_value", &PHIVFGNode::getValue, py::return_value_policy::reference, "Get result SVF variable")
+        .def("to_string", &PHIVFGNode::toString, "Get string representation")
+        // Type checking
+        .def("is_intra_phi_vfg_node", [](const PHIVFGNode* node) { return SVFUtil::isa<IntraPHIVFGNode>(node); }, "Check if this is an intra-procedural PHI VFG node")
+        .def("is_inter_phi_vfg_node", [](const PHIVFGNode* node) { return SVFUtil::isa<InterPHIVFGNode>(node); }, "Check if this is an inter-procedural PHI VFG node")
+        // Downcasting
+        .def("as_intra_phi_vfg_node", [](PHIVFGNode* node) { return SVFUtil::dyn_cast<IntraPHIVFGNode>(node); }, py::return_value_policy::reference, "Downcast to IntraPHIVFGNode")
+        .def("as_inter_phi_vfg_node", [](PHIVFGNode* node) { return SVFUtil::dyn_cast<InterPHIVFGNode>(node); }, py::return_value_policy::reference, "Downcast to InterPHIVFGNode");
+
+    // IntraPHIVFGNode - Intra-procedural PHI VFG node
+    py::class_<IntraPHIVFGNode, PHIVFGNode, std::shared_ptr<IntraPHIVFGNode>>(m, "IntraPHIVFGNode", "Intra-procedural PHI VFG node")
+        .def("to_string", &IntraPHIVFGNode::toString, "Get string representation");
+
+    // InterPHIVFGNode - Inter-procedural PHI VFG node
+    py::class_<InterPHIVFGNode, PHIVFGNode, std::shared_ptr<InterPHIVFGNode>>(m, "InterPHIVFGNode", "Inter-procedural PHI VFG node")
+        .def("to_string", &InterPHIVFGNode::toString, "Get string representation");
+
+    // ArgumentVFGNode - Base class for argument VFG nodes
+    py::class_<ArgumentVFGNode, VFGNode, std::shared_ptr<ArgumentVFGNode>>(m, "ArgumentVFGNode", "Argument VFG node")
+        .def("get_value", &ArgumentVFGNode::getValue, py::return_value_policy::reference, "Get parameter SVF variable")
+        .def("to_string", &ArgumentVFGNode::toString, "Get string representation")
+        // Type checking
+        .def("is_actual_parm_vfg_node", [](const ArgumentVFGNode* node) { return SVFUtil::isa<ActualParmVFGNode>(node); }, "Check if this is an actual parameter VFG node")
+        .def("is_formal_parm_vfg_node", [](const ArgumentVFGNode* node) { return SVFUtil::isa<FormalParmVFGNode>(node); }, "Check if this is a formal parameter VFG node")
+        .def("is_actual_ret_vfg_node", [](const ArgumentVFGNode* node) { return SVFUtil::isa<ActualRetVFGNode>(node); }, "Check if this is an actual return VFG node")
+        .def("is_formal_ret_vfg_node", [](const ArgumentVFGNode* node) { return SVFUtil::isa<FormalRetVFGNode>(node); }, "Check if this is a formal return VFG node")
+        // Downcasting
+        .def("as_actual_parm_vfg_node", [](ArgumentVFGNode* node) { return SVFUtil::dyn_cast<ActualParmVFGNode>(node); }, py::return_value_policy::reference, "Downcast to ActualParmVFGNode")
+        .def("as_formal_parm_vfg_node", [](ArgumentVFGNode* node) { return SVFUtil::dyn_cast<FormalParmVFGNode>(node); }, py::return_value_policy::reference, "Downcast to FormalParmVFGNode")
+        .def("as_actual_ret_vfg_node", [](ArgumentVFGNode* node) { return SVFUtil::dyn_cast<ActualRetVFGNode>(node); }, py::return_value_policy::reference, "Downcast to ActualRetVFGNode")
+        .def("as_formal_ret_vfg_node", [](ArgumentVFGNode* node) { return SVFUtil::dyn_cast<FormalRetVFGNode>(node); }, py::return_value_policy::reference, "Downcast to FormalRetVFGNode");
+
+    // ActualParmVFGNode - Actual parameter VFG node
+    py::class_<ActualParmVFGNode, ArgumentVFGNode, std::shared_ptr<ActualParmVFGNode>>(m, "ActualParmVFGNode", "Actual parameter VFG node")
+        .def("get_def_svf_vars", &ActualParmVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &ActualParmVFGNode::toString, "Get string representation");
+
+    // FormalParmVFGNode - Formal parameter VFG node
+    py::class_<FormalParmVFGNode, ArgumentVFGNode, std::shared_ptr<FormalParmVFGNode>>(m, "FormalParmVFGNode", "Formal parameter VFG node")
+        .def("get_def_svf_vars", &FormalParmVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &FormalParmVFGNode::toString, "Get string representation");
+
+    // ActualRetVFGNode - Actual return VFG node
+    py::class_<ActualRetVFGNode, ArgumentVFGNode, std::shared_ptr<ActualRetVFGNode>>(m, "ActualRetVFGNode", "Actual return VFG node")
+        .def("get_def_svf_vars", &ActualRetVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &ActualRetVFGNode::toString, "Get string representation");
+
+    // FormalRetVFGNode - Formal return VFG node
+    py::class_<FormalRetVFGNode, ArgumentVFGNode, std::shared_ptr<FormalRetVFGNode>>(m, "FormalRetVFGNode", "Formal return VFG node")
+        .def("get_def_svf_vars", &FormalRetVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &FormalRetVFGNode::toString, "Get string representation");
+
+    // CmpVFGNode - Compare operation VFG node
+    py::class_<CmpVFGNode, VFGNode, std::shared_ptr<CmpVFGNode>>(m, "CmpVFGNode", "Compare VFG node")
+        .def("get_def_svf_vars", &CmpVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("get_value", &CmpVFGNode::getValue, py::return_value_policy::reference, "Get result SVF variable")
+        .def("to_string", &CmpVFGNode::toString, "Get string representation");
+
+    // BinaryOPVFGNode - Binary operation VFG node
+    py::class_<BinaryOPVFGNode, VFGNode, std::shared_ptr<BinaryOPVFGNode>>(m, "BinaryOPVFGNode", "Binary operation VFG node")
+        .def("get_def_svf_vars", &BinaryOPVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("get_value", &BinaryOPVFGNode::getValue, py::return_value_policy::reference, "Get result SVF variable")
+        .def("to_string", &BinaryOPVFGNode::toString, "Get string representation");
+
+    // UnaryOPVFGNode - Unary operation VFG node
+    py::class_<UnaryOPVFGNode, VFGNode, std::shared_ptr<UnaryOPVFGNode>>(m, "UnaryOPVFGNode", "Unary operation VFG node")
+        .def("get_def_svf_vars", &UnaryOPVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &UnaryOPVFGNode::toString, "Get string representation");
+
+    // BranchVFGNode - Branch VFG node
+    py::class_<BranchVFGNode, VFGNode, std::shared_ptr<BranchVFGNode>>(m, "BranchVFGNode", "Branch VFG node")
+        .def("get_def_svf_vars", &BranchVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &BranchVFGNode::toString, "Get string representation");
+}
+
+// Bind SVFGNode classes
+void bind_svfg_node(py::module& m) {
+    // MRSVFGNode - Memory region VFGNode (for address-taken objects)
+    py::class_<MRSVFGNode, VFGNode, std::shared_ptr<MRSVFGNode>>(m, "MRSVFGNode", "Memory region VFG node")
+        .def("get_points_to", &MRSVFGNode::getPointsTo, py::return_value_policy::reference, "Get the points-to set of the memory region")
+        .def("get_def_svf_vars", &MRSVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("to_string", &MRSVFGNode::toString, "Get string representation")
+        // Type checking
+        .def("is_formal_in_svfg_node", [](const MRSVFGNode* node) { return SVFUtil::isa<FormalINSVFGNode>(node); }, "Check if this is a formal-in SVFG node")
+        .def("is_formal_out_svfg_node", [](const MRSVFGNode* node) { return SVFUtil::isa<FormalOUTSVFGNode>(node); }, "Check if this is a formal-out SVFG node")
+        .def("is_actual_in_svfg_node", [](const MRSVFGNode* node) { return SVFUtil::isa<ActualINSVFGNode>(node); }, "Check if this is an actual-in SVFG node")
+        .def("is_actual_out_svfg_node", [](const MRSVFGNode* node) { return SVFUtil::isa<ActualOUTSVFGNode>(node); }, "Check if this is an actual-out SVFG node")
+        .def("is_mssaphi_svfg_node", [](const MRSVFGNode* node) { return SVFUtil::isa<MSSAPHISVFGNode>(node); }, "Check if this is an MSSA phi SVFG node")
+        // Downcasting
+        .def("as_formal_in_svfg_node", [](MRSVFGNode* node) { return SVFUtil::dyn_cast<FormalINSVFGNode>(node); }, py::return_value_policy::reference, "Downcast to FormalINSVFGNode")
+        .def("as_formal_out_svfg_node", [](MRSVFGNode* node) { return SVFUtil::dyn_cast<FormalOUTSVFGNode>(node); }, py::return_value_policy::reference, "Downcast to FormalOUTSVFGNode")
+        .def("as_actual_in_svfg_node", [](MRSVFGNode* node) { return SVFUtil::dyn_cast<ActualINSVFGNode>(node); }, py::return_value_policy::reference, "Downcast to ActualINSVFGNode")
+        .def("as_actual_out_svfg_node", [](MRSVFGNode* node) { return SVFUtil::dyn_cast<ActualOUTSVFGNode>(node); }, py::return_value_policy::reference, "Downcast to ActualOUTSVFGNode")
+        .def("as_mssaphi_svfg_node", [](MRSVFGNode* node) { return SVFUtil::dyn_cast<MSSAPHISVFGNode>(node); }, py::return_value_policy::reference, "Downcast to MSSAPHISVFGNode");
+    
+    // FormalINSVFGNode - SVFG Node for entry chi node (address-taken variables)
+    py::class_<FormalINSVFGNode, MRSVFGNode, std::shared_ptr<FormalINSVFGNode>>(m, "FormalINSVFGNode", "Formal-in SVFG node (entry chi)")
+        .def("get_mr_ver", &FormalINSVFGNode::getMRVer, py::return_value_policy::reference, "Get the memory region version")
+        .def("get_fun_entry_node", &FormalINSVFGNode::getFunEntryNode, py::return_value_policy::reference, "Get the function entry ICFG node")
+        .def("to_string", &FormalINSVFGNode::toString, "Get string representation");
+    
+    // FormalOUTSVFGNode - SVFG Node for return mu node (address-taken variables)
+    py::class_<FormalOUTSVFGNode, MRSVFGNode, std::shared_ptr<FormalOUTSVFGNode>>(m, "FormalOUTSVFGNode", "Formal-out SVFG node (return mu)")
+        .def("get_mr_ver", &FormalOUTSVFGNode::getMRVer, py::return_value_policy::reference, "Get the memory region version")
+        .def("get_fun_exit_node", &FormalOUTSVFGNode::getFunExitNode, py::return_value_policy::reference, "Get the function exit ICFG node")
+        .def("to_string", &FormalOUTSVFGNode::toString, "Get string representation");
+    
+    // ActualINSVFGNode - SVFG Node for callsite mu node (address-taken variables)
+    py::class_<ActualINSVFGNode, MRSVFGNode, std::shared_ptr<ActualINSVFGNode>>(m, "ActualINSVFGNode", "Actual-in SVFG node (callsite mu)")
+        .def("get_mr_ver", &ActualINSVFGNode::getMRVer, py::return_value_policy::reference, "Get the memory region version")
+        .def("get_callsite", &ActualINSVFGNode::getCallSite, py::return_value_policy::reference, "Get the call site")
+        .def("to_string", &ActualINSVFGNode::toString, "Get string representation");
+    
+    // ActualOUTSVFGNode - SVFG Node for callsite chi node (address-taken variables)
+    py::class_<ActualOUTSVFGNode, MRSVFGNode, std::shared_ptr<ActualOUTSVFGNode>>(m, "ActualOUTSVFGNode", "Actual-out SVFG node (callsite chi)")
+        .def("get_mr_ver", &ActualOUTSVFGNode::getMRVer, py::return_value_policy::reference, "Get the memory region version")
+        .def("get_callsite", &ActualOUTSVFGNode::getCallSite, py::return_value_policy::reference, "Get the call site")
+        .def("to_string", &ActualOUTSVFGNode::toString, "Get string representation");
+    
+    // MSSAPHISVFGNode - SVFG Node for memory SSA phi nodes
+    py::class_<MSSAPHISVFGNode, MRSVFGNode, std::shared_ptr<MSSAPHISVFGNode>>(m, "MSSAPHISVFGNode", "Memory SSA PHI SVFG node")
+        .def("to_string", &MSSAPHISVFGNode::toString, "Get string representation")
+        // Type checking
+        .def("is_intra_mssaphi_svfg_node", [](const MSSAPHISVFGNode* node) { return SVFUtil::isa<IntraMSSAPHISVFGNode>(node); }, "Check if this is an intra-procedural MSSA phi SVFG node")
+        .def("is_inter_mssaphi_svfg_node", [](const MSSAPHISVFGNode* node) { return SVFUtil::isa<InterMSSAPHISVFGNode>(node); }, "Check if this is an inter-procedural MSSA phi SVFG node")
+        // Downcasting
+        .def("as_intra_mssaphi_svfg_node", [](MSSAPHISVFGNode* node) { return SVFUtil::dyn_cast<IntraMSSAPHISVFGNode>(node); }, py::return_value_policy::reference, "Downcast to IntraMSSAPHISVFGNode")
+        .def("as_inter_mssaphi_svfg_node", [](MSSAPHISVFGNode* node) { return SVFUtil::dyn_cast<InterMSSAPHISVFGNode>(node); }, py::return_value_policy::reference, "Downcast to InterMSSAPHISVFGNode");
+    
+    // IntraMSSAPHISVFGNode - Intra-procedural MSSA PHI node
+    py::class_<IntraMSSAPHISVFGNode, MSSAPHISVFGNode, std::shared_ptr<IntraMSSAPHISVFGNode>>(m, "IntraMSSAPHISVFGNode", "Intra-procedural Memory SSA PHI SVFG node")
+        .def("to_string", &IntraMSSAPHISVFGNode::toString, "Get string representation");
+    
+    // InterMSSAPHISVFGNode - Inter-procedural MSSA PHI node (formalIN/ActualOUT)
+    py::class_<InterMSSAPHISVFGNode, MSSAPHISVFGNode, std::shared_ptr<InterMSSAPHISVFGNode>>(m, "InterMSSAPHISVFGNode", "Inter-procedural Memory SSA PHI SVFG node")
+        .def("get_fun", &InterMSSAPHISVFGNode::getFun, py::return_value_policy::reference, "Get the function")
+        .def("to_string", &InterMSSAPHISVFGNode::toString, "Get string representation");
+    
+    // DummyVersionPropSVFGNode - Dummy node for object/version propagation
+    py::class_<DummyVersionPropSVFGNode, VFGNode, std::shared_ptr<DummyVersionPropSVFGNode>>(m, "DummyVersionPropSVFGNode", "Dummy version propagation SVFG node")
+        .def("get_def_svf_vars", &DummyVersionPropSVFGNode::getDefSVFVars, "Get defined SVF variables")
+        .def("get_object", [](const DummyVersionPropSVFGNode& node) { return node.getObject(); }, "Get the object ID")
+        .def("get_version", [](const DummyVersionPropSVFGNode& node) { return node.getVersion(); }, "Get the version");
+}
+
+
+// Bind VFG class
+void bind_vfg(py::module& m) {
+    py::class_<VFG>(m, "VFG", "Value Flow Graph")
+        .def("get_nodes", [](VFG& vfg) {
+            std::vector<VFGNode*> nodes;
+            for (auto& node : vfg) {
+                nodes.push_back(node.second);
+            }
+            return nodes;
+        }, py::return_value_policy::reference, "Get all nodes in the VFG")
+        .def("get_gnode", [](VFG& vfg, NodeID id) -> VFGNode* {
+            VFGNode* node = vfg.getGNode(id);
+            if (!node) {
+                throw std::runtime_error("VFGNode with given ID not found.");
+            }
+            return node;
+        }, py::arg("id"), py::return_value_policy::reference, "Get a VFG node by ID")
+        .def("view", &VFG::view, "View the VFG")
+        .def("get_node_num", &VFG::getTotalNodeNum, "Get the total number of nodes")
+        .def("get_edge_num", &VFG::getTotalEdgeNum, "Get the total number of edges");
+}
+
+// Bind SVFG class
+void bind_svfg(py::module& m) {
+    py::class_<SVFG, VFG>(m, "SVFG", "Sparse Value Flow Graph")
+        // SVFG specific methods
+        .def("get_def_svfg_node", [](SVFG& svfg, const SVFVar* val) { return svfg.getDefSVFGNode(val);}, py::arg("val"), py::return_value_policy::reference, "Get all the definition SVFG nodes of a SVF variable")
+        .def("get_actual_out_svfg_nodes", [](SVFG& svfg, const CallICFGNode* cs) { return svfg.getActualOUTSVFGNodes(cs); }, py::arg("cs"), py::return_value_policy::reference, "Get the ActualOUT SVFG nodes for a given call site")
+        .def("get_actual_in_svfg_nodes", [](SVFG& svfg, const CallICFGNode* cs) { return svfg.getActualINSVFGNodes(cs); }, py::arg("cs"), py::return_value_policy::reference, "Get the ActualIN SVFG nodes for a given call site")
+        .def("get_formal_out_svfg_nodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.getFormalOUTSVFGNodes(fun); }, py::arg("fun"), py::return_value_policy::reference, "Get the FormalOUT SVFG nodes for a given function")
+        .def("get_formal_in_svfg_nodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.getFormalINSVFGNodes(fun); }, py::arg("fun"), py::return_value_policy::reference, "Get the FormalIN SVFG nodes for a given function")
+        .def("dump", [](SVFG &icfg, std::string file) {
+            icfg.dump(file);
+        })
+        .def("view", &SVFG::view, "View the SVFG")
+        // has methods
+        .def("has_actual_out_svfg_nodes", [](SVFG& svfg, const CallICFGNode* cs) { return svfg.hasActualOUTSVFGNodes(cs); }, py::arg("cs"), "Check if there are ActualOUT SVFG nodes for a given call site")
+        .def("has_actual_in_svfg_nodes", [](SVFG& svfg, const CallICFGNode* cs) { return svfg.getActualINSVFGNodes(cs); }, py::arg("cs"), "Check if there are ActualIN SVFG nodes for a given call site")
+        .def("has_formal_out_svfg_nodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.getFormalOUTSVFGNodes(fun); }, py::arg("fun"), "Check if there are FormalOUT SVFG nodes for a given function")
+        .def("has_formal_in_svfg_nodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.getFormalINSVFGNodes(fun); }, py::arg("fun"), "Check if there are FormalIN SVFG nodes for a given function");
+}
+
+SVFIR* PySVF::currentSVFIR = nullptr;
+CallGraph* PySVF::currentCallGraph = nullptr;
+SVFG* PySVF::currentSVFG = nullptr;
+ICFG* PySVF::currentICFG = nullptr;
+std::string PySVF::lastAnalyzedModule = "";
 
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
@@ -1120,11 +1565,23 @@ PYBIND11_MODULE(pysvf, m) {
     bind_svf_stmt(m);
     bind_svf_var(m);
     bind_svf_type(m);
-    m.def("get_pag", &PySVF::get_pag, py::return_value_policy::reference, "Analyze LLVM bitcode and return SVFIR");
+    m.def("get_pag", &PySVF::get_pag, 
+        py::arg("bitcode_path"),  // Name the first parameter
+        py::arg("build_svfg") = false,  // Name the second parameter with default value
+        py::return_value_policy::reference, 
+        "Analyze LLVM bitcode and return SVFIR");
     m.def("release_pag", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
+    m.def("get_icfg", &PySVF::get_current_icfg, py::return_value_policy::reference, "Get the interprocedural control flow graph");
+    m.def("get_callgraph", &PySVF::get_current_call_graph, py::return_value_policy::reference, "Get the call graph");
+    m.def("get_svfg", &PySVF::get_current_svfg, py::return_value_policy::reference, "Get the sparse value flow graph");
+    m.def("get_module_name", &PySVF::get_last_analyzed_module, "Get the name of the last analyzed module");
     bind_callgraph_node(m);
     bind_callgraph_edge(m);
     bind_basic_block(m);
     bind_callgraph(m);
-
+    bind_svfg_edge(m);
+    bind_vfg_node(m);
+    bind_svfg_node(m);
+    bind_vfg(m);   
+    bind_svfg(m);    
 }
