@@ -3,13 +3,6 @@
 ## 1. Introduction
 This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF). 
 
-- If you are interested in using SVF by Python, please install the SVF-Python by the following command in (Chapter 2. Install SVF-Python).
-
-- If you are interested in building SVF-Python from scratch, please read [Build From Scratch](./Build_From_Scratch.md). If you cannot use
-  the pre-built wheels, you can follow this guide.
-
-- If you are publishing a new release of SVF-Python, please read [Build Release Whl](./Build_Release_Whl.md). [For SVF maintainers only]
-
 ## 2. Install SVF-Python
 
 ### Pre-requisite
@@ -23,25 +16,23 @@ install pysvf by pip
 python3 -m pip install  -i https://test.pypi.org/simple/ pysvf
 ```
 
-### Demo
+### Documentation
 
-Then you can use the pysvf in your python3 code.
+The documentation of pysvf is available at [Wiki](https://github.com/SVF-tools/SVF-Python/wiki) page. 
+
+- Pysvf API reference: [Link](https://github.com/SVF-tools/SVF-Python/wiki/PySVF-API)
+- Install Pysvf from Scratch: [Link](https://github.com/SVF-tools/SVF-Python/wiki/Install-Pysvf-from-Scratch) 
+
+
+
+### Tutorial
+
+In `tutorial` folder, there are some examples to show how to use pysvf. Before running the examples, you need to install Jupyter Notebook first.
+
 ```angular2html
-git clone https://github.com/SVF-tools/SVF-Python.git
-cd SVF-Python/test_cases
-python3 test.py
+python3 -m pip install jupyter
 ```
 
-Then you should see a bunch of output from ICFGNode from the bitcodes.
-```angular2html
-.... [Other output
-CallICFGNode45 {fun: main{ "ln": 21, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }}
-   call void @svf_assert(i1 noundef zeroext %cmp), !dbg !47 CallICFGNode: { "ln": 21, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }
-
-RetICFGNode46 {fun: main{ "ln": 21, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }}
-   call void @svf_assert(i1 noundef zeroext %cmp), !dbg !47 RetICFGNode: { "ln": 21, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }
-
-IntraICFGNode47 {fun: main{ "ln": 22, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }}
-   ret i32 0, !dbg !48 { "ln": 22, "cl": 5, "fl": "src/ae_assert_tests/BASIC_array_2d_0-0.c" }
-
-```
+- [PAG](./tutorials/pag.ipynb): This example shows how to use pysvf to generate Program Assignment Graph (PAG, SVFIR) from LLVM BC files, and how to manipulate PAGNode(SVFVar).
+- [ICFG](./tutorials/icfg.ipynb): This example shows how to use pysvf to generate Interprocedural Control Flow Graph (ICFG) and how to manipulate ICFGNode, ICFGEdge and their sub-classes.
+- [SVFG](./tutorials/svfg.ipynb): This example shows how to use pysvf to generate Static Value Flow Graph (SVFG) and how to manipulate SVFGNode, SVFGEdge and their sub-classes.
