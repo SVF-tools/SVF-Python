@@ -28,7 +28,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
-          pip install pybind11 notebook nbconvert nbclient ipykernel build
+          pip install wheel pybind11 notebook nbconvert nbclient ipykernel
 
       - name: Register Jupyter kernel
         run: |
