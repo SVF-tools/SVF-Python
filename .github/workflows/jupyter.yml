@@ -1,15 +1,14 @@
-name: Run Notebooks in Tutorials
+name: Run Notebooks using Built pysvf
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+
 jobs:
   execute-notebooks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -19,17 +18,17 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake gcc g++ python3-dev python3-pip nodejs
+          sudo apt-get install -y cmake gcc g++ python3-dev nodejs
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install pip dependencies
+      - name: Install Python dependencies
         run: |
           pip install --upgrade pip
-          pip install notebook nbconvert nbclient ipykernel build pybind11
+          pip install pybind11 notebook nbconvert nbclient ipykernel build
 
       - name: Register Jupyter kernel
         run: |
@@ -42,21 +41,33 @@ jobs:
           echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
 
-      - name: Build & install pysvf locally
+      - name: Get system architecture
+        id: get_arch
+        run: |
+          echo "arch=$(uname -m)" >> $GITHUB_OUTPUT
+
+      - name: Build and install pysvf
         run: |
           git clone https://github.com/SVF-tools/SVF-Python.git
           cd SVF-Python
-          rm -rf build dist pysvf.egg-info
+          rm -rf build dist pysvf.egg-info  
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
-          mkdir build && cd build
-          cmake -DCMAKE_PREFIX_PATH=$PYBIND11_DIR -DSVF_DIR=$SVF_DIR -DLLVM_DIR=$LLVM_DIR -DZ3_DIR=$Z3_DIR .. 
-          make -j$(nproc)
-          cd ..
-          python -m build
+
+          # Fake version for dev notebook CI
+          sed -i.bak "s/version=.*,/version='0.0.0.dev0',/" setup.py
+
+          if [[ "$(uname)" == "Linux" ]]; then
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
+            python3 setup.py bdist_wheel --plat-name manylinux2014_${{ steps.get_arch.outputs.arch }}
+          else
+            echo "Unsupported platform"
+            exit 1
+          fi
+
           pip install dist/*.whl
 
-      - name: Run all notebooks in tutorials/
+      - name: Run notebooks under tutorials/
         run: |
           cd tutorials
           for nb in $(find . -name "*.ipynb"); do
