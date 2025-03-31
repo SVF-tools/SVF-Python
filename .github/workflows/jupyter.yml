@@ -67,9 +67,9 @@ jobs:
 
           pip install dist/*.whl
 
-      - name: Run notebooks under tutorials/
+      - name: Run notebooks under demo/
         run: |
-          cd tutorials
+          cd demo
           for nb in $(find . -name "*.ipynb"); do
             echo "Executing $nb..."
             jupyter nbconvert --to notebook --execute "$nb" --stdout > /dev/null

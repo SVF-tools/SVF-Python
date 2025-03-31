@@ -163,3 +163,4 @@ pysvf.MSSAPHISVFGNode.__init__
 pysvf.PHIVFGNode.__init__
 pysvf.VFG.__init__
 pysvf.VFG.dump
+pysvf.SVFType.to_string

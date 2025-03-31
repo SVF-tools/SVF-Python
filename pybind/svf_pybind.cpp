@@ -649,7 +649,7 @@ void bind_svf_var(py::module &m) {
                 oss << node->toString();
                 return oss.str();
             }, "Get the string representation of the SVF variable")
-            .def("__repr____", [](SVF::SVFVar* node) {
+            .def("__repr__", [](SVF::SVFVar* node) {
                 if (!node) {
                     return std::string("nullptr");
                 }
