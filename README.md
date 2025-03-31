@@ -33,6 +33,6 @@ In `tutorial` folder, there are some examples to show how to use pysvf. Before r
 python3 -m pip install jupyter
 ```
 
-- [PAG](./tutorials/pag.ipynb): This example shows how to use pysvf to generate Program Assignment Graph (PAG, SVFIR) from LLVM BC files, and how to manipulate PAGNode(SVFVar).
-- [ICFG](./tutorials/icfg.ipynb): This example shows how to use pysvf to generate Interprocedural Control Flow Graph (ICFG) and how to manipulate ICFGNode, ICFGEdge and their sub-classes.
-- [SVFG](./tutorials/svfg.ipynb): This example shows how to use pysvf to generate Static Value Flow Graph (SVFG) and how to manipulate SVFGNode, SVFGEdge and their sub-classes.
+- [PAG](./demo/pag.ipynb): This example shows how to use pysvf to generate Program Assignment Graph (PAG, SVFIR) from LLVM BC files, and how to manipulate PAGNode(SVFVar).
+- [ICFG](./demo/icfg.ipynb): This example shows how to use pysvf to generate Interprocedural Control Flow Graph (ICFG) and how to manipulate ICFGNode, ICFGEdge and their sub-classes.
+- [SVFG](./demo/svfg.ipynb): This example shows how to use pysvf to generate Static Value Flow Graph (SVFG) and how to manipulate SVFGNode, SVFGEdge and their sub-classes.

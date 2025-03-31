@@ -81,6 +81,7 @@ def main():
     args = sys.argv[2:]
     run_svf_tool(tool_name, args)
 
+from .enums import Predicate, OpCode
 # Import all the module classes and functions
 from .pysvf import (
     get_pag,
