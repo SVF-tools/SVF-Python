@@ -13,19 +13,42 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake gcc g++ python3-dev
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install Jupyter and register kernel
+      - name: Install pip dependencies
         run: |
-          pip install notebook nbconvert nbclient ipykernel
-          python -m ipykernel install --user --name python3
-          pip install install -i https://test.pypi.org/simple/ pysvf
+          pip install notebook nbconvert nbclient ipykernel build pybind11
 
-      - name: Run all notebooks under tutorials/
+      - name: Register Jupyter kernel
+        run: |
+          python -m ipykernel install --user --name python3
+
+      - name: Build & install pysvf locally
+        run: |
+          git clone https://github.com/SVF-tools/SVF-Python.git
+          cd SVF-Python
+          rm -rf build dist pysvf.egg-info
+          export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
+          export CMAKE_BUILD_TYPE=Release
+          mkdir build && cd build
+          cmake ..
+          make -j$(nproc)
+          cd ..
+          python -m build
+          pip install dist/*.whl
+
+      - name: Run all notebooks in tutorials/
         run: |
           cd tutorials
           for nb in $(find . -name "*.ipynb"); do
