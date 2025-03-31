@@ -10,10 +10,6 @@ on:
   push:
     branches:
       - main  # only build on main branch
-    paths:
-      - 'pysvf/**'
-      - 'pybind/**'
-      - 'CMakeLists.txt'
 
 jobs:
   stubtest:
