@@ -1,0 +1,34 @@
+name: Run Notebooks in Tutorials
+
+on:
+  push:
+    paths:
+      - 'tutorials/**/*.ipynb'
+  pull_request:
+    paths:
+      - 'tutorials/**/*.ipynb'
+
+jobs:
+  execute-notebooks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Jupyter
+        run: |
+          pip install nbconvert nbclient
+          pip install install -i https://test.pypi.org/simple/ pysvf
+
+      - name: Run all notebooks under tutorials/
+        run: |
+          cd tutorials
+          for nb in $(find . -name "*.ipynb"); do
+            echo "Executing $nb..."
+            jupyter nbconvert --to notebook --execute "$nb" --stdout > /dev/null
+          done
