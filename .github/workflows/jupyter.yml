@@ -50,7 +50,7 @@ jobs:
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
           mkdir build && cd build
-          cmake -DCMAKE_PREFIX_PATH=$PYBIND11_DIR ..  # ✅ 让 pybind11 找到
+          cmake -DCMAKE_PREFIX_PATH=$PYBIND11_DIR -DSVF_DIR=$SVF_DIR -DLLVM_DIR=$LLVM_DIR -DZ3_DIR=$Z3_DIR .. 
           make -j$(nproc)
           cd ..
           python -m build
