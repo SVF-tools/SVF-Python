@@ -36,6 +36,9 @@
 #include "SVFIR/SVFStatements.h"
 #include "MemoryModel/PointerAnalysis.h"
 #include "WPA/Andersen.h"
+#include "AE/Core/AbstractState.h"
+#include <pybind11/operators.h>
+
 
 namespace py = pybind11;
 using namespace SVF;
@@ -96,7 +99,10 @@ public:
     static std::string get_last_analyzed_module() {
         return lastAnalyzedModule;
     }
+
 };
+
+    
 
 void bind_icfg_node(py::module& m) {
     py::class_<ICFGNode>(m, "ICFGNode", "Represents a node in the Interprocedural Control Flow Graph (ICFG)")
@@ -1796,6 +1802,493 @@ void bind_svfg(py::module& m) {
         .def("has_formal_in_svfg_nodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.getFormalINSVFGNodes(fun); }, py::arg("fun"), "Check if there are FormalIN SVFG nodes for a given function");
 }
 
+
+void bind_andersen_base(py::module& m) {
+    class PublicAndersen : public AndersenBase {
+        public:
+            using AndersenBase::AndersenBase;  // 继承构造函数
+        
+            using AndersenBase::pushIntoWorklist;
+            using AndersenBase::popFromWorklist;
+            using AndersenBase::isWorklistEmpty;
+            using AndersenBase::unionPts;
+            using AndersenBase::addPts;
+            using AndersenBase::getPts;
+            using AndersenBase::initWorklist;
+            using AndersenBase::finalize;
+            using AndersenBase::initialize;
+            using AndersenBase::updateCallGraph;
+            using AndersenBase::getIndirectCallsites;
+            using AndersenBase::getConstraintGraph;
+            using AndersenBase::alias;
+            bool addCopyEdge(NodeID src, NodeID dst) override {
+                assert(false && "You cannot call AndersenBase::addCopyEdge");
+                return false;
+            }
+        };
+    py::class_<PublicAndersen, std::shared_ptr<PublicAndersen>>(m, "AndersenBase", "Anderson's analysis base class")
+        .def(py::init([](SVFIR* svfir) {
+            return std::make_shared<PublicAndersen>(svfir);
+        }))
+        .def("initialize", &PublicAndersen::initialize, "Initialize the analysis")
+        .def("init_worklist", &PublicAndersen::initWorklist, "Initialize the worklist")
+        .def("update_call_graph", [](PublicAndersen& base) {
+            return base.updateCallGraph(base.getIndirectCallsites());
+        }, py::return_value_policy::reference, "Update the call graph with the given call sites")
+        .def("push_into_worklist", [](PublicAndersen& base, NodeID id) {
+            base.pushIntoWorklist(id);
+        }, py::arg("node"), "Push a node into the worklist")
+        .def("finalize", &PublicAndersen::finalize, "Finalize the analysis")
+        .def("add_pts",[](PublicAndersen& base, NodeID id, NodeID ptd) {
+            return base.addPts(id, ptd);
+        }, py::arg("id"), py::arg("ptd"), "Add points-to information")
+        .def("get_constraint_graph", &PublicAndersen::getConstraintGraph, py::return_value_policy::reference, "Get the constraint graph")
+        .def("union_pts", [](PublicAndersen& base, NodeID id, NodeID ptd) {
+            return base.unionPts(id, ptd);
+        }, py::arg("id"), py::arg("ptd"), "Union points-to 1 information")
+        .def("union_pts_2", [](PublicAndersen& base, NodeID id, const PointsTo& ptd) {
+            return base.unionPts(id, ptd);
+        }, py::arg("id"), py::arg("ptd"), "Union points-to 2 information")
+        .def("alias", [](PublicAndersen& base, NodeID id1, NodeID id2) {
+            return base.alias(id1, id2);
+        }, py::arg("id1"), py::arg("id2"), py::return_value_policy::reference, "Check if two nodes are aliases")
+        .def("is_worklist_empty", &PublicAndersen::isWorklistEmpty, "Check if the worklist is empty")
+        .def("pop_from_worklist", [](PublicAndersen& base) {
+            return base.popFromWorklist();
+        }, "Pop a node from the worklist")
+        .def("get_pts", [](PublicAndersen& base, NodeID id) {
+            return base.getPts(id);
+        }, py::arg("id"), py::return_value_policy::reference, "Get points-to information for a given ID");
+
+}
+
+void bind_points_to(py::module& m) {
+    py::class_<PointsTo, std::shared_ptr<PointsTo>>(m, "PointsTo", "Points-to set")
+        .def(py::init<>())  // 默认构造
+        .def("set", [](PointsTo& pts, NodeID id) {
+            pts.set(id);
+        }, py::arg("id"), "Set a node ID in the points-to set")
+        .def("__iter__", [](PointsTo &self) {
+            return py::make_iterator(self.begin(), self.end());
+        }, py::keep_alive<0, 1>()) ;
+}
+
+void bind_constraint_graph(py::module& m) {
+    // ConstraintEdge (base class)
+    py::class_<ConstraintEdge>(m, "ConstraintEdge", "Constraint edge")
+        .def("get_src", &ConstraintEdge::getSrcNode, py::return_value_policy::reference)
+        .def("get_dst", &ConstraintEdge::getDstNode, py::return_value_policy::reference)
+        .def("get_src_id", &ConstraintEdge::getSrcID)
+        .def("get_dst_id", &ConstraintEdge::getDstID)
+        .def("as_addr_cg_edge", [](ConstraintEdge* edge) { return SVFUtil::dyn_cast<AddrCGEdge>(edge); }, py::return_value_policy::reference)
+        .def("as_copy_cg_edge", [](ConstraintEdge* edge) { return SVFUtil::dyn_cast<CopyCGEdge>(edge); }, py::return_value_policy::reference)
+        .def("as_store_cg_edge", [](ConstraintEdge* edge) { return SVFUtil::dyn_cast<StoreCGEdge>(edge); }, py::return_value_policy::reference)
+        .def("as_load_cg_edge", [](ConstraintEdge* edge) { return SVFUtil::dyn_cast<LoadCGEdge>(edge); }, py::return_value_policy::reference)
+        .def("as_gep_cg_edge", [](ConstraintEdge* edge) { return SVFUtil::dyn_cast<GepCGEdge>(edge); }, py::return_value_policy::reference)
+        .def("as_normal_gep_cg_edge", [](ConstraintEdge* edge) { return SVFUtil::dyn_cast<NormalGepCGEdge>(edge); }, py::return_value_policy::reference)
+        .def("as_variant_gep_cg_edge", [](ConstraintEdge* edge) { return SVFUtil::dyn_cast<VariantGepCGEdge>(edge); }, py::return_value_policy::reference);
+
+    // Subclasses of ConstraintEdge
+    py::class_<AddrCGEdge, ConstraintEdge>(m, "AddrCGEdge");
+    py::class_<CopyCGEdge, ConstraintEdge>(m, "CopyCGEdge");
+    py::class_<StoreCGEdge, ConstraintEdge>(m, "StoreCGEdge");
+    py::class_<LoadCGEdge, ConstraintEdge>(m, "LoadCGEdge");
+    // GepCGEdge is abstract; don't instantiate directly
+    py::class_<GepCGEdge, ConstraintEdge>(m, "GepCGEdge")
+        .def("as_normal_gep_cg_edge", [](GepCGEdge* edge) { return SVFUtil::dyn_cast<NormalGepCGEdge>(edge); }, py::return_value_policy::reference)
+        .def("as_variant_gep_cg_edge", [](GepCGEdge* edge) { return SVFUtil::dyn_cast<VariantGepCGEdge>(edge); }, py::return_value_policy::reference);
+
+    // NormalGepCGEdge
+    py::class_<NormalGepCGEdge, GepCGEdge>(m, "NormalGepCGEdge")
+        .def("get_access_path", &NormalGepCGEdge::getAccessPath, py::return_value_policy::reference)
+        .def("get_constant_field_idx", &NormalGepCGEdge::getConstantFieldIdx);
+
+    // VariantGepCGEdge
+    py::class_<VariantGepCGEdge, GepCGEdge>(m, "VariantGepCGEdge");
+
+
+    py::class_<ConstraintNode>(m, "ConstraintNode", "Constraint node")
+        .def("to_string", &ConstraintNode::toString)
+        .def("__str__", &ConstraintNode::toString)
+        .def("__repr__", &ConstraintNode::toString)
+        .def("get_in_edges", &ConstraintNode::getInEdges, py::return_value_policy::reference)
+        .def("get_out_edges", &ConstraintNode::getOutEdges, py::return_value_policy::reference)
+        .def("get_direct_in_edges", &ConstraintNode::getDirectInEdges, py::return_value_policy::reference)
+        .def("get_direct_out_edges", &ConstraintNode::getDirectOutEdges, py::return_value_policy::reference)
+        .def("get_copy_in_edges", &ConstraintNode::getCopyInEdges, py::return_value_policy::reference)
+        .def("get_copy_out_edges", &ConstraintNode::getCopyOutEdges, py::return_value_policy::reference)
+        .def("get_gep_in_edges", &ConstraintNode::getGepInEdges, py::return_value_policy::reference)
+        .def("get_gep_out_edges", &ConstraintNode::getGepOutEdges, py::return_value_policy::reference)
+        .def("get_load_in_edges", &ConstraintNode::getLoadInEdges, py::return_value_policy::reference)
+        .def("get_load_out_edges", &ConstraintNode::getLoadOutEdges, py::return_value_policy::reference)
+        .def("get_store_in_edges", &ConstraintNode::getStoreInEdges, py::return_value_policy::reference)
+        .def("get_store_out_edges", &ConstraintNode::getStoreOutEdges, py::return_value_policy::reference)
+        .def("get_addr_in_edges", &ConstraintNode::getAddrInEdges, py::return_value_policy::reference)
+        .def("get_addr_out_edges", &ConstraintNode::getAddrOutEdges, py::return_value_policy::reference);
+    // ConstraintGraph itself
+    py::class_<ConstraintGraph>(m, "ConstraintGraph")
+        .def("get_nodes", [](ConstraintGraph& graph) {
+            std::vector<ConstraintNode*> nodes;
+            for (auto& node : graph) {
+                nodes.push_back(node.second);
+            }
+            return nodes;
+        }, py::return_value_policy::reference)
+        .def("get_gnode", [](ConstraintGraph& graph, NodeID id) -> ConstraintNode* {
+            ConstraintNode* node = graph.getGNode(id);
+            if (!node) {
+                throw std::runtime_error("ConstraintsNode with given ID not found.");
+            }
+            return node;
+        }, py::arg("id"), py::return_value_policy::reference)
+        .def("get_constraint_node", [](ConstraintGraph& graph, NodeID id) -> ConstraintNode* {
+            ConstraintNode* node = graph.getConstraintNode(id);
+            if (!node) {
+                throw std::runtime_error("ConstraintsNode with given ID not found.");
+            }
+            return node;
+        }, py::arg("id"), py::return_value_policy::reference)
+        .def("add_copy_edge", [](ConstraintGraph& graph, NodeID src, NodeID dst) -> CopyCGEdge* {
+            std::cout << "Pybind Adding copy edge from " << src << " to " << dst << std::endl;
+            return graph.addCopyCGEdge(src, dst);
+        }, py::arg("src"), py::arg("dst"),
+           py::return_value_policy::reference_internal)
+        .def("get_gep_obj_var", [](ConstraintGraph& graph, NodeID id, const APOffset& ap) 
+        { return graph.getGepObjVar(id, ap); }, py::arg("id"), py::arg("offset"), py::return_value_policy::reference);
+}
+
+void bind_abstract_state(py::module& m) {
+
+    py::class_<BoundedInt>(m, "BoundedInt")
+        .def(py::init([](int64_t val) {
+            return new BoundedInt(val);
+        }), py::arg("val"))
+        .def(py::init([](int64_t val, bool isInf) {
+            return new BoundedInt(val, isInf);
+        }), py::arg("val"), py::arg("isInf"))
+        
+        .def("get_numeral", &BoundedInt::getNumeral)
+        .def_property_readonly("is_infinity", &BoundedInt::is_infinity)
+        .def_property_readonly("is_plus_infinity", &BoundedInt::is_plus_infinity)
+        .def_property_readonly("is_minus_infinity", &BoundedInt::is_minus_infinity)
+        .def_property_readonly("is_zero", &BoundedInt::is_zero)
+        .def("__str__", [](const BoundedInt& self) { return self.to_string(); })
+        .def("__repr__", [](const BoundedInt& self) {
+            return "<BoundedInt " + self.to_string() + ">";
+        })
+        .def(py::self + py::self)
+        .def(py::self - py::self)
+        .def(py::self * py::self)
+        .def(py::self / py::self)
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+        .def(py::self < py::self)
+        .def(py::self <= py::self)
+        .def(py::self > py::self)
+        .def(py::self >= py::self)
+        .def("__neg__", [](const BoundedInt& self) { return -self; })
+        .def("__le__", [](const BoundedInt& self, int64_t other) {
+            return self <= BoundedInt(other);
+        })
+        .def("__ge__", [](const BoundedInt& self, int64_t other) {
+            return self >= BoundedInt(other);
+        })
+        .def("__lt__", [](const BoundedInt& self, int64_t other) {
+            return self < BoundedInt(other);
+        })
+        .def("__gt__", [](const BoundedInt& self, int64_t other) {
+            return self > BoundedInt(other);
+        })
+        .def("__eq__", [](const BoundedInt& self, int64_t other) {
+            return self == BoundedInt(other);
+        })
+        .def("__ne__", [](const BoundedInt& self, int64_t other) {
+            return self != BoundedInt(other);
+        })
+        .def_property_readonly("is_plus_infinity", &BoundedInt::is_plus_infinity)
+        .def_static("plus_infinity", &BoundedInt::plus_infinity)
+        .def_property_readonly("is_minus_infinity", &BoundedInt::is_minus_infinity)
+        .def_static("minus_infinity", &BoundedInt::minus_infinity);
+
+
+    py::class_<IntervalValue>(m, "IntervalValue", "Interval Value")
+        // Constructors
+        .def(py::init([]() {
+            return new IntervalValue();
+        }))
+        .def(py::init([](int64_t val) {
+            return new IntervalValue(val);
+        }), py::arg("val"))
+
+        .def(py::init([](py::object lb, py::object ub) {
+            auto to_bounded_int = [](py::object obj) -> BoundedInt {
+                if (py::isinstance<BoundedInt>(obj)) {
+                    return obj.cast<BoundedInt>();
+                } else if (py::isinstance<py::int_>(obj)) {
+                    return BoundedInt(obj.cast<int64_t>());
+                } else {
+                    throw std::invalid_argument("Expected int or BoundedInt");
+                }
+            };
+        
+            return new IntervalValue(to_bounded_int(lb), to_bounded_int(ub));
+        }), py::arg("lb"), py::arg("ub"))
+
+        // Equality
+        .def("__eq__", [](const IntervalValue &self, const IntervalValue &other) {
+            return self == other;
+        })
+        .def("__ne__", [](const IntervalValue &self, const IntervalValue &other) {
+            return self != other;
+        })
+
+        // Arithmetic operators
+        .def(py::self + py::self)
+        .def(py::self - py::self)
+        .def(py::self * py::self)
+        .def(py::self / py::self)
+        .def(py::self % py::self)
+
+        // Bitwise operators
+        .def(py::self << py::self)
+        .def(py::self >> py::self)
+        .def(py::self & py::self)
+        .def(py::self | py::self)
+        .def(py::self ^ py::self)
+
+        // Comparison operators (return IntervalValue)
+        .def("__lt__", [](const IntervalValue &self, const IntervalValue &other) {
+            return self < other;
+        })
+        .def("__le__", [](const IntervalValue &self, const IntervalValue &other) {
+            return self <= other;
+        })
+        .def("__gt__", [](const IntervalValue &self, const IntervalValue &other) {
+            return self > other;
+        })
+        .def("__ge__", [](const IntervalValue &self, const IntervalValue &other) {
+            return self >= other;
+        })
+
+        // Methods
+        .def("is_bottom", &IntervalValue::isBottom)
+        .def("is_top", &IntervalValue::isTop)
+        .def("is_numeral", &IntervalValue::is_numeral)
+        .def("is_zero", &IntervalValue::is_zero)
+        .def("is_real", &IntervalValue::is_real)
+        .def("is_int", &IntervalValue::is_int)
+        .def("equals", &IntervalValue::equals, py::arg("other"))
+        .def("get_numeral", &IntervalValue::getNumeral)
+        .def("get_int_numeral", &IntervalValue::getIntNumeral)
+        .def("get_real_numeral", &IntervalValue::getRealNumeral)
+        .def("contained_within", &IntervalValue::containedWithin)
+        .def("contain", &IntervalValue::contain)
+        .def("leq", &IntervalValue::leq)
+        .def("geq", &IntervalValue::geq)
+        .def("set_to_bottom", &IntervalValue::set_to_bottom)
+        .def("set_to_top", &IntervalValue::set_to_top)
+        .def("to_string", &IntervalValue::toString)
+        .def("lb", &IntervalValue::lb)
+        .def("ub", &IntervalValue::ub)
+
+        .def("join_with", &IntervalValue::join_with, py::arg("other"))
+        .def("meet_with", &IntervalValue::meet_with, py::arg("other"))
+        .def("widen_with", &IntervalValue::widen_with, py::arg("other"))
+        .def("narrow_with", &IntervalValue::narrow_with, py::arg("other"))
+
+        // Class methods for top/bottom
+        .def_static("top", &IntervalValue::top)
+        .def_static("bottom", &IntervalValue::bottom)
+
+        // __repr__ for Python string representation
+        .def("__repr__", [](const IntervalValue &iv) {
+            return iv.toString();
+        });
+
+    py::class_<AddressValue>(m, "AddressValue", "Address Value Set")
+        .def(py::init<u32_t>(), py::arg("val"))
+        .def(py::init<const Set<u32_t>&>(), py::arg("vals"))
+    
+        .def("__eq__", [](const AddressValue &self, const AddressValue &other) {
+            return self.equals(other);
+        })
+        .def("__ne__", [](const AddressValue &self, const AddressValue &other) {
+            return !self.equals(other);
+        })
+    
+        .def("__iter__", [](AddressValue &self) {
+            return py::make_iterator(self.begin(), self.end());
+        }, py::keep_alive<0, 1>())
+    
+        .def("__len__", &AddressValue::size)
+        .def("__contains__", [](const AddressValue &self, u32_t val) {
+            return self.contains(val);
+        }, py::arg("val"))
+    
+        .def("insert", [](AddressValue &self, u32_t val) {
+            return self.insert(val).second;
+        }, py::arg("addr"))
+    
+        .def("contains", &AddressValue::contains, py::arg("addr"))
+        .def("empty", &AddressValue::empty)
+        .def("size", &AddressValue::size)
+        .def("is_top", &AddressValue::isTop)
+        .def("is_bottom", &AddressValue::isBottom)
+        .def("set_top", &AddressValue::setTop)
+        .def("set_bottom", &AddressValue::setBottom)
+    
+        .def("join_with", &AddressValue::join_with)
+        .def("meet_with", &AddressValue::meet_with)
+        .def("has_intersect", &AddressValue::hasIntersect)
+    
+        .def("get_vals", &AddressValue::getVals, py::return_value_policy::reference_internal)
+        .def("set_vals", &AddressValue::setVals, py::arg("vals"))
+    
+        .def_static("get_virtual_mem_address", &AddressValue::getVirtualMemAddress, py::arg("idx"))
+        .def_static("is_virtual_mem_address", &AddressValue::isVirtualMemAddress, py::arg("val"))
+        .def_static("get_internal_id", &AddressValue::getInternalID, py::arg("val"))
+    
+        .def("__str__", [](const AddressValue &av) {
+            return av.toString();
+        })
+        .def("__repr__", [](const AddressValue &av) {
+            return "<AddressValue: " + av.toString() + ">";
+        });
+    
+
+    py::class_<AbstractValue>(m, "AbstractValue")
+        .def(py::init<>())
+        .def(py::init<const IntervalValue&>())
+        .def(py::init<const AddressValue&>())
+        .def("is_interval", &AbstractValue::isInterval)
+        .def("is_addr", &AbstractValue::isAddr)
+        .def("get_interval", py::overload_cast<>(&AbstractValue::getInterval, py::const_)) 
+        .def("get_addrs", py::overload_cast<>(&AbstractValue::getAddrs, py::const_))
+        .def("ref_interval", py::overload_cast<>(&AbstractValue::getInterval), py::return_value_policy::reference)
+        .def("ref_addrs", py::overload_cast<>(&AbstractValue::getAddrs), py::return_value_policy::reference)
+        .def("equals", &AbstractValue::equals)
+            // === join_with overloads ===
+        .def("join_with", [](AbstractValue &self, const AbstractValue &other) {
+            self.join_with(other);
+        })
+        .def("join_with", [](AbstractValue &self, const IntervalValue &ival) {
+            self.join_with(AbstractValue(ival));
+        })
+        .def("join_with", [](AbstractValue &self, const AddressValue &aval) {
+            self.join_with(AbstractValue(aval));
+        })
+
+        // === meet_with overloads ===
+        .def("meet_with", [](AbstractValue &self, const AbstractValue &other) {
+            self.meet_with(other);
+        })
+        .def("meet_with", [](AbstractValue &self, const IntervalValue &ival) {
+            self.meet_with(AbstractValue(ival));
+        })
+        .def("meet_with", [](AbstractValue &self, const AddressValue &aval) {
+            self.meet_with(AbstractValue(aval));
+        })
+
+        // === widen_with overloads ===
+        .def("widen_with", [](AbstractValue &self, const AbstractValue &other) {
+            self.widen_with(other);
+        })
+        .def("widen_with", [](AbstractValue &self, const IntervalValue &ival) {
+            self.widen_with(AbstractValue(ival));
+        })
+        .def("widen_with", [](AbstractValue &self, const AddressValue &aval) {
+            self.widen_with(AbstractValue(aval));
+        })
+
+        // === narrow_with overloads ===
+        .def("narrow_with", [](AbstractValue &self, const AbstractValue &other) {
+            self.narrow_with(other);
+        })
+        .def("narrow_with", [](AbstractValue &self, const IntervalValue &ival) {
+            self.narrow_with(AbstractValue(ival));
+        })
+        .def("narrow_with", [](AbstractValue &self, const AddressValue &aval) {
+            self.narrow_with(AbstractValue(aval));
+        })
+
+        .def("__eq__", [](const AbstractValue& a, const AbstractValue& b) {
+            return a.equals(b);
+        })
+        .def("__str__", &AbstractValue::toString);
+
+    py::class_<AbstractState>(m, "AbstractState")
+        // Constructor
+        .def(py::init<>())
+    
+        // Getter & Setter for variables via get_var/set_var
+        .def("get_var", [](AbstractState& self, u32_t varId) -> AbstractValue& {
+            return self[varId];
+        }, py::arg("varId"), py::return_value_policy::reference)
+    
+        .def("set_var", [](AbstractState& self, u32_t varId, const AbstractValue& val) {
+            self[varId] = val;
+        }, py::arg("varId"), py::arg("val"))
+    
+        // Store value to memory address
+        .def("store", &AbstractState::store,
+             py::arg("addr"), py::arg("val"))
+    
+        // Load value from memory address
+        .def("load", &AbstractState::load,
+             py::arg("addr"), py::return_value_policy::reference)
+    
+        // Equality comparison
+        .def("equals", &AbstractState::equals,
+             py::arg("other"))
+    
+        // Abstract operations
+        .def("join_with", &AbstractState::joinWith, py::arg("other"))
+        .def("meet_with", &AbstractState::meetWith, py::arg("other"))
+        .def("widening", &AbstractState::widening, py::arg("other"))
+        .def("narrowing", &AbstractState::narrowing, py::arg("other"))
+    
+        // Static utilities for address handling
+        .def_static("is_virtual_mem_address", &AbstractState::isVirtualMemAddress, py::arg("val"))
+        .def_static("get_virtual_mem_address", &AbstractState::getVirtualMemAddress, py::arg("idx"))
+        .def_static("is_null_ptr", &AbstractState::isNullPtr, py::arg("addr"))
+    
+        // State management
+        .def("clear", &AbstractState::clear)
+        .def("print", &AbstractState::printAbstractState)
+        .def("__str__", &AbstractState::toString)
+    
+        // Pythonic operator[]
+        .def("__getitem__", [](AbstractState& self, u32_t varId) -> AbstractValue& {
+            return self[varId];
+        }, py::arg("varId"), py::return_value_policy::reference)
+    
+        .def("__setitem__", [](AbstractState& self, u32_t varId, py::object val) {
+            if (py::isinstance<AbstractValue>(val)) {
+                self[varId] = val.cast<AbstractValue>();
+            }
+            else if (py::isinstance<IntervalValue>(val)) {
+                self[varId] = AbstractValue(val.cast<IntervalValue>());
+            }
+            else if (py::isinstance<AddressValue>(val)) {
+                self[varId] = AbstractValue(val.cast<AddressValue>());
+            }
+            else if (py::isinstance<py::int_>(val)) {
+                self[varId] = AbstractValue(IntervalValue(val.cast<int64_t>()));
+            }
+            else {
+                throw std::invalid_argument("Unsupported type for AbstractState assignment.");
+            }
+        })
+        
+        // Access to internal maps
+        .def("get_var_to_vals", &AbstractState::getVarToVal, py::return_value_policy::reference)
+        .def("get_addr_to_vals", &AbstractState::getLocToVal, py::return_value_policy::reference)
+        .def("print_abs_state", &AbstractState::printAbstractState)
+        .def("clone", [](AbstractState& self) {
+            return new AbstractState(self);
+        }, py::return_value_policy::reference);
+}
+
 SVFIR* PySVF::currentSVFIR = nullptr;
 CallGraph* PySVF::currentCallGraph = nullptr;
 SVFG* PySVF::currentSVFG = nullptr;
@@ -1828,5 +2321,10 @@ PYBIND11_MODULE(pysvf, m) {
     bind_vfg_node(m);
     bind_svfg_node(m);
     bind_vfg(m);   
-    bind_svfg(m);    
+    bind_svfg(m);  
+    bind_andersen_base(m);  
+    bind_points_to(m);
+    bind_constraint_graph(m);
+    bind_abstract_state(m);
+
 }

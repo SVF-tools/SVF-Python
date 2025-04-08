@@ -197,7 +197,23 @@ from .pysvf import (
     RetDirSVFGEdge,
     RetIndSVFGEdge,
     VFG,
-
+    AndersenBase,
+    PointsTo,
+    ConstraintEdge,
+    ConstraintNode,
+    AddrCGEdge,
+    CopyCGEdge,
+    StoreCGEdge,
+    LoadCGEdge,
+    GepCGEdge,
+    NormalGepCGEdge,
+    VariantGepCGEdge,
+    ConstraintGraph,
+    IntervalValue,
+    AddressValue,
+    AbstractState,
+    AbstractValue,
+    BoundedInt
 )
 
 # Enable direct module execution
