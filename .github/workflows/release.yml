@@ -185,30 +185,30 @@ jobs:
           git clone https://github.com/SVF-tools/SVF-Python.git
           cd SVF-Python
 
-        
-          rm -rf build dist wheelhouse pysvf.egg-info  
+          rm -rf build dist pysvf.egg-info  
+
+          echo "Building with version: $NEXT_VERSION"
+          sed -i.bak "s/version=.*,/version='${NEXT_VERSION}',/" setup.py
 
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
 
-          echo "Building with version: $NEXT_VERSION"
+          python3 -m pip install --upgrade pip setuptools wheel
 
-          sed -i.bak "s/version=.*,/version='${NEXT_VERSION}',/" setup.py
+          PYTHON_EXEC=${PYTHON_EXEC:-python3}
 
-          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
-            python3 -m build --wheel
-
-          # if linux
-          if [[ "$(uname)" == "Linux" ]]; then
-            auditwheel repair dist/*.whl -w wheelhouse/
-            echo "Fixed wheel files:"
-            ls -lh wheelhouse/
-
-            #move wheelhouse back to dist
-            rm -rf dist/*
-            mv wheelhouse/* dist/
+          if [[ "$(uname)" == "Darwin" ]]; then
+              # macOS arm64
+              SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
+                  ${PYTHON_EXEC} setup.py bdist_wheel --plat-name macosx-11.0-arm64
+          else
+              # Linux x86_64 等
+              SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
+                  ${PYTHON_EXEC} setup.py bdist_wheel --plat-name manylinux2014_$(uname -m)
           fi
-          echo "Build completed. Repaired wheel files contain version $NEXT_VERSION"
+
+          echo "Built wheel files:"
+          ls -lh dist/
 
       # Upload to TestPyPI
       - name: Publish to TestPyPI
