@@ -55,6 +55,26 @@ jobs:
         python -m pip install --upgrade pip
         pip install build wheel setuptools mypy typing-extensions pybind11
 
+    - name: Get next version from TestPyPI
+      id: get_next_version
+      run: |
+        PACKAGE="pysvf"
+        INDEX_URL="https://test.pypi.org/pypi/$PACKAGE/json"
+        apt -get install -y jq
+        
+        echo "Querying $INDEX_URL ..."
+        VERSIONS=$(curl -s "$INDEX_URL" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$')
+        
+        LAST_VERSION=$(echo "$VERSIONS" | sort -V | tail -n 1)
+        echo "Last version on TestPyPI: $LAST_VERSION"
+        
+        NEXT_VERSION=$(echo "$LAST_VERSION" | awk -F. '{$NF+=1; print $1 "." $2 "." $3 "." $4}')
+        echo "Next version: $NEXT_VERSION"
+
+        echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+        echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+
     - name: Get system architecture
       id: get_arch
       run: |
@@ -120,19 +140,24 @@ jobs:
               python3 python3-pip python3-venv patchelf
 
       # calculate version
-      - name: Read version
-        id: read_version
+      - name: Get next version from TestPyPI
+        id: get_next_version
         run: |
-          CURRENT_VERSION=$(grep 'CURRENT_VERSION' VERSION | cut -d':' -f2 | tr -d '[:space:]')
-          NEXT_VERSION=$(grep 'NEXT_VERSION' VERSION | cut -d':' -f2 | tr -d '[:space:]')
-          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+          PACKAGE="pysvf"
+          INDEX_URL="https://test.pypi.org/pypi/$PACKAGE/json"
+          apt-get install -y jq
+          
+          echo "Querying $INDEX_URL ..."
+          VERSIONS=$(curl -s "$INDEX_URL" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$')
+          
+          LAST_VERSION=$(echo "$VERSIONS" | sort -V | tail -n 1)
+          echo "Last version on TestPyPI: $LAST_VERSION"
+          
+          NEXT_VERSION=$(echo "$LAST_VERSION" | awk -F. '{$NF+=1; print $1 "." $2 "." $3 "." $4}')
+          echo "Next version: $NEXT_VERSION"
+      
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
-          echo "::set-output name=version::$NEXT_VERSION"
-          # Debug output
-          echo "----------------------------------------"
-          echo "Current Version: $CURRENT_VERSION"
-          echo "Next Version: $NEXT_VERSION"
-          echo "----------------------------------------"
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
 
 
       - name: Set up Node.js
@@ -224,7 +249,7 @@ jobs:
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
         with:
-          name: python-wheels-${{ steps.read_version.outputs.version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}
+          name: python-wheels-${{ steps.get_next_version.outputs.next_version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}
           path: SVF-Python/dist/
 
   update-version:
