@@ -194,13 +194,8 @@ jobs:
           # Update version in setup.py
           sed -i.bak "s/version=.*,/version='${NEXT_VERSION}',/" setup.py
           
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
-            python3 setup.py bdist_wheel --plat-name manylinux2014_${{ steps.get_arch.outputs.arch }}
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
-            python3 setup.py bdist_wheel --plat-name macosx-11.0-arm64
-          fi
+          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR}  ${PYTHON_EXEC} -m build --wheel
+         
           
           # Verify the built wheel version
           echo "Built wheel files:"
