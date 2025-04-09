@@ -170,7 +170,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build wheel twine pybind11
+          pip install build wheel twine pybind11 auditwheel setuptools
 
       - name: Get system architecture
         id: get_arch
@@ -184,25 +184,26 @@ jobs:
         run: |
           git clone https://github.com/SVF-tools/SVF-Python.git
           cd SVF-Python
-          rm -rf build dist pysvf.egg-info  
+
+        
+          rm -rf build dist wheelhouse pysvf.egg-info  
+
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
-          
-          # Debug output before build
+
           echo "Building with version: $NEXT_VERSION"
-          
-          # Update version in setup.py
+
           sed -i.bak "s/version=.*,/version='${NEXT_VERSION}',/" setup.py
-          
-          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR}  python3 -m build --wheel
-         
-          
-          # Verify the built wheel version
-          echo "Built wheel files:"
-          ls -lh dist/
-          
-          # Debug output after build
-          echo "Build completed. Wheel files contain version $NEXT_VERSION"
+
+          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
+            python3 -m build --wheel
+
+          auditwheel repair dist/*.whl -w wheelhouse/
+
+          echo "Fixed wheel files:"
+          ls -lh wheelhouse/
+
+          echo "Build completed. Repaired wheel files contain version $NEXT_VERSION"
 
       # Upload to TestPyPI
       - name: Publish to TestPyPI
