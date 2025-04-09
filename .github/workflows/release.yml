@@ -194,7 +194,7 @@ jobs:
           # Update version in setup.py
           sed -i.bak "s/version=.*,/version='${NEXT_VERSION}',/" setup.py
           
-          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR}  ${PYTHON_EXEC} -m build --wheel
+          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR}  python3 -m build --wheel
          
           
           # Verify the built wheel version
