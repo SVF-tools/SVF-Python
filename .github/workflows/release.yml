@@ -143,34 +143,31 @@ jobs:
       - name: Get next version from TestPyPI
         id: get_next_version
         run: |
-          - name: Get next version from TestPyPI
-          id: get_next_version
-          run: |
-            echo "🛠️ Installing jq based on platform..."
-            if [[ "$RUNNER_OS" == "Linux" ]]; then
-              sudo apt-get update
-              sudo apt-get install -y jq
-            elif [[ "$RUNNER_OS" == "macOS" ]]; then
-              brew install jq
-            else
-              echo "❌ Unsupported OS: $RUNNER_OS"
-              exit 1
-            fi
-        
-            PACKAGE="pysvf"
-            INDEX_URL="https://test.pypi.org/pypi/$PACKAGE/json"
-        
-            echo "🔍 Querying $INDEX_URL ..."
-            VERSIONS=$(curl -s "$INDEX_URL" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$')
-        
-            LAST_VERSION=$(echo "$VERSIONS" | sort -V | tail -n 1)
-            echo "📌 Last version on TestPyPI: $LAST_VERSION"
-        
-            NEXT_VERSION=$(echo "$LAST_VERSION" | awk -F. '{$NF+=1; print $1 "." $2 "." $3 "." $4}')
-            echo "📦 Next version: $NEXT_VERSION"
-        
-            echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
-            echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "🛠️ Installing jq based on platform..."
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y jq
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew install jq
+          else
+            echo "❌ Unsupported OS: $RUNNER_OS"
+            exit 1
+          fi
+      
+          PACKAGE="pysvf"
+          INDEX_URL="https://test.pypi.org/pypi/$PACKAGE/json"
+      
+          echo "🔍 Querying $INDEX_URL ..."
+          VERSIONS=$(curl -s "$INDEX_URL" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$')
+      
+          LAST_VERSION=$(echo "$VERSIONS" | sort -V | tail -n 1)
+          echo "📌 Last version on TestPyPI: $LAST_VERSION"
+      
+          NEXT_VERSION=$(echo "$LAST_VERSION" | awk -F. '{$NF+=1; print $1 "." $2 "." $3 "." $4}')
+          echo "📦 Next version: $NEXT_VERSION"
+      
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
       
 
 
