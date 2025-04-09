@@ -198,11 +198,16 @@ jobs:
           SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
             python3 -m build --wheel
 
-          auditwheel repair dist/*.whl -w wheelhouse/
+          # if linux
+          if [[ "$(uname)" == "Linux" ]]; then
+            auditwheel repair dist/*.whl -w wheelhouse/
+            echo "Fixed wheel files:"
+            ls -lh wheelhouse/
 
-          echo "Fixed wheel files:"
-          ls -lh wheelhouse/
-
+            #move wheelhouse back to dist
+            rm -rf dist/*
+            mv wheelhouse/* dist/
+          fi
           echo "Build completed. Repaired wheel files contain version $NEXT_VERSION"
 
       # Upload to TestPyPI
