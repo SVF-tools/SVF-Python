@@ -545,6 +545,9 @@ void bind_svf(py::module& m) {
                 }
                 return node;
             }, py::arg("id"), py::return_value_policy::reference)
+            .def("__iter__", [](SVFIR* pag) {
+                return py::make_iterator(pag->begin(), pag->end());
+            }, py::keep_alive<0, 1>(), "Iterate over the PAG nodes")
             .def("get_gep_obj_var", [](SVFIR* pag, NodeID id, const APOffset& offset) {
                 NodeID gepObjVarID = pag->getGepObjVar(id, offset);
                 return gepObjVarID;
