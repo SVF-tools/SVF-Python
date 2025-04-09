@@ -1,6 +1,6 @@
 
 
-from typing import List, Iterator, Any
+from typing import List, Iterator, Tuple, Any
 
 BIN_DIR: str
 CURRENT_DIR: str
@@ -1306,7 +1306,7 @@ class SVFIR(SVFLLVMValue):
     def get_call_graph(self) -> "CallGraph": ...
     """Get the call graph of the SVFIR"""
 
-    def __iter__(self) -> Iterator[(int, SVFVar)]: ...
+    def __iter__(self) -> Iterator[Tuple[int, SVFVar]]: ...
     
     def get_base_object(self, id: int) -> BaseObjVar: ...
     """Get the base object with the given ID"""
