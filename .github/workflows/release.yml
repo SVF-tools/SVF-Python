@@ -72,7 +72,7 @@ jobs:
         # Dummy version, no need to update VERSION file
         sed -i.bak "s/version=.*,/version='0.0.0.dev0',/" setup.py
         SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
-        python3 setup.py bdist_wheel --plat-name manylinux2014_${{ steps.get_arch.outputs.arch }}
+        python3 -m build --wheel
         # Install wheel
         pip install dist/*.whl
 
