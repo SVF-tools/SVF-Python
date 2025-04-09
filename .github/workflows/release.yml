@@ -263,31 +263,3 @@ jobs:
           name: python-wheels-${{ steps.get_next_version.outputs.next_version }}-${{ runner.os }}-${{ steps.get_arch.outputs.arch }}-py${{ matrix.python-version }}
           path: SVF-Python/dist/
 
-  update-version:
-    needs: build  # This ensures all builds are complete
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Update VERSION file
-        run: |
-          # Read current versions
-          CURRENT_VERSION=$(grep 'CURRENT_VERSION' VERSION | cut -d':' -f2 | tr -d '[:space:]')
-          NEXT_VERSION=$(grep 'NEXT_VERSION' VERSION | cut -d':' -f2 | tr -d '[:space:]')
-          
-          # Calculate new next version (increment last digit)
-          NEW_NEXT_VERSION=$(echo $NEXT_VERSION | awk -F. '{$NF=$NF+1}1' OFS=.)
-          
-          # Update VERSION file
-          echo "CURRENT_VERSION:$NEXT_VERSION" > VERSION
-          echo "NEXT_VERSION:$NEW_NEXT_VERSION" >> VERSION
-          
-          # Commit and push changes
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add VERSION
-          git commit -m "Update VERSION file after successful release $NEXT_VERSION"
-          git push
