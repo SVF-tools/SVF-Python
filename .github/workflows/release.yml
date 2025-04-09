@@ -60,7 +60,7 @@ jobs:
       run: |
         PACKAGE="pysvf"
         INDEX_URL="https://test.pypi.org/pypi/$PACKAGE/json"
-        apt -get install -y jq
+        apt-get install -y jq
         
         echo "Querying $INDEX_URL ..."
         VERSIONS=$(curl -s "$INDEX_URL" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$')
