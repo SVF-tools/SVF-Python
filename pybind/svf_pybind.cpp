@@ -53,26 +53,26 @@ static std::string lastAnalyzedModule;
 public:
     static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
-        Options::UsePreCompFieldSensitive.setValue(false);
-        Options::ModelConsts.setValue(true);
-        Options::ModelArrays.setValue(true);
+        // Options::UsePreCompFieldSensitive.setValue(false);
+        // Options::ModelConsts.setValue(true);
+        // Options::ModelArrays.setValue(true);
         LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder;
         SVFIR* pag = builder.build();
-        AndersenWaveDiff* ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
-        CallGraph* callgraph = ander->getCallGraph();
-        builder.updateCallGraph(callgraph);
-        pag->getICFG()->updateCallGraph(callgraph);
+        // AndersenWaveDiff* ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
+        // CallGraph* callgraph = ander->getCallGraph();
+        // builder.updateCallGraph(callgraph);
+        // pag->getICFG()->updateCallGraph(callgraph);
         
 
-        currentSVFIR = pag;
-        currentCallGraph = callgraph;
-        currentICFG = pag->getICFG();
-        if (buildSVFG) {
-            SVFGBuilder* svfgBuilder = new SVFGBuilder(pag);
-            SVFG* svfg = svfgBuilder->buildFullSVFG(ander);
-            currentSVFG = svfg;
-        }
+        // currentSVFIR = pag;
+        // currentCallGraph = callgraph;
+        // currentICFG = pag->getICFG();
+        // if (buildSVFG) {
+        //     SVFGBuilder* svfgBuilder = new SVFGBuilder(pag);
+        //     SVFG* svfg = svfgBuilder->buildFullSVFG(ander);
+        //     currentSVFG = svfg;
+        // }
         lastAnalyzedModule = bitcodePath;
 
         return pag;  // Now we directly return SVFIR(pag)
@@ -551,6 +551,9 @@ void bind_svf(py::module& m) {
                 }
                 return node;
             }, py::arg("id"), py::return_value_policy::reference)
+            .def("__iter__", [](SVFIR* pag) {
+                return py::make_iterator(pag->begin(), pag->end());
+            }, py::keep_alive<0, 1>(), "Iterate over the PAG nodes")
             .def("get_gep_obj_var", [](SVFIR* pag, NodeID id, const APOffset& offset) {
                 NodeID gepObjVarID = pag->getGepObjVar(id, offset);
                 return gepObjVarID;
@@ -1826,6 +1829,12 @@ void bind_andersen_base(py::module& m) {
                 return false;
             }
         };
+    py::enum_<AliasResult>(m, "AliasResult")
+        .value("NoAlias", AliasResult::NoAlias)
+        .value("MayAlias", AliasResult::MayAlias)
+        .value("MustAlias", AliasResult::MustAlias)
+        .value("PartialAlias", AliasResult::PartialAlias)
+        .export_values();
     py::class_<PublicAndersen, std::shared_ptr<PublicAndersen>>(m, "AndersenBase", "Anderson's analysis base class")
         .def(py::init([](SVFIR* svfir) {
             return std::make_shared<PublicAndersen>(svfir);
@@ -1850,8 +1859,10 @@ void bind_andersen_base(py::module& m) {
             return base.unionPts(id, ptd);
         }, py::arg("id"), py::arg("ptd"), "Union points-to 2 information")
         .def("alias", [](PublicAndersen& base, NodeID id1, NodeID id2) {
-            return base.alias(id1, id2);
-        }, py::arg("id1"), py::arg("id2"), py::return_value_policy::reference, "Check if two nodes are aliases")
+            AliasResult res =  base.alias(id1, id2);
+            std::cout << "Alias result: " << res << std::endl;
+            return res;
+        }, py::arg("id1"), py::arg("id2"), "Check if two nodes are aliases")
         .def("is_worklist_empty", &PublicAndersen::isWorklistEmpty, "Check if the worklist is empty")
         .def("pop_from_worklist", [](PublicAndersen& base) {
             return base.popFromWorklist();
@@ -1870,7 +1881,14 @@ void bind_points_to(py::module& m) {
         }, py::arg("id"), "Set a node ID in the points-to set")
         .def("__iter__", [](PointsTo &self) {
             return py::make_iterator(self.begin(), self.end());
-        }, py::keep_alive<0, 1>()) ;
+        }, py::keep_alive<0, 1>())
+        .def("__str__", [](const PointsTo &self) {
+            std::ostringstream oss;
+            for (NodeID id : self) {
+                oss << id << " ";
+            }
+            return oss.str();
+        }, "Get the string representation of the points-to set");
 }
 
 void bind_constraint_graph(py::module& m) {
