@@ -24,12 +24,7 @@ for version in "${PYTHON_VERSIONS[@]}"; do
 
     PYBIND11_DIR=$(${PYTHON_EXEC} -m pybind11 --cmakedir)
 
-    # if mac arm , platfrom name is macosx-11.0-arm64, if linux x86 64, platfrom name is manylinux2014_x86_64
-    if [ "$(uname)" == "Darwin" ]; then
-        SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} ${PYTHON_EXEC} setup.py bdist_wheel --plat-name macosx-11.0-arm64
-    else
-        SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} ${PYTHON_EXEC} setup.py bdist_wheel --plat-name manylinux2014_$(uname -m)
-    fi
+    SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR}  ${PYTHON_EXEC} -m build --wheel
     if [ $? -ne 0 ]; then
         echo "Building for Python ${version} failed."
     else

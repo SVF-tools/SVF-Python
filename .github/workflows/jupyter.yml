@@ -28,7 +28,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
-          pip install wheel pybind11 notebook nbconvert nbclient ipykernel
+          pip install wheel pybind11 notebook nbconvert nbclient ipykernel build
 
       - name: Register Jupyter kernel
         run: |
@@ -59,7 +59,7 @@ jobs:
 
           if [[ "$(uname)" == "Linux" ]]; then
             SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
-            python3 setup.py bdist_wheel --plat-name manylinux2014_${{ steps.get_arch.outputs.arch }}
+            python3 -m build --wheel
           else
             echo "Unsupported platform"
             exit 1
