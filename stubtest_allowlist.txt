@@ -164,3 +164,8 @@ pysvf.PHIVFGNode.__init__
 pysvf.VFG.__init__
 pysvf.VFG.dump
 pysvf.SVFType.to_string
+pysvf.AbstractState
+pysvf.AbstractValue
+pysvf.AddressValue
+pysvf.BoundedInt
+pysvf.IntervalValue

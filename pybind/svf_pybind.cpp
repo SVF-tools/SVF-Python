@@ -2054,10 +2054,10 @@ void bind_abstract_state(py::module& m) {
 
         // Equality
         .def("__eq__", [](const IntervalValue &self, const IntervalValue &other) {
-            return self == other;
+            return self.equals(other);
         })
         .def("__ne__", [](const IntervalValue &self, const IntervalValue &other) {
-            return self != other;
+            return !self.equals(other);
         })
 
         // Arithmetic operators
@@ -2096,6 +2096,12 @@ void bind_abstract_state(py::module& m) {
         .def("is_real", &IntervalValue::is_real)
         .def("is_int", &IntervalValue::is_int)
         .def("equals", &IntervalValue::equals, py::arg("other"))
+        .def("eq_interval", [](const IntervalValue &self, const IntervalValue &other) {
+                return self.operator==(other);
+            }, py::arg("other"))
+        .def("ne_interval", [](const IntervalValue &self, const IntervalValue &other) {
+                return self.operator!=(other);
+            }, py::arg("other"))
         .def("get_numeral", &IntervalValue::getNumeral)
         .def("get_int_numeral", &IntervalValue::getIntNumeral)
         .def("get_real_numeral", &IntervalValue::getRealNumeral)
