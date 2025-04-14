@@ -53,26 +53,26 @@ static std::string lastAnalyzedModule;
 public:
     static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
-        // Options::UsePreCompFieldSensitive.setValue(false);
-        // Options::ModelConsts.setValue(true);
-        // Options::ModelArrays.setValue(true);
+        Options::UsePreCompFieldSensitive.setValue(false);
+        Options::ModelConsts.setValue(true);
+        Options::ModelArrays.setValue(true);
         LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder;
         SVFIR* pag = builder.build();
-        // AndersenWaveDiff* ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
-        // CallGraph* callgraph = ander->getCallGraph();
-        // builder.updateCallGraph(callgraph);
-        // pag->getICFG()->updateCallGraph(callgraph);
+        AndersenWaveDiff* ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
+        CallGraph* callgraph = ander->getCallGraph();
+        builder.updateCallGraph(callgraph);
+        pag->getICFG()->updateCallGraph(callgraph);
         
 
-        // currentSVFIR = pag;
-        // currentCallGraph = callgraph;
-        // currentICFG = pag->getICFG();
-        // if (buildSVFG) {
-        //     SVFGBuilder* svfgBuilder = new SVFGBuilder(pag);
-        //     SVFG* svfg = svfgBuilder->buildFullSVFG(ander);
-        //     currentSVFG = svfg;
-        // }
+        currentSVFIR = pag;
+        currentCallGraph = callgraph;
+        currentICFG = pag->getICFG();
+        if (buildSVFG) {
+            SVFGBuilder* svfgBuilder = new SVFGBuilder(pag);
+            SVFG* svfg = svfgBuilder->buildFullSVFG(ander);
+            currentSVFG = svfg;
+        }
         lastAnalyzedModule = bitcodePath;
 
         return pag;  // Now we directly return SVFIR(pag)
@@ -2035,7 +2035,7 @@ void bind_abstract_state(py::module& m) {
             return new IntervalValue();
         }))
         .def(py::init([](int64_t val) {
-            return new IntervalValue(val);
+            return new IntervalValue(static_cast<s64_t>(val));
         }), py::arg("val"))
 
         .def(py::init([](py::object lb, py::object ub) {
@@ -2297,7 +2297,7 @@ void bind_abstract_state(py::module& m) {
                 self[varId] = AbstractValue(val.cast<AddressValue>());
             }
             else if (py::isinstance<py::int_>(val)) {
-                self[varId] = AbstractValue(IntervalValue(val.cast<int64_t>()));
+                self[varId] = AbstractValue(IntervalValue(val.cast<s64_t>()));
             }
             else {
                 throw std::invalid_argument("Unsupported type for AbstractState assignment.");

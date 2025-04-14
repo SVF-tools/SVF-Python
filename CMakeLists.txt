@@ -6,6 +6,10 @@ project(SVF-PYTHON
         HOMEPAGE_URL "https://github.com/SVF-tools/SVF-Python"
         LANGUAGES C CXX
 )
+# print SVF_DIR, LLVM_DIR, and Z3_DIR
+message(STATUS "SVF_DIR: ${SVF_DIR}")
+message(STATUS "LLVM_DIR: ${LLVM_DIR}")
+message(STATUS "Z3_DIR: ${Z3_DIR}")
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 
@@ -77,8 +81,19 @@ endif()
 # ------------------------------------------------------------------------------
 # 2) Add include directories and link directories for the pysvf target
 # ------------------------------------------------------------------------------
+set(SVF_LIB_EXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
+if(EXISTS "${Z3_DIR}/bin/libz3${SVF_LIB_EXT}")
+    set(Z3_INCLUDE_DIR "${Z3_DIR}/include")
+    set(Z3_LIB_FILE "${Z3_DIR}/bin/libz3${SVF_LIB_EXT}")
+elseif(EXISTS "${Z3_DIR}/lib/libz3${SVF_LIB_EXT}")
+    set(Z3_INCLUDE_DIR "${Z3_DIR}/include")
+    set(Z3_LIB_FILE "${Z3_DIR}/lib/libz3${SVF_LIB_EXT}")
+else()
+    message(FATAL_ERROR "Z3 library not found in expected locations.")
+endif()
+
 message("SVF_INCLUDE_DIR: ${SVF_INCLUDE_DIR}")
-include_directories(SYSTEM "${SVF_INCLUDE_DIR}")
+include_directories(SYSTEM "${SVF_INCLUDE_DIR}" "${Z3_INCLUDE_DIR}")
 
 add_library(pysvf MODULE pybind/svf_pybind.cpp)
 target_link_directories(pysvf PRIVATE "${SVF_LIB_DIR}")
@@ -87,14 +102,6 @@ target_link_directories(pysvf PRIVATE "${SVF_LIB_DIR}")
 # 3) Link against SVF libraries and pybind11
 # ------------------------------------------------------------------------------
 
-set(SVF_LIB_EXT ${CMAKE_SHARED_LIBRARY_SUFFIX})
-if(EXISTS "${Z3_DIR}/bin/libz3${SVF_LIB_EXT}")
-    set(Z3_LIB_FILE "${Z3_DIR}/bin/libz3${SVF_LIB_EXT}")
-elseif(EXISTS "${Z3_DIR}/lib/libz3${SVF_LIB_EXT}")
-    set(Z3_LIB_FILE "${Z3_DIR}/lib/libz3${SVF_LIB_EXT}")
-else()
-    message(FATAL_ERROR "Z3 library not found in expected locations.")
-endif()
 message("Z3_LIB_FILE: ${Z3_LIB_FILE}")
 target_link_libraries(pysvf PRIVATE
         Python3::Module
