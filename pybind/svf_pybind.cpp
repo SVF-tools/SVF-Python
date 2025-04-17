@@ -374,65 +374,41 @@ void bind_svf_stmt(py::module& m) {
             .def("as_branch_stmt", [](SVFStmt *stmt) { return SVFUtil::dyn_cast<BranchStmt>(stmt); },
                  py::return_value_policy::reference, "Downcast the SVF statement to a branch statement");
 
-    py::class_<AddrStmt, SVFStmt>(m, "AddrStmt")
-            .def("get_lhs_var", &AddrStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the address statement")
-            .def("get_lhs_id", &AddrStmt::getLHSVarID, "Get the ID of the LHS variable of the address statement")
-            .def("get_rhs_var", &AddrStmt::getRHSVar, py::return_value_policy::reference, "Get the RHS variable of the address statement")
-            .def("get_rhs_id", &AddrStmt::getRHSVarID, "Get the ID of the RHS variable of the address statement")
+    py::class_<AssignStmt, SVFStmt>(m, "AssignStmt")
+            .def("get_lhs_var", &AssignStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the assignment statement")
+            .def("get_lhs_id", &AssignStmt::getLHSVarID, "Get the ID of the LHS variable of the assignment statement")
+            .def("get_rhs_var", &AssignStmt::getRHSVar, py::return_value_policy::reference, "Get the RHS variable of the assignment statement")
+            .def("get_rhs_id", &AssignStmt::getRHSVarID, "Get the ID of the RHS variable of the assignment statement");
+
+    py::class_<AddrStmt, AssignStmt>(m, "AddrStmt")
             .def("get_arr_size", &AddrStmt::getArrSize, py::return_value_policy::reference, "Get the array size of the address statement");
 
-    py::class_<CopyStmt, SVFStmt>(m, "CopyStmt")
-            // TODO: more API from CopyStmt
-            .def("get_lhs_var", &CopyStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the copy statement")
-            .def("get_lhs_id", &CopyStmt::getLHSVarID, "Get the ID of the LHS variable of the copy statement")
-            .def("get_rhs_var", &CopyStmt::getRHSVar, py::return_value_policy::reference, "Get the RHS variable of the copy statement")
-            .def("get_rhs_id", &CopyStmt::getRHSVarID, "Get the ID of the RHS variable of the copy statement");
+    py::class_<CopyStmt, AssignStmt>(m, "CopyStmt")
+            .def("get_copy_kind", &CopyStmt::getCopyKind, "Get the copy kind of the copy statement")
+            .def("is_bitcast", &CopyStmt::isBitCast, "Check if the copy statement is a bitcast")
+            .def("is_value_copy", &CopyStmt::isValueCopy, "Check if the copy statement is a value copy")
+            .def("is_int2ptr", &CopyStmt::isInt2Ptr, "Check if the copy statement is an int2ptr")
+            .def("is_ptr2int", &CopyStmt::isPtr2Int, "Check if the copy statement is a ptr2int")
+            .def("is_zext", &CopyStmt::isZext, "Check if the copy statement is a zext")
+            .def("is_sext", &CopyStmt::isSext, "Check if the copy statement is a sext");
+
+    py::class_<StoreStmt, AssignStmt>(m, "StoreStmt");
 
 
-    py::class_<StoreStmt, SVFStmt>(m, "StoreStmt")
-            .def("get_lhs_var", &StoreStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the store statement")
-            .def("get_lhs_id", &StoreStmt::getLHSVarID, "Get the ID of the LHS variable of the store statement")
-            .def("get_rhs_var", &StoreStmt::getRHSVar, py::return_value_policy::reference,
-                 "Get the RHS variable of the store statement")
-            .def("get_rhs_id", &StoreStmt::getRHSVarID, "Get the ID of the RHS variable of the store statement");
+    py::class_<LoadStmt, AssignStmt>(m, "LoadStmt");
 
-
-    py::class_<LoadStmt, SVFStmt>(m, "LoadStmt")
-            .def("get_lhs_var", &LoadStmt::getLHSVar, py::return_value_policy::reference,
-                 "Get the LHS variable of the load statement")
-            .def("get_lhs_id", &LoadStmt::getLHSVarID, "Get the ID of the LHS variable of the load statement")
-            .def("get_rhs_var", &LoadStmt::getRHSVar, py::return_value_policy::reference,
-                 "Get the RHS variable of the load statement")
-            .def("get_rhs_id", &LoadStmt::getRHSVarID, "Get the ID of the RHS variable of the load statement");
-
-    py::class_<CallPE, SVFStmt>(m, "CallPE")
+    py::class_<CallPE, AssignStmt>(m, "CallPE")
             .def("get_callsite", &CallPE::getCallSite, "Get the call site")
-            .def("get_lhs_var", &CallPE::getLHSVar, py::return_value_policy::reference,
-                 "Get the LHS variable of the call PE")
-            .def("get_lhs_id", &CallPE::getLHSVarID, "Get the ID of the LHS variable of the call PE")
-            .def("get_rhs_var", &CallPE::getRHSVar, py::return_value_policy::reference,
-                 "Get the RHS variable of the call PE")
-            .def("get_rhs_id", &CallPE::getRHSVarID, "Get the ID of the RHS variable of the call PE")
             .def("get_fun_entry_icfg_node", &CallPE::getFunEntryICFGNode, py::return_value_policy::reference,
                  "Get the function entry ICFG node");
 
-    py::class_<RetPE, SVFStmt>(m, "RetPE")
+    py::class_<RetPE, AssignStmt>(m, "RetPE")
             .def("get_callsite", &RetPE::getCallSite, "Get the call site")
-            .def("get_lhs_var", &RetPE::getLHSVar, py::return_value_policy::reference,
-                 "Get the LHS variable of the return PE")
-            .def("get_lhs_id", &RetPE::getLHSVarID, "Get the ID of the LHS variable of the return PE")
-            .def("get_rhs_var", &RetPE::getRHSVar, py::return_value_policy::reference,
-                 "Get the RHS variable of the return PE")
-            .def("get_rhs_id", &RetPE::getRHSVarID, "Get the ID of the RHS variable of the return PE")
             .def("get_fun_exit_icfg_node", &RetPE::getFunExitICFGNode, py::return_value_policy::reference,
                  "Get the function exit ICFG node");
 
 
-    py::class_<GepStmt, SVFStmt>(m, "GepStmt")
-            .def("get_lhs_var", &GepStmt::getLHSVar, py::return_value_policy::reference, "Get the LHS variable of the GEP statement")
-            .def("get_lhs_id", &GepStmt::getLHSVarID, "Get the ID of the LHS variable of the GEP statement")
-            .def("get_rhs_var", &GepStmt::getRHSVar, py::return_value_policy::reference, "Get the RHS variable of the GEP statement")
-            .def("get_rhs_id", &GepStmt::getRHSVarID, "Get the ID of the RHS variable of the GEP statement")
+    py::class_<GepStmt, AssignStmt>(m, "GepStmt")
             .def("is_constant_offset", &GepStmt::isConstantOffset, "Check if the GEP statement has a constant offset")
             .def("get_constant_offset", &GepStmt::accumulateConstantOffset, "Get the constant offset of the GEP statement")
             .def("get_constant_byte_offset", &GepStmt::accumulateConstantByteOffset,
@@ -444,43 +420,48 @@ void bind_svf_stmt(py::module& m) {
             .def("get_src_pointee_type", [](GepStmt& stmt) { return stmt.getAccessPath().gepSrcPointeeType(); },
                  py::return_value_policy::reference);
 
-    py::class_<PhiStmt, SVFStmt>(m, "PhiStmt")
+    py::class_<MultiOpndStmt, SVFStmt>(m, "MultiOpndStmt")
+            .def("get_op_var", [](MultiOpndStmt& stmt, int ID) { return stmt.getOpVar(ID); },
+                 py::return_value_policy::reference)
+            .def("get_op_var_id", &MultiOpndStmt::getOpVarID)
+            .def("get_opnd_vars", &MultiOpndStmt::getOpndVars, py::return_value_policy::reference)
+            .def("get_res_id", &MultiOpndStmt::getResID)
+            .def("get_res", &MultiOpndStmt::getRes, py::return_value_policy::reference)
+            .def("get_res_var", &MultiOpndStmt::getRes, py::return_value_policy::reference)
+            .def("get_op_var_num", &MultiOpndStmt::getOpVarNum, "Get the number of operands of the statement")
+            .def("__iter__", [](MultiOpndStmt& stmt) {
+                return py::make_iterator(stmt.opVarBegin(), stmt.opVerEnd());
+            }, py::keep_alive<0, 1>()); // Keep the iterator alive while iterating
+
+    py::class_<PhiStmt, MultiOpndStmt>(m, "PhiStmt")
             // TODO: may implement get_op_var and get_op_var_id
-            .def("get_res_var", &PhiStmt::getRes, py::return_value_policy::reference)
-            .def("get_res_id", &PhiStmt::getResID)
             .def("get_op_icfg_node", [](PhiStmt& stmt, int idx) { return stmt.getOpICFGNode(idx); },
                  py::return_value_policy::reference)
-            .def("get_op_var", [](PhiStmt& stmt, int ID) { return stmt.getOpVar(ID); },
-                 py::return_value_policy::reference)
-                 //get varnums
-            .def("get_op_var_num", &PhiStmt::getOpVarNum, "Get the number of operands of the phi statement");
+            .def("is_fun_ret_phi", &PhiStmt::isFunctionRetPhi, "Check if the phi statement is a function return phi");
 
-   // TODO: selectStmt
+    // TODO: selectStmt
+    py::class_<SelectStmt, MultiOpndStmt>(m, "SelectStmt")
+            .def("get_condition", &SelectStmt::getCondition, py::return_value_policy::reference)
+            .def("get_true_value", &SelectStmt::getTrueValue, py::return_value_policy::reference)
+            .def("get_false_value", &SelectStmt::getFalseValue, py::return_value_policy::reference);
 
-    py::class_<CmpStmt, SVFStmt>(m, "CmpStmt")
+    py::class_<CmpStmt, MultiOpndStmt>(m, "CmpStmt")
             // TODO: Return int, maybe need to think about friendly return value
-            .def("get_predicate", &CmpStmt::getPredicate)
-            .def("get_res", &CmpStmt::getRes, py::return_value_policy::reference)
-            .def("get_res_id", &CmpStmt::getResID)
-            // TODO: implement SVFVar
-            .def("get_op_var", [](CmpStmt& stmt, int ID) { return stmt.getOpVar(ID); },
-                 py::return_value_policy::reference)
-            .def("get_op_var_num", &CmpStmt::getOpVarNum, "Get the number of operands of the phi statement");
+            .def("get_predicate", &CmpStmt::getPredicate);
 
-    py::class_<BinaryOPStmt, SVFStmt>(m, "BinaryOPStmt")
+    py::class_<BinaryOPStmt, MultiOpndStmt>(m, "BinaryOPStmt")
             //TODO: enum of get_op
             .def("get_op", &BinaryOPStmt::getOpcode)
-            .def("get_res", &BinaryOPStmt::getRes, py::return_value_policy::reference)
-            .def("get_res_id", &BinaryOPStmt::getResID)
-            .def("get_op_var", [](BinaryOPStmt& stmt, int ID) { return stmt.getOpVar(ID); },
-                 py::return_value_policy::reference);
+            .def("get_opcode", &BinaryOPStmt::getOpcode);
 
     py::class_<UnaryOPStmt, SVFStmt>(m, "UnaryOPStmt")
             .def("get_op", &UnaryOPStmt::getOpcode)
+            .def("get_opcode", &UnaryOPStmt::getOpcode)
+            .def("get_op_var", &UnaryOPStmt::getOpVar, py::return_value_policy::reference)
             .def("get_res", &UnaryOPStmt::getRes, py::return_value_policy::reference)
-            .def("get_res_id", &UnaryOPStmt::getResID)
-            .def("get_op_var", [](UnaryOPStmt& stmt) { return stmt.getOpVar(); },
-                 py::return_value_policy::reference);
+            .def("get_res_var", &UnaryOPStmt::getRes, py::return_value_policy::reference)
+            .def("get_op_var_id", &UnaryOPStmt::getOpVarID)
+            .def("get_res_id", &UnaryOPStmt::getResID);
 
     py::class_<BranchStmt, SVFStmt>(m, "BranchStmt")
             //std::vector<std::pair<const ICFGNode*, s32_t>> getSuccessors()
@@ -490,8 +471,6 @@ void bind_svf_stmt(py::module& m) {
             .def("is_unconditional", &BranchStmt::isUnconditional)
             .def("get_condition", &BranchStmt::getCondition, py::return_value_policy::reference)
             .def("get_branch_inst", &BranchStmt::getBranchInst, py::return_value_policy::reference);
-
-
 }
 
 
@@ -641,6 +620,20 @@ void bind_svf_var(py::module &m) {
             }, py::return_value_policy::reference)
             .def("as_dummy_obj_var", [](SVF::SVFVar* node) -> SVF::DummyObjVar* {
                 return SVFUtil::dyn_cast<SVF::DummyObjVar>(node);
+            }, py::return_value_policy::reference)
+            .def("get_in_edges", [](SVF::SVFVar* node) {
+                std::vector<const SVFStmt*> inEdges;
+                for (auto& edge : node->getInEdges()) {
+                    inEdges.push_back(edge);
+                }
+                return inEdges;
+            }, py::return_value_policy::reference)
+            .def("get_out_edges", [](SVF::SVFVar* node) {
+                std::vector<const SVFStmt*> outEdges;
+                for (auto& edge : node->getOutEdges()) {
+                    outEdges.push_back(edge);
+                }
+                return outEdges;
             }, py::return_value_policy::reference)
             .def("to_string", [](SVF::SVFVar* node) {
                 if (!node) {
@@ -2310,7 +2303,17 @@ void bind_abstract_state(py::module& m) {
         .def("print_abs_state", &AbstractState::printAbstractState)
         .def("clone", [](AbstractState& self) {
             return new AbstractState(self);
-        }, py::return_value_policy::reference);
+        }, py::return_value_policy::reference)
+        .def("bottom", &AbstractState::bottom)
+        .def("top", &AbstractState::top)
+        .def("get_gep_obj_addrs", &AbstractState::getGepObjAddrs, py::arg("ptr"), py::arg("offset"))
+        .def("get_element_index", &AbstractState::getElementIndex, py::arg("gep"))
+        .def("get_byte_offset", &AbstractState::getByteOffset, py::arg("gep"))
+        .def("load_value", &AbstractState::loadValue, py::arg("var_id"))
+        .def("store_value", &AbstractState::storeValue, py::arg("var_id"), py::arg("val"))
+        .def("get_pointee_element", &AbstractState::getPointeeElement, py::arg("var_id"))
+        .def("is_interval", &AbstractState::inVarToValTable, py::arg("var_id"))
+        .def("is_addr", &AbstractState::inVarToAddrsTable, py::arg("var_id"));
 }
 
 SVFIR* PySVF::currentSVFIR = nullptr;
