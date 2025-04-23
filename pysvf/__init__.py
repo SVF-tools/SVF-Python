@@ -221,11 +221,11 @@ from .pysvf import get_pag as _get_pag_internal
 def get_pag(bitcodePath, *args, **kwargs):
     import os
 
-    if not os.path.isfile(filepath) or not filepath.endswith((".ll", ".bc")):
-        print(f"[error] Invalid file path or not an IR file: {filepath}")
+    if not os.path.isfile(bitcodePath) or not bitcodePath.endswith((".ll", ".bc")):
+        print(f"[error] Invalid file path or not an IR file: {bitcodePath}")
         sys.exit(1)
     try:
-        return _get_pag_internal(filepath, *args, **kwargs)
+        return _get_pag_internal(bitcodePath, *args, **kwargs)
     except Exception as e:
         print(f"[error] Failed to load IR: {e}")
         return None
