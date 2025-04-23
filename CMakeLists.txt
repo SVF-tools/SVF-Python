@@ -95,7 +95,8 @@ endif()
 message("SVF_INCLUDE_DIR: ${SVF_INCLUDE_DIR}")
 include_directories(SYSTEM "${SVF_INCLUDE_DIR}" "${Z3_INCLUDE_DIR}")
 
-add_library(pysvf MODULE pybind/svf_pybind.cpp)
+file(GLOB_RECURSE PYBIND_CPP pybind/*.cpp)
+add_library(pysvf MODULE ${PYBIND_CPP})
 target_link_directories(pysvf PRIVATE "${SVF_LIB_DIR}")
 
 # ------------------------------------------------------------------------------
