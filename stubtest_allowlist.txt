@@ -68,7 +68,6 @@ pysvf.SVFStructType
 pysvf.SVFType
 pysvf.SVFValue
 pysvf.SVFVar
-pysvf.SelectStmt
 pysvf.StackObjVar
 pysvf.StoreStmt
 pysvf.TOOL_NAMES

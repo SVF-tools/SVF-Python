@@ -84,7 +84,6 @@ def main():
 from .enums import Predicate, OpCode
 # Import all the module classes and functions
 from .pysvf import (
-    get_pag,
     release_pag,
     get_icfg,
     get_svfg,
@@ -115,6 +114,7 @@ from .pysvf import (
     BinaryOPStmt,
     UnaryOPStmt,
     BranchStmt,
+    SelectStmt,
     ICFG,
     SVFIR,
     SVFVar,
@@ -215,6 +215,22 @@ from .pysvf import (
     AbstractValue,
     BoundedInt
 )
+
+from .pysvf import get_pag as _get_pag_internal
+
+def get_pag(bitcodePath, *args, **kwargs):
+    import os
+
+    if not os.path.isfile(filepath) or not filepath.endswith((".ll", ".bc")):
+        print(f"[error] Invalid file path or not an IR file: {filepath}")
+        sys.exit(1)
+    try:
+        return _get_pag_internal(filepath, *args, **kwargs)
+    except Exception as e:
+        print(f"[error] Failed to load IR: {e}")
+        return None
+
+
 
 # Enable direct module execution
 if __name__ == "__main__":
