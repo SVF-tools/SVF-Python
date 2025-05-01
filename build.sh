@@ -50,7 +50,7 @@ if ! python3.10 -m pip &> /dev/null; then
 fi
 
 # Step 5: Install Python build dependencies
-python3.10 -m pip install -U pip pybind11 setuptools wheel
+python3.10 -m pip install -U pip pybind11 setuptools wheel build
 PYBIND11_DIR=$(python3.10 -m pybind11 --cmakedir)
 
 # Step 6: Build the wheel
