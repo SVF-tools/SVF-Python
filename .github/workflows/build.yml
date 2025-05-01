@@ -1,0 +1,48 @@
+name: SVF-Python Build (Auto-install Python 3.10)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build via build.sh on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git curl build-essential software-properties-common \
+            cmake g++ nodejs doxygen graphviz lcov libncurses5-dev libtinfo6 libzstd-dev \
+            libffi-dev zlib1g-dev
+
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install git curl cmake node doxygen graphviz
+
+      - name: Run build script
+        run: |
+          chmod +x ./build.sh
+          ./build.sh
+
+      - name: Check for .whl file
+        run: |
+          if ls dist/*.whl 1> /dev/null 2>&1; then
+            echo "✅ Wheel build succeeded."
+          else
+            echo "❌ Wheel file not found. Build failed."
+            exit 1
+          fi
