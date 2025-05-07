@@ -198,10 +198,7 @@ void bind_abstract_state(py::module& m) {
         .def("contains", &AddressValue::contains, py::arg("addr"))
         .def("empty", &AddressValue::empty)
         .def("size", &AddressValue::size)
-        .def("is_top", &AddressValue::isTop)
         .def("is_bottom", &AddressValue::isBottom)
-        .def("set_top", &AddressValue::setTop)
-        .def("set_bottom", &AddressValue::setBottom)
     
         .def("join_with", &AddressValue::join_with)
         .def("meet_with", &AddressValue::meet_with)
@@ -212,7 +209,6 @@ void bind_abstract_state(py::module& m) {
     
         .def_static("get_virtual_mem_address", &AddressValue::getVirtualMemAddress, py::arg("idx"))
         .def_static("is_virtual_mem_address", &AddressValue::isVirtualMemAddress, py::arg("val"))
-        .def_static("get_internal_id", &AddressValue::getInternalID, py::arg("val"))
     
         .def("__str__", [](const AddressValue &av) {
             return av.toString();
@@ -326,11 +322,13 @@ void bind_abstract_state(py::module& m) {
         .def("meet_with", &AbstractState::meetWith, py::arg("other"))
         .def("widening", &AbstractState::widening, py::arg("other"))
         .def("narrowing", &AbstractState::narrowing, py::arg("other"))
+        .def("get_id_from_addr", &AbstractState::getIDFromAddr, py::arg("addr"))
     
         // Static utilities for address handling
         .def_static("is_virtual_mem_address", &AbstractState::isVirtualMemAddress, py::arg("val"))
         .def_static("get_virtual_mem_address", &AbstractState::getVirtualMemAddress, py::arg("idx"))
-        .def_static("is_null_ptr", &AbstractState::isNullPtr, py::arg("addr"))
+        .def_static("is_null_mem", &AbstractState::isNullMem, py::arg("addr"))
+        .def_static("is_invalid_mem", &AbstractState::isInvalidMem, py::arg("addr"))
     
         // State management
         .def("clear", &AbstractState::clear)
@@ -544,7 +542,7 @@ void bind_abstract_state(py::module& m) {
             }
         
             for (const auto& addr : addrs) {
-                NodeID objId = SVF::AbstractState::getInternalID(addr);
+                NodeID objId = as.getIDFromAddr(addr);
                 if (new_es.inAddrToValTable(objId)) {
                     switch (predicate) {
                     case CmpStmt::Predicate::ICMP_EQ:
@@ -659,7 +657,7 @@ void bind_abstract_state(py::module& m) {
                     if (new_es.inVarToAddrsTable(load->getRHSVarID())) {
                         AddressValue& addrs = new_es[load->getRHSVarID()].getAddrs();
                         for (const auto& addr : addrs) {
-                            NodeID objId = SVF::AbstractState::getInternalID(addr);
+                            NodeID objId = as.getIDFromAddr(addr);
                             if (new_es.inAddrToValTable(objId)) {
                                 new_es.load(addr).meet_with(switch_cond);
                             }
