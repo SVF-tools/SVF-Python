@@ -1,38 +1,57 @@
-# Pysvf: the Python bindings of SVF
+# Pysvf: Python Bindings for SVF
 
 ## 1. Introduction
-This is a Python binding of the [SVF](https://github.com/SVF-tools/SVF). 
 
-## 2. Install SVF-Python
+**Pysvf** is a Python binding for the [SVF (Static Value-Flow)](https://github.com/SVF-tools/SVF), a static analysis framework built on LLVM.
 
-### Pre-requisite
+## 2. Installation
+
+Pysvf can be installed in two ways:
+
+### Method 1: Install via pip (Test PyPI)
+
+#### Requirements
 
 - Python 3.8 - 3.11
+- OS: Linux X86-64, Linux Arm64, MacOS
 
-### Install
+#### Install Command
 
-install pysvf by pip
-```angular2html
-python3 -m pip install  -i https://test.pypi.org/simple/ pysvf
+```bash
+python3 -m pip install -i https://test.pypi.org/simple/ pysvf
+````
+
+### Method 2: Build from Source
+
+Clone the repository and run the build script:
+
+```bash
+bash build.sh
 ```
 
-### Documentation
+> This will build the SVF and its depedencies like LLVM and Z3, and set up the Python bindings.
 
-The documentation of pysvf is available at [Wiki](https://github.com/SVF-tools/SVF-Python/wiki) page. 
+## 3. Documentation
 
-- Pysvf API reference: [Link](https://github.com/SVF-tools/SVF-Python/wiki/PySVF-API)
-- Install Pysvf from Scratch: [Link](https://github.com/SVF-tools/SVF-Python/wiki/Install-Pysvf-from-Scratch) 
+Documentation is available on the [SVF-Python Wiki](https://github.com/SVF-tools/SVF-Python/wiki):
 
+* [Pysvf API Reference](https://github.com/SVF-tools/SVF-Python/wiki/PySVF-API)
 
+## 4. Tutorial
 
-### Tutorial
+Example notebooks are provided in the `tutorial` folder. Before running them, please install Jupyter Notebook:
 
-In `tutorial` folder, there are some examples to show how to use pysvf. Before running the examples, you need to install Jupyter Notebook first.
-
-```angular2html
+```bash
 python3 -m pip install jupyter
+cd demo
+jupyter notebook
 ```
 
-- [PAG](./demo/pag.ipynb): This example shows how to use pysvf to generate Program Assignment Graph (PAG, SVFIR) from LLVM BC files, and how to manipulate PAGNode(SVFVar).
-- [ICFG](./demo/icfg.ipynb): This example shows how to use pysvf to generate Interprocedural Control Flow Graph (ICFG) and how to manipulate ICFGNode, ICFGEdge and their sub-classes.
-- [SVFG](./demo/svfg.ipynb): This example shows how to use pysvf to generate Static Value Flow Graph (SVFG) and how to manipulate SVFGNode, SVFGEdge and their sub-classes.
+Then you can click one of the following notebooks.
+
+### Example Notebooks
+
+* [PAG](./demo/pag.ipynb): Generate Program Assignment Graph (PAG / SVFIR) from LLVM BC files and manipulate `PAGNode` (`SVFVar`).
+* [ICFG](./demo/icfg.ipynb): Generate Interprocedural Control Flow Graph (ICFG) and manipulate `ICFGNode`, `ICFGEdge`, and subclasses.
+* [SVFG](./demo/svfg.ipynb): Generate Static Value Flow Graph (SVFG) and manipulate `SVFGNode`, `SVFGEdge`, and subclasses.
+
