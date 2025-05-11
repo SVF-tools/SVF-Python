@@ -24,7 +24,7 @@ void bind_abstract_state(py::module& m) {
             return new BoundedInt(val, isInf);
         }), py::arg("val"), py::arg("isInf"))
         
-        .def("get_numeral", &BoundedInt::getNumeral)
+        .def("getNumeral", &BoundedInt::getNumeral)
         .def_property_readonly("is_infinity", &BoundedInt::is_infinity)
         .def_property_readonly("is_plus_infinity", &BoundedInt::is_plus_infinity)
         .def_property_readonly("is_minus_infinity", &BoundedInt::is_minus_infinity)
@@ -131,8 +131,8 @@ void bind_abstract_state(py::module& m) {
         })
 
         // Methods
-        .def("is_bottom", &IntervalValue::isBottom)
-        .def("is_top", &IntervalValue::isTop)
+        .def("isBottom", &IntervalValue::isBottom)
+        .def("isTop", &IntervalValue::isTop)
         .def("is_numeral", &IntervalValue::is_numeral)
         .def("is_zero", &IntervalValue::is_zero)
         .def("is_real", &IntervalValue::is_real)
@@ -144,16 +144,16 @@ void bind_abstract_state(py::module& m) {
         .def("ne_interval", [](const IntervalValue &self, const IntervalValue &other) {
                 return self.operator!=(other);
             }, py::arg("other"))
-        .def("get_numeral", &IntervalValue::getNumeral)
-        .def("get_int_numeral", &IntervalValue::getIntNumeral)
-        .def("get_real_numeral", &IntervalValue::getRealNumeral)
-        .def("contained_within", &IntervalValue::containedWithin)
+        .def("getNumeral", &IntervalValue::getNumeral)
+        .def("getIntNumeral", &IntervalValue::getIntNumeral)
+        .def("getRealNumeral", &IntervalValue::getRealNumeral)
+        .def("containedWithin", &IntervalValue::containedWithin)
         .def("contain", &IntervalValue::contain)
         .def("leq", &IntervalValue::leq)
         .def("geq", &IntervalValue::geq)
         .def("set_to_bottom", &IntervalValue::set_to_bottom)
         .def("set_to_top", &IntervalValue::set_to_top)
-        .def("to_string", &IntervalValue::toString)
+        .def("toString", &IntervalValue::toString)
         .def("lb", &IntervalValue::lb)
         .def("ub", &IntervalValue::ub)
 
@@ -198,17 +198,17 @@ void bind_abstract_state(py::module& m) {
         .def("contains", &AddressValue::contains, py::arg("addr"))
         .def("empty", &AddressValue::empty)
         .def("size", &AddressValue::size)
-        .def("is_bottom", &AddressValue::isBottom)
+        .def("isBottom", &AddressValue::isBottom)
     
         .def("join_with", &AddressValue::join_with)
         .def("meet_with", &AddressValue::meet_with)
-        .def("has_intersect", &AddressValue::hasIntersect)
+        .def("hasIntersect", &AddressValue::hasIntersect)
     
-        .def("get_vals", &AddressValue::getVals, py::return_value_policy::reference_internal)
-        .def("set_vals", &AddressValue::setVals, py::arg("vals"))
+        .def("getVals", &AddressValue::getVals, py::return_value_policy::reference_internal)
+        .def("setVals", &AddressValue::setVals, py::arg("vals"))
     
-        .def_static("get_virtual_mem_address", &AddressValue::getVirtualMemAddress, py::arg("idx"))
-        .def_static("is_virtual_mem_address", &AddressValue::isVirtualMemAddress, py::arg("val"))
+        .def_static("getVirtualMemAddress", &AddressValue::getVirtualMemAddress, py::arg("idx"))
+        .def_static("isVirtualMemAddress", &AddressValue::isVirtualMemAddress, py::arg("val"))
     
         .def("__str__", [](const AddressValue &av) {
             return av.toString();
@@ -222,12 +222,12 @@ void bind_abstract_state(py::module& m) {
         .def(py::init<>())
         .def(py::init<const IntervalValue&>())
         .def(py::init<const AddressValue&>())
-        .def("is_interval", &AbstractValue::isInterval)
-        .def("is_addr", &AbstractValue::isAddr)
-        .def("get_interval", py::overload_cast<>(&AbstractValue::getInterval, py::const_)) 
-        .def("get_addrs", py::overload_cast<>(&AbstractValue::getAddrs, py::const_))
-        .def("ref_interval", py::overload_cast<>(&AbstractValue::getInterval), py::return_value_policy::reference)
-        .def("ref_addrs", py::overload_cast<>(&AbstractValue::getAddrs), py::return_value_policy::reference)
+        .def("isInterval", &AbstractValue::isInterval)
+        .def("isAddr", &AbstractValue::isAddr)
+        .def("getInterval", py::overload_cast<>(&AbstractValue::getInterval, py::const_)) 
+        .def("getAddrs", py::overload_cast<>(&AbstractValue::getAddrs, py::const_))
+        .def("getInterval", py::overload_cast<>(&AbstractValue::getInterval), py::return_value_policy::reference)
+        .def("getAddrs", py::overload_cast<>(&AbstractValue::getAddrs), py::return_value_policy::reference)
         .def("equals", &AbstractValue::equals)
             // === join_with overloads ===
         .def("join_with", [](AbstractValue &self, const AbstractValue &other) {
@@ -283,11 +283,11 @@ void bind_abstract_state(py::module& m) {
         .def(py::init<>())
     
         // Getter & Setter for variables via get_var/set_var
-        .def("get_var", [](AbstractState& self, u32_t varId) -> AbstractValue& {
+        .def("getVar", [](AbstractState& self, u32_t varId) -> AbstractValue& {
             return self[varId];
         }, py::arg("varId"), py::return_value_policy::reference)
     
-        .def("set_var", [](AbstractState& self, u32_t varId, const AbstractValue& val) {
+        .def("setVar", [](AbstractState& self, u32_t varId, const AbstractValue& val) {
             self[varId] = val;
         }, py::arg("varId"), py::arg("val"))
     
@@ -299,10 +299,10 @@ void bind_abstract_state(py::module& m) {
         .def("load", &AbstractState::load,
              py::arg("addr"), py::return_value_policy::reference)
 
-        .def("store_value", &AbstractState::storeValue,
+        .def("storeValue", &AbstractState::storeValue,
              py::arg("varId"), py::arg("val"))
 
-        .def("load_value", &AbstractState::loadValue,
+        .def("loadValue", &AbstractState::loadValue,
             py::arg("varId"), py::return_value_policy::reference)
     
         // Equality comparison
@@ -318,21 +318,21 @@ void bind_abstract_state(py::module& m) {
         }, py::arg("other"))
     
         // Abstract operations
-        .def("join_with", &AbstractState::joinWith, py::arg("other"))
-        .def("meet_with", &AbstractState::meetWith, py::arg("other"))
+        .def("joinWith", &AbstractState::joinWith, py::arg("other"))
+        .def("meetWith", &AbstractState::meetWith, py::arg("other"))
         .def("widening", &AbstractState::widening, py::arg("other"))
         .def("narrowing", &AbstractState::narrowing, py::arg("other"))
-        .def("get_id_from_addr", &AbstractState::getIDFromAddr, py::arg("addr"))
+        .def("getIDFromAddr", &AbstractState::getIDFromAddr, py::arg("addr"))
     
         // Static utilities for address handling
-        .def_static("is_virtual_mem_address", &AbstractState::isVirtualMemAddress, py::arg("val"))
-        .def_static("get_virtual_mem_address", &AbstractState::getVirtualMemAddress, py::arg("idx"))
-        .def_static("is_null_mem", &AbstractState::isNullMem, py::arg("addr"))
-        .def_static("is_invalid_mem", &AbstractState::isInvalidMem, py::arg("addr"))
+        .def_static("isVirtualMemAddress", &AbstractState::isVirtualMemAddress, py::arg("val"))
+        .def_static("getVirtualMemAddress", &AbstractState::getVirtualMemAddress, py::arg("idx"))
+        .def_static("isNullMem", &AbstractState::isNullMem, py::arg("addr"))
+        .def_static("isInvalidMem", &AbstractState::isInvalidMem, py::arg("addr"))
     
         // State management
         .def("clear", &AbstractState::clear)
-        .def("print", &AbstractState::printAbstractState)
+        .def("printAbstractState", &AbstractState::printAbstractState)
         .def("__str__", &AbstractState::toString)
     
         // Pythonic operator[]
@@ -359,24 +359,24 @@ void bind_abstract_state(py::module& m) {
         })
         
         // Access to internal maps
-        .def("get_var_to_vals", &AbstractState::getVarToVal, py::return_value_policy::reference)
-        .def("get_addr_to_vals", &AbstractState::getLocToVal, py::return_value_policy::reference)
-        .def("print_abs_state", &AbstractState::printAbstractState)
+        .def("getVarToVal", &AbstractState::getVarToVal, py::return_value_policy::reference)
+        .def("getLocToVal", &AbstractState::getLocToVal, py::return_value_policy::reference)
+        .def("printAbstractState", &AbstractState::printAbstractState)
         .def("clone", [](AbstractState& self) {
             return new AbstractState(self);
         }, py::return_value_policy::reference)
         .def("bottom", &AbstractState::bottom)
         .def("top", &AbstractState::top)
-        .def("get_gep_obj_addrs", &AbstractState::getGepObjAddrs, py::arg("ptr"), py::arg("offset"))
-        .def("get_element_index", &AbstractState::getElementIndex, py::arg("gep"))
-        .def("get_byte_offset", &AbstractState::getByteOffset, py::arg("gep"))
-        .def("load_value", &AbstractState::loadValue, py::arg("var_id"))
-        .def("store_value", &AbstractState::storeValue, py::arg("var_id"), py::arg("val"))
-        .def("get_pointee_element_type", &AbstractState::getPointeeElement, py::arg("var_id"), py::return_value_policy::reference)
-        .def("is_interval", &AbstractState::inVarToValTable, py::arg("var_id"))
-        .def("is_addr", &AbstractState::inVarToAddrsTable, py::arg("var_id"))
-        .def("get_gep_obj_addrs", &AbstractState::getGepObjAddrs, py::arg("var_id"), py::arg("offset"))
-        .def_static("is_cmp_branch_feasible", [](SVFIR* svfir, const CmpStmt* cmpStmt, s64_t succ, AbstractState& as) {
+        .def("getGepObjAddrs", &AbstractState::getGepObjAddrs, py::arg("ptr"), py::arg("offset"))
+        .def("getElementIndex", &AbstractState::getElementIndex, py::arg("gep"))
+        .def("getByteOffset", &AbstractState::getByteOffset, py::arg("gep"))
+        .def("loadValue", &AbstractState::loadValue, py::arg("var_id"))
+        .def("storeValue", &AbstractState::storeValue, py::arg("var_id"), py::arg("val"))
+        .def("getPointeeElement", &AbstractState::getPointeeElement, py::arg("var_id"), py::return_value_policy::reference)
+        .def("inVarToValTable", &AbstractState::inVarToValTable, py::arg("var_id"))
+        .def("inVarToAddrsTable", &AbstractState::inVarToAddrsTable, py::arg("var_id"))
+        .def("getGepObjAddrs", &AbstractState::getGepObjAddrs, py::arg("var_id"), py::arg("offset"))
+        .def_static("isCmpBranchFeasible", [](SVFIR* svfir, const CmpStmt* cmpStmt, s64_t succ, AbstractState& as) {
             Map<s32_t, s32_t> _reverse_predicate = {
                 {CmpStmt::Predicate::FCMP_OEQ, CmpStmt::Predicate::FCMP_ONE}, // == -> !=
                 {CmpStmt::Predicate::FCMP_UEQ, CmpStmt::Predicate::FCMP_UNE}, // == -> !=
@@ -597,7 +597,7 @@ void bind_abstract_state(py::module& m) {
             as = new_es;
             return true;
         }, py::arg("pag"), py::arg("cmpStmt"), py::arg("succ"), py::arg("as"))
-        .def_static("is_switch_branch_feasible", [](SVFIR* svfir, const SVFVar* var, s64_t succ, AbstractState& as) {
+        .def_static("isSwitchBranchFeasible", [](SVFIR* svfir, const SVFVar* var, s64_t succ, AbstractState& as) {
             Map<s32_t, s32_t> _reverse_predicate = {
                 {CmpStmt::Predicate::FCMP_OEQ, CmpStmt::Predicate::FCMP_ONE}, // == -> !=
                 {CmpStmt::Predicate::FCMP_UEQ, CmpStmt::Predicate::FCMP_UNE}, // == -> !=

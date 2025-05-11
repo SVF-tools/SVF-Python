@@ -84,11 +84,11 @@ def main():
 from .enums import Predicate, OpCode
 # Import all the module classes and functions
 from .pysvf import (
-    release_pag,
-    get_icfg,
-    get_svfg,
-    get_callgraph,
-    get_module_name,
+    releasePAG,
+    getICFG,
+    getSVFG,
+    getCallGraph,
+    getModuleName,
     ICFGNode,
     IntraICFGNode,
     InterICFGNode,
@@ -216,9 +216,9 @@ from .pysvf import (
     BoundedInt
 )
 
-from .pysvf import get_pag as _get_pag_internal
+from .pysvf import getPAG as _get_pag_internal
 
-def get_pag(bitcodePath, *args, **kwargs):
+def getPAG(bitcodePath, *args, **kwargs):
     import os
 
     if not os.path.isfile(bitcodePath) or not bitcodePath.endswith((".ll", ".bc")):

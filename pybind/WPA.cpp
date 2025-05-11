@@ -47,22 +47,22 @@ void bind_andersen_base(py::module& m) {
             return std::make_shared<PublicAndersen>(svfir);
         }))
         .def("initialize", &PublicAndersen::initialize, "Initialize the analysis")
-        .def("init_worklist", &PublicAndersen::initWorklist, "Initialize the worklist")
-        .def("update_call_graph", [](PublicAndersen& base) {
+        .def("initWorklist", &PublicAndersen::initWorklist, "Initialize the worklist")
+        .def("updateCallGraph", [](PublicAndersen& base) {
             return base.updateCallGraph(base.getIndirectCallsites());
         }, py::return_value_policy::reference, "Update the call graph with the given call sites")
-        .def("push_into_worklist", [](PublicAndersen& base, NodeID id) {
+        .def("pushIntoWorklist", [](PublicAndersen& base, NodeID id) {
             base.pushIntoWorklist(id);
         }, py::arg("node"), "Push a node into the worklist")
         .def("finalize", &PublicAndersen::finalize, "Finalize the analysis")
-        .def("add_pts",[](PublicAndersen& base, NodeID id, NodeID ptd) {
+        .def("addPts",[](PublicAndersen& base, NodeID id, NodeID ptd) {
             return base.addPts(id, ptd);
         }, py::arg("id"), py::arg("ptd"), "Add points-to information")
-        .def("get_constraint_graph", &PublicAndersen::getConstraintGraph, py::return_value_policy::reference, "Get the constraint graph")
-        .def("union_pts", [](PublicAndersen& base, NodeID id, NodeID ptd) {
+        .def("getConstraintGraph", &PublicAndersen::getConstraintGraph, py::return_value_policy::reference, "Get the constraint graph")
+        .def("unionPts", [](PublicAndersen& base, NodeID id, NodeID ptd) {
             return base.unionPts(id, ptd);
         }, py::arg("id"), py::arg("ptd"), "Union points-to 1 information")
-        .def("union_pts_2", [](PublicAndersen& base, NodeID id, const PointsTo& ptd) {
+        .def("unionPts2", [](PublicAndersen& base, NodeID id, const PointsTo& ptd) {
             return base.unionPts(id, ptd);
         }, py::arg("id"), py::arg("ptd"), "Union points-to 2 information")
         .def("alias", [](PublicAndersen& base, NodeID id1, NodeID id2) {
@@ -70,11 +70,11 @@ void bind_andersen_base(py::module& m) {
             std::cout << "Alias result: " << res << std::endl;
             return res;
         }, py::arg("id1"), py::arg("id2"), "Check if two nodes are aliases")
-        .def("is_worklist_empty", &PublicAndersen::isWorklistEmpty, "Check if the worklist is empty")
-        .def("pop_from_worklist", [](PublicAndersen& base) {
+        .def("isWorklistEmpty", &PublicAndersen::isWorklistEmpty, "Check if the worklist is empty")
+        .def("popFromWorklist", [](PublicAndersen& base) {
             return base.popFromWorklist();
         }, "Pop a node from the worklist")
-        .def("get_pts", [](PublicAndersen& base, NodeID id) {
+        .def("getPts", [](PublicAndersen& base, NodeID id) {
             return base.getPts(id);
         }, py::arg("id"), py::return_value_policy::reference, "Get points-to information for a given ID");
 

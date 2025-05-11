@@ -159,16 +159,16 @@ PYBIND11_MODULE(pysvf, m) {
     bind_svf_stmt(m);
     bind_svf_var(m);
     bind_svf_type(m);
-    m.def("get_pag", &PySVF::get_pag, 
+    m.def("getPAG", &PySVF::get_pag, 
         py::arg("bitcode_path"),  // Name the first parameter
         py::arg("build_svfg") = false,  // Name the second parameter with default value
         py::return_value_policy::reference, 
         "Analyze LLVM bitcode and return SVFIR");
-    m.def("release_pag", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
-    m.def("get_icfg", &PySVF::get_current_icfg, py::return_value_policy::reference, "Get the interprocedural control flow graph");
-    m.def("get_callgraph", &PySVF::get_current_call_graph, py::return_value_policy::reference, "Get the call graph");
-    m.def("get_svfg", &PySVF::get_current_svfg, py::return_value_policy::reference, "Get the sparse value flow graph");
-    m.def("get_module_name", &PySVF::get_last_analyzed_module, "Get the name of the last analyzed module");
+    m.def("releasePAG", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
+    m.def("getICFG", &PySVF::get_current_icfg, py::return_value_policy::reference, "Get the interprocedural control flow graph");
+    m.def("getCallGraph", &PySVF::get_current_call_graph, py::return_value_policy::reference, "Get the call graph");
+    m.def("getSVFG", &PySVF::get_current_svfg, py::return_value_policy::reference, "Get the sparse value flow graph");
+    m.def("getModuleName", &PySVF::get_last_analyzed_module, "Get the name of the last analyzed module");
     bind_callgraph_node(m);
     bind_callgraph_edge(m);
     bind_basic_block(m);
