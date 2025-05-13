@@ -85,6 +85,7 @@ from .enums import Predicate, OpCode
 # Import all the module classes and functions
 from .pysvf import (
     releasePAG,
+    getPAG,
     getICFG,
     getSVFG,
     getCallGraph,
@@ -216,20 +217,15 @@ from .pysvf import (
     BoundedInt
 )
 
-from .pysvf import getPAG as _get_pag_internal
-
-def getPAG(bitcodePath, *args, **kwargs):
-    import os
-
-    if not os.path.isfile(bitcodePath) or not bitcodePath.endswith((".ll", ".bc")):
-        print(f"[error] Invalid file path or not an IR file: {bitcodePath}")
-        sys.exit(1)
-    try:
-        return _get_pag_internal(bitcodePath, *args, **kwargs)
-    except Exception as e:
-        print(f"[error] Failed to load IR: {e}")
-        return None
-
+from .pysvf import buildSVFModule as _buildSVFModule
+# argument can be a string or a list of strings
+def buildSVFModule(args) -> None:
+    if isinstance(args, str):
+        args = [args]
+    # if arg is a list, make sure every element is a string
+    if not all(isinstance(arg, str) for arg in args):
+        raise ValueError("All arguments must be strings")
+    _buildSVFModule(args)
 
 
 # Enable direct module execution

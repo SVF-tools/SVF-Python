@@ -1367,8 +1367,9 @@ class ConstNullPtrObjVar(ConstDataObjVar):
 
 # Updated function signatures
 # __init__.py
-def getPAG(bitcodePath, *args, **kwargs) -> SVFIR: ...
-"""Analyze LLVM bitcode and return SVFIR. If buildSVFG is True, also builds sparse value flow graph."""
+
+def getPAG() -> SVFIR: ...
+"""Analyze LLVM bitcode and return SVFIR."""
 
 # New access functions
 def getICFG() -> ICFG: ...

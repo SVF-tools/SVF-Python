@@ -34,6 +34,7 @@
 #include "Graphs/ICFG.h"
 #include "WPA/Andersen.h"
 #include <pybind11/operators.h>
+#include "Util/CommandLine.h"
 
 
 namespace py = pybind11;
@@ -47,6 +48,36 @@ static ICFG* currentICFG;
 static std::string lastAnalyzedModule;
 
 public:
+    static void buildSVFModule(std::vector<std::string> options) {
+        if (options.size() == 0) {
+            std::cout << "No options provided, using default options -h" << std::endl;
+            options.push_back("-h");
+        }
+        // Create an array of char* from the vector of strings
+        std::vector<char*> arg_value;
+        std::string empty = "";
+        arg_value.push_back(&empty[0]);
+        for (auto& option : options) {
+            arg_value.push_back(&option[0]); // Get a pointer to the first character of the string
+        }
+
+        std::vector<std::string> moduleNameVec = OptionBase::parseOptions(
+            arg_value.size(),
+            arg_value.data(), // Pass the array of char*
+            "PySVF",
+            "[options] <input-bitcode...>"
+        );
+        // if options contains [svfg-with-ind-call, opt-svfg, write-svfg, read-svfg]
+        bool buildSVFG = false;
+        std::set<std::string> svfgOptions = {"-svfg"};
+        if (std::any_of(options.begin(), options.end(), [&](const std::string& opt) {
+            return svfgOptions.count(opt) > 0;
+        })) {
+            buildSVFG = true;
+        }
+        get_pag(moduleNameVec[0], buildSVFG);
+    }
+
     static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
         std::vector<std::string> moduleNameVec = { bitcodePath };
         Options::UsePreCompFieldSensitive.setValue(false);
@@ -159,11 +190,8 @@ PYBIND11_MODULE(pysvf, m) {
     bind_svf_stmt(m);
     bind_svf_var(m);
     bind_svf_type(m);
-    m.def("getPAG", &PySVF::get_pag, 
-        py::arg("bitcode_path"),  // Name the first parameter
-        py::arg("build_svfg") = false,  // Name the second parameter with default value
-        py::return_value_policy::reference, 
-        "Analyze LLVM bitcode and return SVFIR");
+    m.def("buildSVFModule", &PySVF::buildSVFModule, py::arg("options"), "Build SVF module");
+    m.def("getPAG", &PySVF::get_current_pag, py::return_value_policy::reference);
     m.def("releasePAG", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
     m.def("getICFG", &PySVF::get_current_icfg, py::return_value_policy::reference, "Get the interprocedural control flow graph");
     m.def("getCallGraph", &PySVF::get_current_call_graph, py::return_value_policy::reference, "Get the call graph");
