@@ -1,5 +1,5 @@
 from typing import List, Iterator, Tuple, Any
-from typing import overload, Optional
+from typing import overload, Optional, Union
 from typing import TYPE_CHECKING
 
 BIN_DIR: str
@@ -222,8 +222,6 @@ class CallICFGNode(ICFGNode):
 
     def getRetICFGNode(self) -> "RetICFGNode": ...
     """Get the return ICFG node"""
-
-
 
 class RetICFGNode(ICFGNode):
     def __init__(self, *args, **kwargs) -> None: ...
@@ -1367,6 +1365,9 @@ class ConstNullPtrObjVar(ConstDataObjVar):
 
 # Updated function signatures
 # __init__.py
+# arg is str or list[str]
+def buildSVFModule(options: Union[str, List[str]]) -> None: ...
+"""Pass Arguments to SVF Module"""
 
 def getPAG() -> SVFIR: ...
 """Analyze LLVM bitcode and return SVFIR."""
