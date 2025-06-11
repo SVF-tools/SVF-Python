@@ -24,7 +24,10 @@ class CMakeBuild(build_ext):
             raise RuntimeError("SVF_DIR not set")
         SVF_DIR = os.environ["SVF_DIR"]
         if not os.path.exists(os.path.join(SVF_DIR, "Release-build")):
-            raise RuntimeError("SVF_DIR/Release-build not found")
+            print("SVF_DIR is not built from scratch, should be installed version SVF")
+        else:
+            print("SVF_DIR is built from scratch, will use SVF_DIR/Release-build as source")
+
 
         # get LLVM_DIR from env, otherwise abort
         if "LLVM_DIR" not in os.environ:
@@ -54,7 +57,6 @@ class CMakeBuild(build_ext):
             [
                 "cmake", cmake_dir,
                 "-G", "Unix Makefiles",
-                "-DCMAKE_BUILD_TYPE=Release",
                 "-DLLVM_DIR="+LLVM_DIR,
                 "-DSVF_DIR="+SVF_DIR,
                 "-DZ3_DIR="+Z3_DIR,
@@ -113,13 +115,19 @@ class CMakeBuild(build_ext):
         # cp -rf $GITHUB_WORKSPACE/svf-llvm/include SVF-${osVersion}/Release-build/
         # cp -rf $GITHUB_WORKSPACE/Release-build/lib SVF-${osVersion}/Release-build/
         # cp -rf $GITHUB_WORKSPACE/Release-build/bin SVF-${osVersion}/Release-build/
-        shutil.copytree(os.path.join(SVF_DIR, CMAKE_BUILD_TYPE+"-build", "include"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "include"),dirs_exist_ok=True)
+        if not os.path.exists(os.path.join(SVF_DIR, CMAKE_BUILD_TYPE+"-build", "include")):
+            print("SVF_DIR is not built from scratch.")
+            SVF_SRC_DIR = SVF_DIR
+        else:
+            SVF_SRC_DIR = os.path.join(SVF_DIR, CMAKE_BUILD_TYPE+"-build")
+        
+        shutil.copytree(os.path.join(SVF_SRC_DIR, "include"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "include"),dirs_exist_ok=True)
         if os.path.exists(os.path.join(SVF_DIR, "svf", "include")):
             shutil.copytree(os.path.join(SVF_DIR, "svf", "include"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "include"),dirs_exist_ok=True)
         if os.path.exists(os.path.join(SVF_DIR, "svf-llvm", "include")):
             shutil.copytree(os.path.join(SVF_DIR, "svf-llvm", "include"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "include"),dirs_exist_ok=True)
-        shutil.copytree(os.path.join(SVF_DIR, CMAKE_BUILD_TYPE+"-build", "lib"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "lib"),dirs_exist_ok=True)
-        shutil.copytree(os.path.join(SVF_DIR, CMAKE_BUILD_TYPE+"-build", "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "bin"),dirs_exist_ok=True)
+        shutil.copytree(os.path.join(SVF_SRC_DIR, "lib"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "lib"),dirs_exist_ok=True)
+        shutil.copytree(os.path.join(SVF_SRC_DIR, "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "bin"),dirs_exist_ok=True)
 
         # cp -rf $GITHUB_WORKSPACE/z3/bin .build_lib/pysvf/z3/bin
         # if exist bin or lib
