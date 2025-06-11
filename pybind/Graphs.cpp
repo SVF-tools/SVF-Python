@@ -227,6 +227,9 @@ void bind_icfg_graph(py::module& m) {
                 return node;
             }, py::arg("id"), py::return_value_policy::reference)
             .def("getFunEntryICFGNode", &ICFG::getFunEntryICFGNode, py::return_value_policy::reference, py::arg("fun_obj"))
+            .def("__iter__", [](ICFG* icfg) {
+                return py::make_iterator(icfg->begin(), icfg->end());
+            }, py::keep_alive<0, 1>(), "Iterate over the ICFG nodes")
 
             .def("getGlobalICFGNode", &ICFG::getGlobalICFGNode, py::return_value_policy::reference)
             //void dump(const std::string& file);
@@ -964,6 +967,9 @@ void bind_constraint_graph(py::module& m) {
         .def("getAddrOutEdges", &ConstraintNode::getAddrOutEdges, py::return_value_policy::reference);
     // ConstraintGraph itself
     py::class_<ConstraintGraph>(m, "ConstraintGraph")
+        .def("__iter__", [](ConstraintGraph* graph) {
+            return py::make_iterator(graph->begin(), graph->end());
+        }, py::keep_alive<0, 1>(), "Iterate over the ConstraintGraph nodes")
         .def("getNodes", [](ConstraintGraph& graph) {
             std::vector<ConstraintNode*> nodes;
             for (auto& node : graph) {
@@ -991,6 +997,9 @@ void bind_constraint_graph(py::module& m) {
         }, py::arg("src"), py::arg("dst"),
            py::return_value_policy::reference_internal)
         .def("getGepObjVar", [](ConstraintGraph& graph, NodeID id, const APOffset& ap) 
-        { return graph.getGepObjVar(id, ap); }, py::arg("id"), py::arg("offset"), py::return_value_policy::reference);
+        { return graph.getGepObjVar(id, ap); }, py::arg("id"), py::arg("offset"), py::return_value_policy::reference)
+        .def("dump", [](ConstraintGraph& graph, std::string file) {
+            graph.dump(file);
+        }, py::arg("file"));
 }
 

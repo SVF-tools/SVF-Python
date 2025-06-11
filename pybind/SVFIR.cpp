@@ -246,7 +246,11 @@ void bind_svf(py::module& m) {
                     throw std::runtime_error("Return value with given ID not found.");
                 }
                 return retVal;
-            }, py::arg("funObj"), py::return_value_policy::reference);
+            }, py::arg("funObj"), py::return_value_policy::reference)
+            .def("getModuleIdentifier", &SVFIR::getModuleIdentifier)
+            .def("dump", [](SVFIR* pag, std::string file) {
+                pag->dump(file);
+            }, py::arg("file"));
 }
 
 // Bind SVFVar
