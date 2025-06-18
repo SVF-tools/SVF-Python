@@ -65,6 +65,9 @@ void bind_andersen_base(py::module& m) {
         .def("unionPts2", [](PublicAndersen& base, NodeID id, const PointsTo& ptd) {
             return base.unionPts(id, ptd);
         }, py::arg("id"), py::arg("ptd"), "Union points-to 2 information")
+        .def("dumpPts", [](PublicAndersen& base, NodeID id, const PointsTo& pts) {
+            base.dumpPts(id, pts);
+        }, py::arg("id"), py::arg("pts"), "Dump points-to information")
         .def("alias", [](PublicAndersen& base, NodeID id1, NodeID id2) {
             AliasResult res =  base.alias(id1, id2);
             std::cout << "Alias result: " << res << std::endl;

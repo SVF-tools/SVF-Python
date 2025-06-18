@@ -185,3 +185,4 @@ pysvf.SVFG
 pysvf.SVFG.__init__
 pysvf.VFG.dump
 pysvf.__main__
+pysvf.AndersenBase  

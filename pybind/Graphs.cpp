@@ -951,6 +951,7 @@ void bind_constraint_graph(py::module& m) {
         .def("toString", &ConstraintNode::toString)
         .def("__str__", &ConstraintNode::toString)
         .def("__repr__", &ConstraintNode::toString)
+        .def("getId", &ConstraintNode::getId)
         .def("getInEdges", &ConstraintNode::getInEdges, py::return_value_policy::reference)
         .def("getOutEdges", &ConstraintNode::getOutEdges, py::return_value_policy::reference)
         .def("getDirectInEdges", &ConstraintNode::getDirectInEdges, py::return_value_policy::reference)
