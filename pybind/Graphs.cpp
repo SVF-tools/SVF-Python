@@ -44,6 +44,7 @@ void bind_icfg_node(py::module& m) {
             .def("getId", &ICFGNode::getId, "Get the ID of the ICFG node")
             .def("getFun", &ICFGNode::getFun, py::return_value_policy::reference, "Get the function that the ICFG node belongs to")
             .def("getBB", &ICFGNode::getBB, py::return_value_policy::reference, "Get the basic block that the ICFG node belongs to")
+            .def("getSourceLoc", &ICFGNode::getSourceLoc, py::return_value_policy::reference, "Get the source location of the ICFG node")
             .def("getSVFStmts", &ICFGNode::getSVFStmts, py::return_value_policy::reference, "Get the SVF statements associated with the ICFG node")
             // Downcast
             .def("asFunEntry", [](ICFGNode* node) { return SVFUtil::dyn_cast<FunEntryICFGNode>(node); }, py::return_value_policy::reference, "Downcast to FunEntryICFGNode")

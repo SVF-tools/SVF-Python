@@ -37,6 +37,9 @@ class ICFGNode:
     def getBB(self) -> "SVFBasicBlock": ...
     """Get the basic block that the ICFG node belongs to"""
 
+    def getSourceLoc(self) -> str: ...
+    """Get the source location of the ICFG node"""
+
     def getSVFStmts(self) -> List["SVFStmt"]: ...
     """Get the SVF statements associated with the ICFG node"""
 
