@@ -42,7 +42,8 @@ def run_tool(tool_name, args):
         print(f"[INFO] Running {tool_name} with args {args}")
         result = subprocess.run([tool_path] + args, check=True, text=True, capture_output=True)
         print(f"[INFO] Output:\n{result.stdout}")
-        print(f"[INFO] Error:\n{result.stderr}")
+        if result.stderr:
+            print(f"[INFO] Error:\n{result.stderr}")
         return result.stdout, result.stderr
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] Execution failed: {e}")
