@@ -59,15 +59,15 @@ def run_svf_tool(tool_name, args=None):
     """
     if args is None:
         args = sys.argv[1:]
-    output = ""
+    output_map = {}
     
     if tool_name in TOOL_NAMES:
-        output += run_tool(TOOL_NAMES[tool_name], args) + "\n"
-        return output
+        output_map[TOOL_NAMES[tool_name]] = run_tool(TOOL_NAMES[tool_name], args)
     else:
         print(f"[ERROR] Unknown tool: {tool_name}", file=sys.stderr)
         print(f"[INFO] Available tools: {', '.join(TOOL_NAMES.keys())}", file=sys.stderr)
         sys.exit(1)
+    return output_map
 
 # Main entry point when module is executed directly
 def main():
