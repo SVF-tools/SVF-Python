@@ -56,6 +56,8 @@ def run_svf_tool(tool_name, args=None):
     Args:
         tool_name (str): The name of the tool to run.
         args (list, optional): The arguments to pass to the tool. Defaults to sys.argv[1:].
+    Returns:
+        dict: A dictionary of the tools used and their standard output.
     """
     if args is None:
         args = sys.argv[1:]
