@@ -42,6 +42,7 @@ def run_tool(tool_name, args):
         print(f"[INFO] Running {tool_name} with args {args}")
         result = subprocess.run([tool_path] + args, check=True, text=True, capture_output=True)
         print(f"[INFO] Output:\n{result.stdout}")
+        return result.stdout
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] Execution failed: {e}")
         print(f"[ERROR] STDERR:\n{e.stderr}")
@@ -58,9 +59,11 @@ def run_svf_tool(tool_name, args=None):
     """
     if args is None:
         args = sys.argv[1:]
+    output = ""
     
     if tool_name in TOOL_NAMES:
-        run_tool(TOOL_NAMES[tool_name], args)
+        output += run_tool(TOOL_NAMES[tool_name], args) + "\n"
+        return output
     else:
         print(f"[ERROR] Unknown tool: {tool_name}", file=sys.stderr)
         print(f"[INFO] Available tools: {', '.join(TOOL_NAMES.keys())}", file=sys.stderr)
