@@ -42,6 +42,9 @@ def run_tool(tool_name, args):
         print(f"[INFO] Running {tool_name} with args {args}")
         result = subprocess.run([tool_path] + args, check=True, text=True, capture_output=True)
         print(f"[INFO] Output:\n{result.stdout}")
+        if result.stderr:
+            print(f"[INFO] Error:\n{result.stderr}")
+        return result.stdout, result.stderr
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] Execution failed: {e}")
         print(f"[ERROR] STDERR:\n{e.stderr}")
@@ -55,16 +58,20 @@ def run_svf_tool(tool_name, args=None):
     Args:
         tool_name (str): The name of the tool to run.
         args (list, optional): The arguments to pass to the tool. Defaults to sys.argv[1:].
+    Returns:
+        output (str): The standard output of the tool.
+        error (str): The standard error of the tool.
     """
     if args is None:
         args = sys.argv[1:]
     
     if tool_name in TOOL_NAMES:
-        run_tool(TOOL_NAMES[tool_name], args)
+        output, error = run_tool(TOOL_NAMES[tool_name], args)
     else:
         print(f"[ERROR] Unknown tool: {tool_name}", file=sys.stderr)
         print(f"[INFO] Available tools: {', '.join(TOOL_NAMES.keys())}", file=sys.stderr)
         sys.exit(1)
+    return output, error
 
 # Main entry point when module is executed directly
 def main():
