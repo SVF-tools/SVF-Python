@@ -134,6 +134,10 @@ public:
         return lastAnalyzedModule;
     }
 
+    static bool is_ext_call(FunObjVar* fun) {
+        return SVFUtil::isExtCall(fun);
+    }
+
 };
 
 void bind_icfg_node(py::module& m);
@@ -206,6 +210,7 @@ PYBIND11_MODULE(pysvf, m) {
     m.def("getCallGraphSCC", &PySVF::get_current_call_graph_scc, py::return_value_policy::reference, "Get the call graph SCC");
     m.def("getSVFG", &PySVF::get_current_svfg, py::return_value_policy::reference, "Get the sparse value flow graph");
     m.def("getModuleName", &PySVF::get_last_analyzed_module, "Get the name of the last analyzed module");
+    m.def("isExtCall", &PySVF::is_ext_call, py::arg("fun"), "Check if a function is an external call");
     bind_callgraph_node(m);
     bind_callgraph_edge(m);
     bind_basic_block(m);

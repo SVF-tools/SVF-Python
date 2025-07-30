@@ -392,6 +392,11 @@ void bind_callgraph(py::module& m) {
             icfg.dump(file);
         })
         .def("view", &CallGraph::view, "View the call graph");
+
+    py::class_<Andersen::CallGraphSCC>(m, "CallGraphSCC", "Call Graph SCC")
+        .def("isInCycle", [](Andersen::CallGraphSCC& cg, NodeID id) {
+            return cg.isInCycle(id);
+        }, py::arg("id"), py::return_value_policy::reference, "Check if a node is in a cycle");
 }
 
 // Add this to svf_pybind.cpp
