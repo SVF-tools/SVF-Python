@@ -34,7 +34,6 @@ pysvf.CallGraph
 pysvf.CallGraphEdge
 pysvf.CallGraphNode
 pysvf.CallGraphSCC
-pysvf.CallGraphSCC.__init__
 pysvf.CallICFGNode
 pysvf.CallIndSVFGEdge
 pysvf.CallIndSVFGEdge.__init__
