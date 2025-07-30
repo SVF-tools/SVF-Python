@@ -46,6 +46,7 @@ static SVFG* currentSVFG;
 static CallGraph* currentCallGraph;
 static ICFG* currentICFG;
 static std::string lastAnalyzedModule;
+static Andersen::CallGraphSCC* currentCallGraphSCC;
 
 public:
     static void buildSVFModule(std::vector<std::string> options) {
@@ -88,6 +89,9 @@ public:
         SVFIR* pag = builder.build();
         AndersenWaveDiff* ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
         CallGraph* callgraph = ander->getCallGraph();
+        Andersen::CallGraphSCC* callGraphScc = ander->getCallGraphSCC();
+ 	    callGraphScc->find();
+        currentCallGraphSCC = callGraphScc;
         builder.updateCallGraph(callgraph);
         pag->getICFG()->updateCallGraph(callgraph);
         
@@ -119,6 +123,9 @@ public:
     }
     static CallGraph* get_current_call_graph() {
         return currentCallGraph;
+    }
+    static Andersen::CallGraphSCC* get_current_call_graph_scc() {
+        return currentCallGraphSCC;
     }
     static ICFG* get_current_icfg() {
         return currentICFG;
@@ -181,6 +188,7 @@ CallGraph* PySVF::currentCallGraph = nullptr;
 SVFG* PySVF::currentSVFG = nullptr;
 ICFG* PySVF::currentICFG = nullptr;
 std::string PySVF::lastAnalyzedModule = "";
+Andersen::CallGraphSCC* PySVF::currentCallGraphSCC = nullptr;
 
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
@@ -195,6 +203,7 @@ PYBIND11_MODULE(pysvf, m) {
     m.def("releasePAG", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
     m.def("getICFG", &PySVF::get_current_icfg, py::return_value_policy::reference, "Get the interprocedural control flow graph");
     m.def("getCallGraph", &PySVF::get_current_call_graph, py::return_value_policy::reference, "Get the call graph");
+    m.def("getCallGraphSCC", &PySVF::get_current_call_graph_scc, py::return_value_policy::reference, "Get the call graph SCC");
     m.def("getSVFG", &PySVF::get_current_svfg, py::return_value_policy::reference, "Get the sparse value flow graph");
     m.def("getModuleName", &PySVF::get_last_analyzed_module, "Get the name of the last analyzed module");
     bind_callgraph_node(m);

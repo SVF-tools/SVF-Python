@@ -96,6 +96,7 @@ from .pysvf import (
     getICFG,
     getSVFG,
     getCallGraph,
+    getCallGraphSCC,
     getModuleName,
     ICFGNode,
     IntraICFGNode,
