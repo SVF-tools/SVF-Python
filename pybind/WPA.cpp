@@ -35,7 +35,7 @@ void bind_andersen_base(py::module& m) {
                 assert(false && "You cannot call AndersenBase::addCopyEdge");
                 return false;
             }
-        };
+    };
     py::enum_<AliasResult>(m, "AliasResult")
         .value("NoAlias", AliasResult::NoAlias)
         .value("MayAlias", AliasResult::MayAlias)
@@ -80,5 +80,4 @@ void bind_andersen_base(py::module& m) {
         .def("getPts", [](PublicAndersen& base, NodeID id) {
             return base.getPts(id);
         }, py::arg("id"), py::return_value_policy::reference, "Get points-to information for a given ID");
-
 }

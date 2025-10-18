@@ -187,6 +187,8 @@ void bind_constraint_graph(py::module& m);
 
 void bind_abstract_state(py::module& m);
 
+void bind_multi_thread_analysis(py::module& m);
+
 SVFIR* PySVF::currentSVFIR = nullptr;
 CallGraph* PySVF::currentCallGraph = nullptr;
 SVFG* PySVF::currentSVFG = nullptr;
@@ -224,5 +226,5 @@ PYBIND11_MODULE(pysvf, m) {
     bind_points_to(m);
     bind_constraint_graph(m);
     bind_abstract_state(m);
-
+    bind_multi_thread_analysis(m);
 }
