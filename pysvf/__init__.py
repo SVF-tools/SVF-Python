@@ -209,6 +209,7 @@ from .pysvf import (
     RetIndSVFGEdge,
     VFG,
     AndersenBase,
+    AndersenWaveDiff,
     PointsTo,
     ConstraintEdge,
     ConstraintNode,
@@ -224,7 +225,11 @@ from .pysvf import (
     AddressValue,
     AbstractState,
     AbstractValue,
-    BoundedInt
+    BoundedInt,
+    MTA,
+    MHP,
+    LockAnalysis,
+    TCT
 )
 
 from .pysvf import buildSVFModule as _buildSVFModule
