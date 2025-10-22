@@ -35,6 +35,7 @@
 #include "WPA/Andersen.h"
 #include <pybind11/operators.h>
 #include "Util/CommandLine.h"
+#include <iostream>
 
 
 namespace py = pybind11;
@@ -50,6 +51,20 @@ static Andersen::CallGraphSCC* currentCallGraphSCC;
 
 public:
     static void buildSVFModule(std::vector<std::string> options) {
+      	static bool isInitialized = false;
+
+        // Release SVFIR and LLVMModuleSet if they already exist to allow rebuilding
+        if (isInitialized) {
+          	try {
+                SVF::SVFIR::releaseSVFIR();
+            	SVF::LLVMModuleSet::releaseLLVMModuleSet();
+                SVF::NodeIDAllocator::unset();
+            } catch (...) {
+            	std::cout << "Error releasing SVFIR or LLVMModuleSet" << std::endl;
+            }
+        }
+        isInitialized = true;
+
         if (options.size() == 0) {
             std::cout << "No options provided, using default options -h" << std::endl;
             options.push_back("-h");
@@ -84,6 +99,7 @@ public:
         Options::UsePreCompFieldSensitive.setValue(false);
         Options::ModelConsts.setValue(true);
         Options::ModelArrays.setValue(true);
+
         LLVMModuleSet::buildSVFModule(moduleNameVec);
         SVFIRBuilder builder;
         SVFIR* pag = builder.build();

@@ -7,6 +7,7 @@
 #include "SVFIR/SVFStatements.h"
 #include "MemoryModel/PointerAnalysis.h"
 #include "WPA/Andersen.h"
+#include "WPA/Steensgaard.h"
 #include "AE/Core/AbstractState.h"
 #include <pybind11/operators.h>
 
@@ -93,4 +94,10 @@ void bind_andersen_base(py::module& m) {
             return std::make_shared<AndersenWaveDiff>(svfir);
         }))
         .def("analyze", &AndersenWaveDiff::analyze, "Analysis entry");
+
+    py::class_<Steensgaard, AndersenBase, std::shared_ptr<Steensgaard>>(m, "Steensgaard", "Steensgaard's pts")
+        .def(py::init([](SVFIR *svfir){
+            return std::make_shared<Steensgaard>(svfir);
+        }))
+        .def("analyze", &Steensgaard::analyze, "Analysis entry");
 }
