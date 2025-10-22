@@ -210,6 +210,7 @@ from .pysvf import (
     VFG,
     AndersenBase,
     AndersenWaveDiff,
+    Steensgaard,
     PointsTo,
     ConstraintEdge,
     ConstraintNode,
