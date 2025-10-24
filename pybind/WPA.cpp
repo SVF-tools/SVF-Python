@@ -14,6 +14,7 @@
 
 namespace py = pybind11;
 using namespace SVF;
+
 void bind_andersen_base(py::module& m) {
     class PublicAndersen : public AndersenBase {
         public:
@@ -38,6 +39,7 @@ void bind_andersen_base(py::module& m) {
                 return false;
             }
     };
+
     py::enum_<AliasResult>(m, "AliasResult")
         .value("NoAlias", AliasResult::NoAlias)
         .value("MayAlias", AliasResult::MayAlias)
@@ -46,9 +48,13 @@ void bind_andersen_base(py::module& m) {
         .export_values();
 
     py::class_<PointerAnalysis, std::shared_ptr<PointerAnalysis>>(m, "PointerAnalysis", "PTA");
-    py::class_<BVDataPTAImpl, PointerAnalysis, std::shared_ptr<BVDataPTAImpl>>(m, "BVDataPTAImpl", "BVDataPTAImpl");
-    py::class_<AndersenBase, BVDataPTAImpl, std::shared_ptr<AndersenBase>>(m, "AndersenBase_", "AndersenBase");
-    py::class_<PublicAndersen, AndersenBase, std::shared_ptr<PublicAndersen>>(m, "AndersenBase", "Anderson's analysis base class")
+    py::class_<BVDataPTAImpl, std::shared_ptr<BVDataPTAImpl>, PointerAnalysis>(m, "BVDataPTAImpl", "BVDataPTAImpl");
+    // WPAConstraintSolver has a protected constructor and is not exposed to Python directly.
+    // Skip binding it to avoid needing to expose its protected constructor.
+    // AndersenBase still inherits BVDataPTAImpl (which in turn derives from PointerAnalysis),
+    // so we can upcast AndersenBase -> BVDataPTAImpl -> PointerAnalysis in Python.
+    py::class_<AndersenBase, std::shared_ptr<AndersenBase>, BVDataPTAImpl>(m, "AndersenBase_", "AndersenBase");
+    py::class_<PublicAndersen, std::shared_ptr<PublicAndersen>, AndersenBase>(m, "AndersenBase", "Anderson's analysis base class")
         .def(py::init([](SVFIR* svfir) {
             return std::make_shared<PublicAndersen>(svfir);
         }))
@@ -88,14 +94,14 @@ void bind_andersen_base(py::module& m) {
             return base.getPts(id);
         }, py::arg("id"), py::return_value_policy::reference, "Get points-to information for a given ID");
 
-    py::class_<Andersen, AndersenBase, std::shared_ptr<Andersen>>(m, "Andersen", "Andersen's pts");
-    py::class_<AndersenWaveDiff, Andersen, std::shared_ptr<AndersenWaveDiff>>(m, "AndersenWaveDiff", "AndersenWaveDiff Pointer Analysis")
+    py::class_<Andersen, std::shared_ptr<Andersen>, AndersenBase>(m, "Andersen", "Andersen's pts");
+    py::class_<AndersenWaveDiff, std::shared_ptr<AndersenWaveDiff>, Andersen>(m, "AndersenWaveDiff", "AndersenWaveDiff Pointer Analysis")
         .def(py::init([](SVFIR *svfir){
             return std::make_shared<AndersenWaveDiff>(svfir);
         }))
         .def("analyze", &AndersenWaveDiff::analyze, "Analysis entry");
 
-    py::class_<Steensgaard, AndersenBase, std::shared_ptr<Steensgaard>>(m, "Steensgaard", "Steensgaard's pts")
+    py::class_<Steensgaard, std::shared_ptr<Steensgaard>, AndersenBase>(m, "Steensgaard", "Steensgaard's pts")
         .def(py::init([](SVFIR *svfir){
             return std::make_shared<Steensgaard>(svfir);
         }))

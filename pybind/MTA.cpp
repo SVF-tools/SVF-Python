@@ -10,6 +10,7 @@
 #include "MTA/LockAnalysis.h"
 #include "Util/Casting.h"
 #include "WPA/Andersen.h"
+#include "WPA/Steensgaard.h"
 
 
 namespace py = pybind11;
@@ -36,7 +37,7 @@ void bind_multi_thread_analysis(py::module& m) {
                 return std::make_shared<MHP>(tct.get());
             }),
             py::arg("tct"), "Initialize MHP analysis",
-            py::keep_alive<2, 1>())
+            py::keep_alive<1, 2>())
         .def("analyze", &MHP::analyze, "Analyze entry")
         .def("mayHappenInParallelInst", &MHP::mayHappenInParallelInst,
             py::arg("node1"), py::arg("node2"),
@@ -47,7 +48,7 @@ void bind_multi_thread_analysis(py::module& m) {
                 return std::make_shared<LockAnalysis>(tct.get());
             ;})
             , py::arg("tct"), "Initialize Lock Set analysis",
-            py::keep_alive<2, 1>())
+            py::keep_alive<1, 2>())
         .def("analyze", &LockAnalysis::analyze, "Analysis entry")
         .def("isProtectedByCommandLock", &LockAnalysis::isProtectedByCommonLock,
             py::arg("node1"), py::arg("node2"),
@@ -56,16 +57,15 @@ void bind_multi_thread_analysis(py::module& m) {
     py::class_<TCT, std::shared_ptr<TCT>>(m, "TCT", "Thread Creation Tree class")
         .def(py::init([](std::shared_ptr<AndersenBase> pta){
                 return std::make_shared<TCT>(SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
-            }), py::arg("pa"), "Initialize Thread Creation Tree with Pointer Analysis",
+            }), py::arg("pa"), "Initialize Thread Creation Tree with AndersenBase Pointer Analysis",
+            py::keep_alive<2,1>())
+        .def(py::init([](std::shared_ptr<Steensgaard> pta){
+                return std::make_shared<TCT>(SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
+            }), py::arg("pa"), "Initialize Thread Creation Tree with Steensgaard Pointer Analysis",
             py::keep_alive<2,1>())
         .def(py::init([](std::shared_ptr<AndersenWaveDiff> pta){
                 return std::make_shared<TCT>(SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
-            }), py::arg("pa"), "Initialize Thread Creation Tree with Pointer Analysis",
+            }), py::arg("pa"), "Initialize Thread Creation Tree with AndersenWaveDiff Pointer Analysis",
             py::keep_alive<2,1>())
-//        .def(py::init([](std::shared_ptr<PointerAnalysis> pta){
-//                if (pta == nullptr || pta.get() == nullptr) { throw std::runtime_error("TCT::__init__: received null PointerAnalysis"); }
-//                return std::make_shared<TCT>(pta.get());
-//            }), py::arg("pa"), "Initialize Thread Creation Tree with Pointer Analysis",
-//            py::keep_alive<2,1>())
         .def("getThreadCallGraph", &TCT::getThreadCallGraph, "Get the thread call graph");
 }
