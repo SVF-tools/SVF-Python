@@ -52,7 +52,8 @@ void bind_andersen_base(py::module& m) {
     // WPAConstraintSolver has a protected constructor and is not exposed to Python directly.
     // Skip binding it to avoid needing to expose its protected constructor.
     // AndersenBase still inherits BVDataPTAImpl (which in turn derives from PointerAnalysis),
-    // so we can upcast AndersenBase -> BVDataPTAImpl -> PointerAnalysis in Python.
+    // but we can not upcast AndersenBase to PointerAnalysis,
+    // because pybind can not handle the share_ptr cast correctly.
     py::class_<AndersenBase, std::shared_ptr<AndersenBase>, BVDataPTAImpl>(m, "AndersenBase_", "AndersenBase");
     py::class_<PublicAndersen, std::shared_ptr<PublicAndersen>, AndersenBase>(m, "AndersenBase", "Anderson's analysis base class")
         .def(py::init([](SVFIR* svfir) {

@@ -66,13 +66,6 @@ class CMakeBuild(build_ext):
             "-DPython3_EXECUTABLE=" + sys.executable,
         ]
 
-        # Prevent MACOS to automatically externalize debuginfo when generating dynamic libs
-        if platform.system() == "Darwin" and CMAKE_BUILD_TYPE == "Debug":
-            cmake_args.extend([
-                "-DCMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT=DWARF", # force DWARF format
-                "-DCMAKE_CXX_FLAGS=-g -O0 -ggdb3",
-            ])
-
         # Run CMake
         subprocess.run(
             cmake_args,
