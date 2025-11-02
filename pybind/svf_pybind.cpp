@@ -33,38 +33,28 @@
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Graphs/ICFG.h"
 #include "WPA/Andersen.h"
+#include "WPA/Steensgaard.h"
 #include <pybind11/operators.h>
 #include "Util/CommandLine.h"
 #include <iostream>
+#include <filesystem>
 
 
 namespace py = pybind11;
 using namespace SVF;
 
 class PySVF {
-static SVFIR* currentSVFIR;
-static SVFG* currentSVFG;
-static CallGraph* currentCallGraph;
+static SVFIR* currentSVFIR; /// Singleton, user controls life cycle
+static SVFG* currentSVFG;  /// Singleton
 static ICFG* currentICFG;
 static std::string lastAnalyzedModule;
 static Andersen::CallGraphSCC* currentCallGraphSCC;
+static std::shared_ptr<Steensgaard> steensgaardPta;  /// Python gc controls life
+static std::shared_ptr<AndersenWaveDiff> andersenPta;  /// Python gc controls life
+static CallGraph* currentCallGraph;  /// PTA's CallGraph
 
 public:
     static void buildSVFModule(std::vector<std::string> options) {
-      	static bool isInitialized = false;
-
-        // Release SVFIR and LLVMModuleSet if they already exist to allow rebuilding
-        if (isInitialized) {
-          	try {
-                SVF::SVFIR::releaseSVFIR();
-            	SVF::LLVMModuleSet::releaseLLVMModuleSet();
-                SVF::NodeIDAllocator::unset();
-            } catch (...) {
-            	std::cout << "Error releasing SVFIR or LLVMModuleSet" << std::endl;
-            }
-        }
-        isInitialized = true;
-
         if (options.size() == 0) {
             std::cout << "No options provided, using default options -h" << std::endl;
             options.push_back("-h");
@@ -94,42 +84,119 @@ public:
         get_pag(moduleNameVec[0], buildSVFG);
     }
 
-    static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
+    /// Flexible build SVFIR (PAG), PTA
+    // @{
+    /// Build SVFIR (PAG) from bitcode file path
+    static SVFIR* get_svfir(std::string bitcodePath) {
+        _release_svfir();
+
         std::vector<std::string> moduleNameVec = { bitcodePath };
         Options::UsePreCompFieldSensitive.setValue(false);
         Options::ModelConsts.setValue(true);
         Options::ModelArrays.setValue(true);
 
-        LLVMModuleSet::buildSVFModule(moduleNameVec);
-        SVFIRBuilder builder;
-        SVFIR* pag = builder.build();
-        AndersenWaveDiff* ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
-        CallGraph* callgraph = ander->getCallGraph();
-        Andersen::CallGraphSCC* callGraphScc = ander->getCallGraphSCC();
- 	    callGraphScc->find();
-        currentCallGraphSCC = callGraphScc;
-        builder.updateCallGraph(callgraph);
-        pag->getICFG()->updateCallGraph(callgraph);
-        
+        // check if bitcodePath exists in file system
+        if (!std::filesystem::exists(std::filesystem::path(bitcodePath))) {
+            throw py::value_error("Bitcode file does not exist");
+        }
+		LLVMModuleSet::buildSVFModule(moduleNameVec);
 
-        currentSVFIR = pag;
-        currentCallGraph = callgraph;
-        currentICFG = pag->getICFG();
+        SVFIRBuilder builder;
+        builder.build();
+        currentSVFIR = builder.getPAG();
+        currentICFG = currentSVFIR->getICFG();
+        return currentSVFIR;
+    }
+    /// Release SVFIR (PAG) and LLVMModuleSet
+    static void _release_svfir() {
+    	SVF::LLVMModuleSet::releaseLLVMModuleSet();
+        SVF::SVFIR::releaseSVFIR();
+        currentSVFIR = nullptr;
+        currentICFG = nullptr;
+        NodeIDAllocator::unset();
+    }
+    /// Run PTA, ptaType: 0 for AndersenWaveDiff, 1 for Steensgaard
+	static void run_pta(int ptaType)
+   	{
+        if (currentSVFIR == nullptr) {
+            throw py::value_error("SVFIR is not built. Please build SVFIR before running PTA.");
+        }
+        _release_pta();
+        if(ptaType == 0) {
+        	andersenPta = std::make_shared<AndersenWaveDiff>(currentSVFIR);
+            andersenPta->analyze();
+            currentCallGraph = andersenPta->getCallGraph();
+            currentCallGraphSCC = andersenPta->getCallGraphSCC();
+     	    currentCallGraphSCC->find();
+            currentICFG->updateCallGraph(currentCallGraph);
+            SVFIRBuilder builder;
+            builder.updateCallGraph(currentCallGraph);
+        }
+        else if (ptaType == 1)
+        {
+        	steensgaardPta = std::make_shared<Steensgaard>(currentSVFIR);
+            steensgaardPta->analyze();
+            currentCallGraph = steensgaardPta->getCallGraph();
+            currentCallGraphSCC = steensgaardPta->getCallGraphSCC();
+     	    currentCallGraphSCC->find();
+            currentICFG->updateCallGraph(currentCallGraph);
+            SVFIRBuilder builder;
+            builder.updateCallGraph(currentCallGraph);
+        }
+        else
+        {
+          	throw py::value_error("Invalid PTA type. Use 0 for AndersenWaveDiff, 1 for Steensgaard.");
+        }
+    }
+    /// Release ownership of current PTA
+    static void _release_pta() {
+    	andersenPta = nullptr;
+        steensgaardPta = nullptr;
+        currentCallGraph = nullptr;
+        currentCallGraphSCC = nullptr;
+    }
+    /// Get current AndersenWaveDiff PTA
+    static std::shared_ptr<AndersenWaveDiff> get_andersen() {
+        return andersenPta;
+    }
+    /// Get current Steensgaard PTA
+    static std::shared_ptr<Steensgaard> get_steensgaard() {
+      	return steensgaardPta;
+    }
+    // @}
+
+    /// Easy build PAG, PTA, and SVFG
+    // @{
+    /**
+	* Build SVFIR (PAG) from bitcode file path, perform Andersen Pointer Analysis,
+    * and optionally build SVFG.
+	*/
+    static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
+      	get_svfir(bitcodePath);
+        run_pta(0); // 0 for AndersenWaveDiff, 1 for Steensgaard
+
+        // build SVFG if needed
         if (buildSVFG) {
-            SVFGBuilder* svfgBuilder = new SVFGBuilder(pag);
-            SVFG* svfg = svfgBuilder->buildFullSVFG(ander);
+            SVFGBuilder svfgBuilder(currentSVFIR);
+            SVFG* svfg = svfgBuilder.buildFullSVFG(andersenPta.get());
             currentSVFG = svfg;
         }
         lastAnalyzedModule = bitcodePath;
 
-        return pag;  // Now we directly return SVFIR(pag)
+        return currentSVFIR;  // Now we directly return SVFIR(pag)
     }
-
+    /**
+	 * Release SVFIR (PAG), LLVMModuleSet, PTA, and SVFG
+     */
     static void release_pag() {
-        SVF::LLVMModuleSet::releaseLLVMModuleSet();
-        SVF::SVFIR::releaseSVFIR();
-        NodeIDAllocator::unset();
+        _release_svfir();
+        _release_pta();
+        if (currentSVFG != nullptr) {
+          	delete currentSVFG;
+            currentSVFG = nullptr;
+        }
     }
+    // @}
 
     static SVFIR* get_current_pag() {
         return currentSVFIR;
@@ -211,6 +278,9 @@ SVFG* PySVF::currentSVFG = nullptr;
 ICFG* PySVF::currentICFG = nullptr;
 std::string PySVF::lastAnalyzedModule = "";
 Andersen::CallGraphSCC* PySVF::currentCallGraphSCC = nullptr;
+std::shared_ptr<Steensgaard> PySVF::steensgaardPta = nullptr;
+std::shared_ptr<AndersenWaveDiff> PySVF::andersenPta = nullptr;
+
 
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
@@ -223,6 +293,10 @@ PYBIND11_MODULE(pysvf, m) {
     m.def("buildSVFModule", &PySVF::buildSVFModule, py::arg("options"), "Build SVF module");
     m.def("getPAG", &PySVF::get_current_pag, py::return_value_policy::reference);
     m.def("releasePAG", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
+    m.def("get_svfir", &PySVF::get_svfir, py::arg("bitcodePath"), "Get SVFIR (PAG) from bitcode file path");
+    m.def("run_pta", &PySVF::run_pta, py::arg("ptaType"), "Run pointer analysis, ptaType: 0 for AndersenWaveDiff, 1 for Steensgaard");
+    m.def("get_andersen", &PySVF::get_andersen, py::return_value_policy::reference, "Get current AndersenWaveDiff pointer analysis instance");
+   	m.def("get_steensgaard", &PySVF::get_steensgaard, py::return_value_policy::reference, "Get current Steensgaard pointer analysis instance");
     m.def("getICFG", &PySVF::get_current_icfg, py::return_value_policy::reference, "Get the interprocedural control flow graph");
     m.def("getCallGraph", &PySVF::get_current_call_graph, py::return_value_policy::reference, "Get the call graph");
     m.def("getCallGraphSCC", &PySVF::get_current_call_graph_scc, py::return_value_policy::reference, "Get the call graph SCC");

@@ -59,13 +59,5 @@ void bind_multi_thread_analysis(py::module& m) {
                 return std::make_shared<TCT>(SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
             }), py::arg("pa"), "Initialize Thread Creation Tree with AndersenBase Pointer Analysis",
             py::keep_alive<2,1>())
-        .def(py::init([](std::shared_ptr<Steensgaard> pta){
-                return std::make_shared<TCT>(SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
-            }), py::arg("pa"), "Initialize Thread Creation Tree with Steensgaard Pointer Analysis",
-            py::keep_alive<2,1>())
-        .def(py::init([](std::shared_ptr<AndersenWaveDiff> pta){
-                return std::make_shared<TCT>(SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
-            }), py::arg("pa"), "Initialize Thread Creation Tree with AndersenWaveDiff Pointer Analysis",
-            py::keep_alive<2,1>())
         .def("getThreadCallGraph", &TCT::getThreadCallGraph, "Get the thread call graph");
 }

@@ -93,6 +93,10 @@ from .enums import Predicate, OpCode
 from .pysvf import (
     releasePAG,
     getPAG,
+    get_svfir,
+    run_pta,
+    get_steensgaard,
+    get_andersen,
     getICFG,
     getSVFG,
     getCallGraph,
