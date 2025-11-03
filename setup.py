@@ -23,10 +23,16 @@ class CMakeBuild(build_ext):
         if "SVF_DIR" not in os.environ:
             raise RuntimeError("SVF_DIR not set")
         SVF_DIR = os.environ["SVF_DIR"]
-        if not os.path.exists(os.path.join(SVF_DIR, "Release-build")):
-            print("SVF_DIR is not built from scratch, should be installed version SVF")
+
+        if "CMAKE_BUILD_TYPE" not in os.environ:
+            CMAKE_BUILD_TYPE = "Release"
         else:
-            print("SVF_DIR is built from scratch, will use SVF_DIR/Release-build as source")
+            CMAKE_BUILD_TYPE = os.environ["CMAKE_BUILD_TYPE"]
+
+        if os.path.exists(os.path.join(SVF_DIR, f"{CMAKE_BUILD_TYPE}-build")):
+            print(f"SVF_DIR is built from scratch, will use {SVF_DIR}/{CMAKE_BUILD_TYPE}-build as source")
+        else:
+            print("SVF_DIR is not built from scratch, should be installed version SVF")
 
 
         # get LLVM_DIR from env, otherwise abort
@@ -47,30 +53,25 @@ class CMakeBuild(build_ext):
         if "PYBIND11_DIR" not in os.environ:
             raise RuntimeError("PYBIND11_DIR not set")
 
-        if "CMAKE_BUILD_TYPE" not in os.environ:
-            CMAKE_BUILD_TYPE = "Release"
-        else:
-            CMAKE_BUILD_TYPE = os.environ["CMAKE_BUILD_TYPE"]
+        cmake_args = [
+            "cmake", cmake_dir,
+            "-G", "Unix Makefiles",
+            "-DLLVM_DIR=" + LLVM_DIR,
+            "-DSVF_DIR=" + SVF_DIR,
+            "-DZ3_DIR=" + Z3_DIR,
+            "-DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF",
+            "-DCMAKE_PREFIX_PATH=" + os.environ["PYBIND11_DIR"],
+            "-Dpybind11_DIR=" + os.environ["PYBIND11_DIR"],
+            "-DCMAKE_BUILD_TYPE=" + CMAKE_BUILD_TYPE,
+            "-DPython3_EXECUTABLE=" + sys.executable,
+        ]
 
         # Run CMake
         subprocess.run(
-            [
-                "cmake", cmake_dir,
-                "-G", "Unix Makefiles",
-                "-DLLVM_DIR="+LLVM_DIR,
-                "-DSVF_DIR="+SVF_DIR,
-                "-DZ3_DIR="+Z3_DIR,
-                "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
-                "-DCMAKE_PREFIX_PATH="+os.environ["PYBIND11_DIR"],
-                "-Dpybind11_DIR="+os.environ["PYBIND11_DIR"],
-                "-DCMAKE_BUILD_TYPE=" + CMAKE_BUILD_TYPE,
-                "-DPython3_EXECUTABLE=" + sys.executable,
-                ],
+            cmake_args,
             cwd=build_temp,
             check=True
         )
-
-
 
         # Build the project
         subprocess.run(["cmake", "--build", "."], cwd=build_temp, check=True)

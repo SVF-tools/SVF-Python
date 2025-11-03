@@ -93,6 +93,9 @@ from .enums import Predicate, OpCode
 from .pysvf import (
     releasePAG,
     getPAG,
+    get_svfir,
+    run_pta,
+    get_pta,
     getICFG,
     getSVFG,
     getCallGraph,
@@ -209,6 +212,8 @@ from .pysvf import (
     RetIndSVFGEdge,
     VFG,
     AndersenBase,
+    AndersenWaveDiff,
+    Steensgaard,
     PointsTo,
     ConstraintEdge,
     ConstraintNode,
@@ -224,7 +229,11 @@ from .pysvf import (
     AddressValue,
     AbstractState,
     AbstractValue,
-    BoundedInt
+    BoundedInt,
+    MTA,
+    MHP,
+    LockAnalysis,
+    TCT
 )
 
 from .pysvf import buildSVFModule as _buildSVFModule

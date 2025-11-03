@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Step 1: Clone and build SVF
-if [ ! -d "SVF" ]; then
+if [ -z "$SVF_DIR" ] || [ ! -d "$SVF_DIR" ]; then
     git clone https://github.com/SVF-tools/SVF
     cd SVF
     source build.sh
