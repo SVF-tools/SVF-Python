@@ -266,8 +266,9 @@ void bind_abstract_state(py::module& m);
 void bind_multi_thread_analysis(py::module& m);
 
 SVFIR* PySVF::currentSVFIR = nullptr;
-SVFG* PySVF::currentSVFG = nullptr;
 ICFG* PySVF::currentICFG = nullptr;
+SVFGBuilder* PySVF::currentSVFGBuilder = nullptr;
+SVFG* PySVF::currentSVFG = nullptr;
 std::string PySVF::lastAnalyzedModule = "";
 std::shared_ptr<AndersenBase> PySVF::currentPta = nullptr;
 
