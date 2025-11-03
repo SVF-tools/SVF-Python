@@ -49,7 +49,7 @@ jobs:
 
       - name: Build and install pysvf
         run: |
-          git clone https://github.com/SVF-tools/SVF-Python.git
+          git clone https://github.com/${{ github.actor }}/SVF-Python.git
           cd SVF-Python
           rm -rf build dist pysvf.egg-info  
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
