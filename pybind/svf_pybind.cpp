@@ -45,10 +45,11 @@ using namespace SVF;
 
 class PySVF {
 static SVFIR* currentSVFIR; /// Singleton, user controls life cycle
-static SVFG* currentSVFG;  /// Singleton
-static ICFG* currentICFG;
+static ICFG* currentICFG;  /// Owned by currentSVFIR
+static SVFGBuilder* currentSVFGBuilder; /// Singleton
+static SVFG* currentSVFG;  /// Owned by currentSVFGBuilder
 static std::string lastAnalyzedModule;
-static std::shared_ptr<AndersenBase> currentPta;  /// Python gc controls life
+static std::shared_ptr<AndersenBase> currentPta;  /// Python gc controls life cycle
 
 public:
     static void buildSVFModule(std::vector<std::string> options) {
@@ -112,17 +113,17 @@ public:
         currentICFG = nullptr;
         NodeIDAllocator::unset();
     }
-    /// Run PTA, ptaType: 0 for AndersenWaveDiff, 1 for Steensgaard
-	static void run_pta(int ptaType)
+    /// Run PTA, ptaType: AndersenWaveDiff, Steensgaard
+	static void run_pta(PointerAnalysis::PTATY ptaType)
    	{
         if (currentSVFIR == nullptr) {
             throw py::value_error("SVFIR is not built. Please build SVFIR before running PTA.");
         }
         _release_pta();
-        if(ptaType == 0) {
+        if(ptaType == PointerAnalysis::AndersenWaveDiff_WPA) {
         	currentPta = std::make_shared<AndersenWaveDiff>(currentSVFIR);
         }
-        else if (ptaType == 1)
+        else if (ptaType == PointerAnalysis::Steensgaard_WPA)
         {
         	currentPta = std::make_shared<Steensgaard>(currentSVFIR);
         }
@@ -158,14 +159,21 @@ public:
 	*/
     static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
       	get_svfir(bitcodePath);
-        run_pta(0); // 0 for AndersenWaveDiff, 1 for Steensgaard
+        run_pta(PointerAnalysis::AndersenWaveDiff_WPA);
 
-        // build SVFG if needed
+        // Release previous SVFGBuilder and SVFG if any
+        if (currentSVFGBuilder != nullptr) {
+            delete currentSVFGBuilder;
+            currentSVFGBuilder = nullptr;
+            currentSVFG = nullptr;
+        }
+        // Build SVFG if needed
         if (buildSVFG) {
-            SVFGBuilder svfgBuilder(currentSVFIR);
-            SVFG* svfg = svfgBuilder.buildFullSVFG(currentPta.get());
+            currentSVFGBuilder = new SVFGBuilder(currentSVFIR);
+            SVFG* svfg = currentSVFGBuilder->buildFullSVFG(currentPta.get());
             currentSVFG = svfg;
         }
+
         lastAnalyzedModule = bitcodePath;
 
         return currentSVFIR;  // Now we directly return SVFIR(pag)
@@ -275,8 +283,8 @@ PYBIND11_MODULE(pysvf, m) {
     m.def("buildSVFModule", &PySVF::buildSVFModule, py::arg("options"), "Build SVF module");
     m.def("getPAG", &PySVF::get_current_pag, py::return_value_policy::reference);
     m.def("releasePAG", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
-    m.def("get_svfir", &PySVF::get_svfir, py::arg("bitcodePath"), "Get SVFIR (PAG) from bitcode file path");
-    m.def("run_pta", &PySVF::run_pta, py::arg("ptaType"), "Run pointer analysis, ptaType: 0 for AndersenWaveDiff, 1 for Steensgaard");
+    m.def("get_svfir", &PySVF::get_svfir, py::arg("bitcodePath"), py::return_value_policy::reference, "Get SVFIR (PAG) from bitcode file path");
+    m.def("run_pta", &PySVF::run_pta, py::arg("ptaType"), "Run pointer analysis, ptaType: AndersenBase, AndersenWaveDiff, Steensgaard");
     m.def("get_pta", &PySVF::get_pta, py::return_value_policy::reference, "Get current (created most recently) AndersenBase pointer analysis instance");
     m.def("getICFG", &PySVF::get_current_icfg, py::return_value_policy::reference, "Get the interprocedural control flow graph");
     m.def("getCallGraph", &PySVF::get_current_call_graph, py::return_value_policy::reference, "Get the call graph");

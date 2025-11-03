@@ -62,3 +62,9 @@ class OpCode(IntEnum):
     FIRST_OPCODE = Add
     LAST_OPCODE = Xor
     BAD_OPCODE = 31
+
+class PTAType(IntEnum):
+    """Pointer Analysis Types"""
+
+    Andersen = 0        # Andersen's analysis
+    Steensgaard = 1     # Steensgaard's analysis
