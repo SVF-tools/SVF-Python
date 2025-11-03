@@ -168,6 +168,7 @@ from .pysvf import (
     CallGraphNode,
     CallGraphEdge,
     CallGraph,
+    ThreadCallGraph,
     CallGraphSCC,
     SVFG,
     VFGNode,

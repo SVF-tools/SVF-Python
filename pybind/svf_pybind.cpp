@@ -237,6 +237,7 @@ void bind_svf_type(py::module& m);
 void bind_callgraph_node(py::module& m);
 void bind_callgraph_edge(py::module& m);
 void bind_callgraph(py::module& m);
+void bind_thread_call_graph(py::module& m);
 
 // Add this to svf_pybind.cpp
 void bind_basic_block(py::module& m);
@@ -297,6 +298,7 @@ PYBIND11_MODULE(pysvf, m) {
     bind_callgraph_edge(m);
     bind_basic_block(m);
     bind_callgraph(m);
+    bind_thread_call_graph(m);
     bind_svfg_edge(m);
     bind_vfg_node(m);
     bind_svfg_node(m);

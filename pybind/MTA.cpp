@@ -64,5 +64,6 @@ void bind_multi_thread_analysis(py::module& m) {
             if (tcg == nullptr)
                 throw py::value_error("TCT::getThreadCallGraph: Thread Call Graph is null!");
             return static_cast<CallGraph*>(tcg);
-        }, py::return_value_policy::reference, "Get the thread call graph");
+        }, py::return_value_policy::reference, "Get the thread call graph")
+    .def("dump", &TCT::dump, "Dump the TCT");
 }
