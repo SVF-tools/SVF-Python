@@ -32,6 +32,8 @@ pysvf.CallDirSVFGEdge
 pysvf.CallDirSVFGEdge.__init__
 pysvf.CallGraph
 pysvf.ThreadCallGraph
+pysvf.MTA.__init__
+pysvf.TCT.__init__
 pysvf.CallGraphEdge
 pysvf.CallGraphNode
 pysvf.CallGraphSCC
