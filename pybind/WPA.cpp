@@ -53,13 +53,11 @@ void bind_andersen_base(py::module& m) {
         .value("PartialAlias", AliasResult::PartialAlias)
         .export_values();
 
-//    py::class_<PointerAnalysis, std::shared_ptr<PointerAnalysis>>(m, "PointerAnalysis", "PTA");
-//    py::class_<BVDataPTAImpl, std::shared_ptr<BVDataPTAImpl>, PointerAnalysis>(m, "BVDataPTAImpl", "BVDataPTAImpl");
-    // WPAConstraintSolver has a protected constructor and is not exposed to Python directly.
-    // Skip binding it to avoid needing to expose its protected constructor.
-    // AndersenBase still inherits BVDataPTAImpl (which in turn derives from PointerAnalysis),
-    // but we can not upcast AndersenBase to PointerAnalysis,
-    // because pybind can not handle the share_ptr cast correctly.
+    py::enum_<PointerAnalysis::PTATY>(m, "PTATY")
+        .value("AndersenWaveDiff_WPA", PointerAnalysis::PTATY::AndersenWaveDiff_WPA)
+        .value("Steensgaard_WPA", PointerAnalysis::PTATY::Steensgaard_WPA)
+        .export_values();
+
     py::class_<AndersenBase, std::shared_ptr<AndersenBase>>(m, "AndersenBase_", "AndersenBase");
     py::class_<PublicAndersen, AndersenBase, std::shared_ptr<PublicAndersen>>(m, "AndersenBase", "Anderson's analysis base class")
         .def(py::init([](SVFIR* svfir) {

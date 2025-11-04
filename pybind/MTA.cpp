@@ -59,5 +59,11 @@ void bind_multi_thread_analysis(py::module& m) {
                 return std::make_shared<TCT>(SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
             }), py::arg("pa"), "Initialize Thread Creation Tree with AndersenBase Pointer Analysis",
             py::keep_alive<2,1>())
-        .def("getThreadCallGraph", &TCT::getThreadCallGraph, "Get the thread call graph");
+    .def("getThreadCallGraph", [](TCT &self) -> CallGraph* {
+            ThreadCallGraph* tcg = self.getThreadCallGraph();
+            if (tcg == nullptr)
+                throw py::value_error("TCT::getThreadCallGraph: Thread Call Graph is null!");
+            return static_cast<CallGraph*>(tcg);
+        }, py::return_value_policy::reference, "Get the thread call graph")
+    .def("dump", &TCT::dump, "Dump the TCT");
 }

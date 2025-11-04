@@ -168,6 +168,7 @@ from .pysvf import (
     CallGraphNode,
     CallGraphEdge,
     CallGraph,
+    ThreadCallGraph,
     CallGraphSCC,
     SVFG,
     VFGNode,
@@ -237,6 +238,9 @@ from .pysvf import (
 )
 
 from .pysvf import buildSVFModule as _buildSVFModule
+from .pysvf import AndersenWaveDiff_WPA as AndersenWaveDiff_WPA
+from .pysvf import Steensgaard_WPA as Steensgaard_WPA
+
 # argument can be a string or a list of strings
 def buildSVFModule(args) -> None:
     if isinstance(args, str):
