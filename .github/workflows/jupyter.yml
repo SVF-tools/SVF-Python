@@ -90,9 +90,6 @@ jobs:
           pip install dist/*.whl
          #MYPYPATH=./pysvf stubtest pysvf --allowlist ../stubtest_allowlist.txt
 
-      - name: Preflight (verify pysvf loads)
-        run: python -c "import pysvf; print('pysvf ok')"
-
       - name: Run notebooks under demo/
         run: |
           set -euo pipefail
