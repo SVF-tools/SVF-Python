@@ -9,53 +9,30 @@ on:
 jobs:
   execute-notebooks:
     runs-on: ubuntu-latest
-    env:
-      # 让绘图/并行更安全
-      MPLBACKEND: Agg
-      OMP_NUM_THREADS: "1"
-      MKL_NUM_THREADS: "1"
-      NUMEXPR_NUM_THREADS: "1"
-      TOKENIZERS_PARALLELISM: "false"
-      PYTHONFAULTHANDLER: "1"
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # 用 Node LTS，别用 apt 的 nodejs
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake gcc g++ python3-dev pandoc
+          sudo apt-get install -y cmake gcc g++ python3-dev nodejs
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-          cache: 'pip'
 
-      - name: Install Python dependencies (pinned Jupyter stack)
+      - name: Install Python dependencies
         run: |
-          python -m pip install -U pip wheel build pybind11
-          pip install \
-            ipykernel==6.29.* \
-            nbconvert==7.16.* \
-            nbclient==0.10.* \
-            jupyter_client==8.6.* \
-            jupyter_core==5.7.* \
-            traitlets==5.14.* \
-            tornado==6.4.*
-          # demo 常见依赖（按需可删/补）
-          pip install numpy pandas matplotlib networkx
+          pip install --upgrade pip
+          pip install wheel pybind11 notebook nbconvert nbclient ipykernel build
 
       - name: Register Jupyter kernel
-        run: python -m ipykernel install --user --name python3
+        run: |
+          python -m ipykernel install --user --name python3
 
       - name: Install svf-lib and set environment variables
         run: |
@@ -63,59 +40,37 @@ jobs:
           echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-x86_64" >> $GITHUB_ENV
           echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
-          # 运行期/编译期的库与头文件路径（很多“内核挂掉”其实是运行期找不到 .so）
-          echo "LD_LIBRARY_PATH=$PWD/node_modules/svf-lib/SVF-linux-x86_64/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=$PWD/node_modules/svf-lib/SVF-linux-x86_64/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
-          echo "CPATH=$PWD/node_modules/svf-lib/SVF-linux-x86_64/include:\$CPATH" >> $GITHUB_ENV
 
-      - name: Check SVF directories exist
+      - name: Get system architecture
+        id: get_arch
         run: |
-          set -e
-          echo "SVF_DIR: $SVF_DIR"
-          echo "LLVM_DIR: $LLVM_DIR"
-          echo "Z3_DIR: $Z3_DIR"
-          test -d "$SVF_DIR" || (echo "SVF_DIR not found" && ls -la node_modules && exit 1)
-          test -d "$SVF_DIR/lib" || (echo "SVF_DIR/lib not found" && ls -la "$SVF_DIR" && exit 1)
+          echo "arch=$(uname -m)" >> $GITHUB_OUTPUT
 
       - name: Build and install pysvf
         run: |
-          set -e
           git clone https://github.com/SVF-tools/SVF-Python.git
           cd SVF-Python
-          rm -rf build dist pysvf.egg-info
+          rm -rf build dist pysvf.egg-info  
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
+
           # Fake version for dev notebook CI
           sed -i.bak "s/version=.*,/version='0.0.0.dev0',/" setup.py
-          SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
-            python3 -m build --wheel
-          pip install dist/*.whl
 
-      - name: Preflight (verify pysvf loads)
-        run: |
-          python -VV
-          python -c "import pysvf, sys; print('pysvf version:', getattr(pysvf,'__version__','?')); print('ok')"
+          if [[ "$(uname)" == "Linux" ]]; then
+            SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
+            python3 -m build --wheel
+          else
+            echo "Unsupported platform"
+            exit 1
+          fi
+
+          pip install dist/*.whl
 
       - name: Run notebooks under demo/
         run: |
-          set -euo pipefail
-          mkdir -p nb-logs
-          for nb in $(find demo -name "*.ipynb" -print); do
+          cd demo
+          for nb in $(find . -name "*.ipynb"); do
             echo "Executing $nb..."
-            jupyter nbconvert \
-              --to notebook \
-              --execute "$nb" \
-              --inplace \
-              --ExecutePreprocessor.kernel_name=python3 \
-              --ExecutePreprocessor.timeout=1800 \
-              --ExecutePreprocessor.iopub_timeout=1800 \
-              --debug 2>&1 | tee "nb-logs/$(basename "$nb").log"
+            jupyter nbconvert --to notebook --execute "$nb" --stdout > /dev/null
           done
-
-      - name: Upload executed notebooks
-        uses: actions/upload-artifact@v4
-        with:
-          name: executed-notebooks
-          path: |
-            demo/**/*.ipynb
-            nb-logs/*.log
