@@ -5,13 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   execute-notebooks:
     runs-on: ubuntu-latest
     env:
-      # 让绘图/并行更安全
       MPLBACKEND: Agg
       OMP_NUM_THREADS: "1"
       MKL_NUM_THREADS: "1"
@@ -24,7 +22,25 @@ jobs:
         with:
           submodules: recursive
 
-      # 用 Node LTS，别用 apt 的 nodejs
+      # 先写一个 CI 专用的依赖文件，供 cache 使用
+      - name: Prepare CI dependency file
+        run: |
+          cat > requirements-ci.txt <<'EOF'
+          build
+          pybind11
+          ipykernel==6.29.*
+          nbconvert==7.16.*
+          nbclient==0.10.*
+          jupyter_client==8.6.*
+          jupyter_core==5.7.*
+          traitlets==5.14.*
+          tornado==6.4.*
+          numpy
+          pandas
+          matplotlib
+          networkx
+          EOF
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -40,20 +56,12 @@ jobs:
         with:
           python-version: '3.10'
           cache: 'pip'
+          cache-dependency-path: 'requirements-ci.txt'
 
       - name: Install Python dependencies (pinned Jupyter stack)
         run: |
-          python -m pip install -U pip wheel build pybind11
-          pip install \
-            ipykernel==6.29.* \
-            nbconvert==7.16.* \
-            nbclient==0.10.* \
-            jupyter_client==8.6.* \
-            jupyter_core==5.7.* \
-            traitlets==5.14.* \
-            tornado==6.4.*
-          # demo 常见依赖（按需可删/补）
-          pip install numpy pandas matplotlib networkx
+          python -m pip install -U pip wheel
+          pip install -r requirements-ci.txt
 
       - name: Register Jupyter kernel
         run: python -m ipykernel install --user --name python3
@@ -64,37 +72,26 @@ jobs:
           echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-x86_64" >> $GITHUB_ENV
           echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
-          # 运行期/编译期的库与头文件路径（很多“内核挂掉”其实是运行期找不到 .so）
           echo "LD_LIBRARY_PATH=$PWD/node_modules/svf-lib/SVF-linux-x86_64/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV
           echo "LIBRARY_PATH=$PWD/node_modules/svf-lib/SVF-linux-x86_64/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
           echo "CPATH=$PWD/node_modules/svf-lib/SVF-linux-x86_64/include:\$CPATH" >> $GITHUB_ENV
 
-      - name: Check SVF directories exist
+      - name: Build and install pysvf, stubtest pysvf
         run: |
           set -e
-          echo "SVF_DIR: $SVF_DIR"
-          echo "LLVM_DIR: $LLVM_DIR"
-          echo "Z3_DIR: $Z3_DIR"
-          test -d "$SVF_DIR" || (echo "SVF_DIR not found" && ls -la node_modules && exit 1)
-          test -d "$SVF_DIR/lib" || (echo "SVF_DIR/lib not found" && ls -la "$SVF_DIR" && exit 1)
-
-      - name: Build and install pysvf
-        run: |
-          git clone https://github.com/${{ github.repository }}.git
-          cd ${{ github.event.repository.name }}
-          rm -rf build dist pysvf.egg-info  
+          git clone https://github.com/SVF-tools/SVF-Python.git
+          cd SVF-Python
+          rm -rf build dist pysvf.egg-info
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release
-          # Fake version for dev notebook CI
           sed -i.bak "s/version=.*,/version='0.0.0.dev0',/" setup.py
           SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
             python3 -m build --wheel
           pip install dist/*.whl
+          MYPYPATH=./pysvf stubtest pysvf --allowlist ../stubtest_allowlist.txt
 
       - name: Preflight (verify pysvf loads)
-        run: |
-          python -VV
-          python -c "import pysvf, sys; print('pysvf version:', getattr(pysvf,'__version__','?')); print('ok')"
+        run: python -c "import pysvf; print('pysvf ok')"
 
       - name: Run notebooks under demo/
         run: |
@@ -112,8 +109,7 @@ jobs:
               --debug 2>&1 | tee "nb-logs/$(basename "$nb").log"
           done
 
-      - name: Upload executed notebooks
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: executed-notebooks
           path: |
