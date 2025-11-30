@@ -40,6 +40,10 @@ void bind_svf_stmt(py::module& m) {
                 oss << stmt->toString();
                 return oss.str();
             }, "Get the string representation of the SVF statement")
+            .def("getSrcNode", &SVFStmt::getSrcNode, py::return_value_policy::reference_internal, "Get the source node of the SVF statement")
+            .def("getDstNode", &SVFStmt::getDstNode, py::return_value_policy::reference_internal, "Get the destination node of the SVF statement")
+            .def("getSrcID", &SVFStmt::getSrcID, "Get the ID of the source node of the SVF statement")
+            .def("getDstID", &SVFStmt::getDstID, "Get the ID of the destination node of the SVF statement")
             .def("getEdgeId", &SVFStmt::getEdgeID, "Get the ID of the SVF statement")
             .def("getICFGNode", &SVFStmt::getICFGNode, py::return_value_policy::reference_internal, "Get the ICFG node that the SVF statement belongs to")
             .def("getValue", &SVFStmt::getValue, py::return_value_policy::reference_internal, "Get the value of the SVF statement")

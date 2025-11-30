@@ -339,6 +339,8 @@ void bind_abstract_state(py::module& m) {
         .def("narrowing", &AbstractState::narrowing, py::arg("other"))
         .def("getIDFromAddr", &AbstractState::getIDFromAddr, py::arg("addr"))
 
+        .def("getAllocaInstByteSize", &AbstractState::getAllocaInstByteSize, py::arg("addr"))
+
         // Static utilities for address handling
         .def_static("isVirtualMemAddress", &AbstractState::isVirtualMemAddress, py::arg("val"))
         .def_static("getVirtualMemAddress", &AbstractState::getVirtualMemAddress, py::arg("idx"))
