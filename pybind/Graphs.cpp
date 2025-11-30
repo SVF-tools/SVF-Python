@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Graphs/ICFG.h"
+#include "Graphs/ThreadCallGraph.h"
 #include "SVFIR/SVFType.h"
 #include "SVFIR/SVFStatements.h"
 #include "MemoryModel/PointerAnalysis.h"
@@ -397,6 +398,27 @@ void bind_callgraph(py::module& m) {
         .def("isInCycle", [](Andersen::CallGraphSCC& cg, NodeID id) {
             return cg.isInCycle(id);
         }, py::arg("id"), py::return_value_policy::reference, "Check if a node is in a cycle");
+}
+
+void bind_thread_call_graph(py::module &m) {
+    py::class_<ThreadCallGraph, CallGraph>(m, "ThreadCallGraph", "Thread Call Graph")
+        .def("getForkSites", [](ThreadCallGraph& tcg){
+            std::vector<const CallICFGNode*> forkSites;
+            for (ThreadCallGraph::CallSiteSet::const_iterator it = tcg.forksitesBegin(); it != tcg.forksitesEnd(); ++it) {
+                forkSites.push_back(*it);
+            }
+            return forkSites;
+        }, py::return_value_policy::reference, "Get all fork CallICFGNodes in ICFG")
+        .def("getForkEdges", [](ThreadCallGraph& tcg){
+            std::vector<const CallGraphEdge*> forkEdges;
+            for (ThreadCallGraph::CallSiteSet::const_iterator it = tcg.forksitesBegin(); it != tcg.forksitesEnd(); ++it) {
+                for(ThreadCallGraph::ForkEdgeSet::const_iterator eit = tcg.getForkEdgeBegin(*it);
+                    eit != tcg.getForkEdgeEnd(*it); ++eit) {
+                    forkEdges.push_back(*eit);
+                }
+            }
+            return forkEdges;
+        }, py::return_value_policy::reference, "Get all fork edges in the ThreadCallGraph");
 }
 
 // Add this to svf_pybind.cpp

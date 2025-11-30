@@ -1,5 +1,9 @@
 # Pysvf: Python Bindings for SVF
 
+
+## News
+* <b>SVF-Python now supports MTA bindings and more pointer analysis strategies(AndersenWaveDiff, AndersenBase, and Steensgaard bindings). (Thank [JoelYYoung](https://github.com/JoelYYoung) for his help!).  </b>
+
 ## 1. Introduction
 
 **Pysvf** is a Python binding for the [SVF (Static Value-Flow)](https://github.com/SVF-tools/SVF), a static analysis framework built on LLVM.

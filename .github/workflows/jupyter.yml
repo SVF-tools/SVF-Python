@@ -48,8 +48,9 @@ jobs:
 
       - name: Build and install pysvf
         run: |
-          git clone https://github.com/SVF-tools/SVF-Python.git
-          cd SVF-Python
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
           rm -rf build dist pysvf.egg-info  
           export PYBIND11_DIR=$(python3 -m pybind11 --cmakedir)
           export CMAKE_BUILD_TYPE=Release

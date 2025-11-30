@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.23)
 
+message(WARNING "CMAKE_PREFIX_PATH" "${CMAKE_PREFIX_PATH}")
+message(WARNING "CMAKE_BUILD_WITH_INSTALL_RPATH" "${CMAKE_BUILD_WITH_INSTALL_RPATH}")
+
 project(SVF-PYTHON
         VERSION 0.1
         DESCRIPTION "SVF Python bindings"
@@ -62,16 +65,11 @@ include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 # ------------------------------------------------------------------------------
 if(SVF_DIR)
     message(STATUS "Detected SVF_DIR environment variable: ${SVF_DIR}")
-    if(EXISTS "${SVF_DIR}/Release-build")
-        set(SVF_CUSTOM_DIR "${SVF_DIR}/Release-build")
+    if(EXISTS "${SVF_DIR}/${CMAKE_BUILD_TYPE}-build")
+        set(SVF_CUSTOM_DIR "${SVF_DIR}/${CMAKE_BUILD_TYPE}-build")
         set(SVF_INCLUDE_DIR "${SVF_CUSTOM_DIR}/include" "${SVF_DIR}/svf/include" "${SVF_DIR}/svf-llvm/include")
         set(SVF_LIB_DIR "${SVF_CUSTOM_DIR}/lib")
-        message(STATUS "Using Release-build directory for SVF.")
-    elseif(EXISTS "${SVF_DIR}/Debug-build")
-        set(SVF_CUSTOM_DIR "${SVF_DIR}/Debug-build")
-        set(SVF_INCLUDE_DIR "${SVF_CUSTOM_DIR}/include" "${SVF_DIR}/svf/include" "${SVF_DIR}/svf-llvm/include")
-        set(SVF_LIB_DIR "${SVF_CUSTOM_DIR}/lib")
-        message(STATUS "Using Debug-build directory for SVF.")
+        message(STATUS "Using ${CMAKE_BUILD_TYPE}-build directory for SVF.")
     else()
         set(SVF_CUSTOM_DIR "${SVF_DIR}")
         set(SVF_INCLUDE_DIR "${SVF_CUSTOM_DIR}/include")

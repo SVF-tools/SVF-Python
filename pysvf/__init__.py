@@ -93,6 +93,9 @@ from .enums import Predicate, OpCode
 from .pysvf import (
     releasePAG,
     getPAG,
+    get_svfir,
+    run_pta,
+    get_pta,
     getICFG,
     getSVFG,
     getCallGraph,
@@ -165,6 +168,7 @@ from .pysvf import (
     CallGraphNode,
     CallGraphEdge,
     CallGraph,
+    ThreadCallGraph,
     CallGraphSCC,
     SVFG,
     VFGNode,
@@ -209,6 +213,8 @@ from .pysvf import (
     RetIndSVFGEdge,
     VFG,
     AndersenBase,
+    AndersenWaveDiff,
+    Steensgaard,
     PointsTo,
     ConstraintEdge,
     ConstraintNode,
@@ -224,10 +230,17 @@ from .pysvf import (
     AddressValue,
     AbstractState,
     AbstractValue,
-    BoundedInt
+    BoundedInt,
+    MTA,
+    MHP,
+    LockAnalysis,
+    TCT
 )
 
 from .pysvf import buildSVFModule as _buildSVFModule
+from .pysvf import AndersenWaveDiff_WPA as AndersenWaveDiff_WPA
+from .pysvf import Steensgaard_WPA as Steensgaard_WPA
+
 # argument can be a string or a list of strings
 def buildSVFModule(args) -> None:
     if isinstance(args, str):

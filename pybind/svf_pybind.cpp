@@ -33,20 +33,23 @@
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Graphs/ICFG.h"
 #include "WPA/Andersen.h"
+#include "WPA/Steensgaard.h"
 #include <pybind11/operators.h>
 #include "Util/CommandLine.h"
+#include <iostream>
+#include <filesystem>
 
 
 namespace py = pybind11;
 using namespace SVF;
 
 class PySVF {
-static SVFIR* currentSVFIR;
-static SVFG* currentSVFG;
-static CallGraph* currentCallGraph;
-static ICFG* currentICFG;
+static SVFIR* currentSVFIR; /// Singleton, user controls life cycle
+static ICFG* currentICFG;  /// Owned by currentSVFIR
+static SVFGBuilder* currentSVFGBuilder; /// Singleton
+static SVFG* currentSVFG;  /// Owned by currentSVFGBuilder
 static std::string lastAnalyzedModule;
-static Andersen::CallGraphSCC* currentCallGraphSCC;
+static std::shared_ptr<AndersenBase> currentPta;  /// Python gc controls life cycle
 
 public:
     static void buildSVFModule(std::vector<std::string> options) {
@@ -79,41 +82,114 @@ public:
         get_pag(moduleNameVec[0], buildSVFG);
     }
 
-    static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
+    /// Flexible build SVFIR (PAG), PTA
+    // @{
+    /// Build SVFIR (PAG) from bitcode file path
+    static SVFIR* get_svfir(std::string bitcodePath) {
+        _release_svfir();
+
         std::vector<std::string> moduleNameVec = { bitcodePath };
         Options::UsePreCompFieldSensitive.setValue(false);
         Options::ModelConsts.setValue(true);
         Options::ModelArrays.setValue(true);
-        LLVMModuleSet::buildSVFModule(moduleNameVec);
-        SVFIRBuilder builder;
-        SVFIR* pag = builder.build();
-        AndersenWaveDiff* ander = AndersenWaveDiff::createAndersenWaveDiff(pag);
-        CallGraph* callgraph = ander->getCallGraph();
-        Andersen::CallGraphSCC* callGraphScc = ander->getCallGraphSCC();
- 	    callGraphScc->find();
-        currentCallGraphSCC = callGraphScc;
-        builder.updateCallGraph(callgraph);
-        pag->getICFG()->updateCallGraph(callgraph);
-        
 
-        currentSVFIR = pag;
-        currentCallGraph = callgraph;
-        currentICFG = pag->getICFG();
-        if (buildSVFG) {
-            SVFGBuilder* svfgBuilder = new SVFGBuilder(pag);
-            SVFG* svfg = svfgBuilder->buildFullSVFG(ander);
-            currentSVFG = svfg;
+        // check if bitcodePath exists in file system
+        if (!std::filesystem::exists(std::filesystem::path(bitcodePath))) {
+            throw py::value_error("Bitcode file does not exist");
         }
-        lastAnalyzedModule = bitcodePath;
+		LLVMModuleSet::buildSVFModule(moduleNameVec);
 
-        return pag;  // Now we directly return SVFIR(pag)
+        SVFIRBuilder builder;
+        builder.build();
+        currentSVFIR = builder.getPAG();
+        currentICFG = currentSVFIR->getICFG();
+        return currentSVFIR;
     }
-
-    static void release_pag() {
-        SVF::LLVMModuleSet::releaseLLVMModuleSet();
+    /// Release SVFIR (PAG) and LLVMModuleSet
+    static void _release_svfir() {
+    	SVF::LLVMModuleSet::releaseLLVMModuleSet();
         SVF::SVFIR::releaseSVFIR();
+        currentSVFIR = nullptr;
+        currentICFG = nullptr;
         NodeIDAllocator::unset();
     }
+    /// Run PTA, ptaType: AndersenWaveDiff, Steensgaard
+	static void run_pta(PointerAnalysis::PTATY ptaType)
+   	{
+        if (currentSVFIR == nullptr) {
+            throw py::value_error("SVFIR is not built. Please build SVFIR before running PTA.");
+        }
+        _release_pta();
+        if(ptaType == PointerAnalysis::AndersenWaveDiff_WPA) {
+        	currentPta = std::make_shared<AndersenWaveDiff>(currentSVFIR);
+        }
+        else if (ptaType == PointerAnalysis::Steensgaard_WPA)
+        {
+        	currentPta = std::make_shared<Steensgaard>(currentSVFIR);
+        }
+        else
+        {
+          	throw py::value_error("Invalid PTA type. Use 0 for AndersenWaveDiff, 1 for Steensgaard.");
+        }
+        currentPta->analyze();
+
+        PointerAnalysis::CallGraphSCC* callGraphSCC = currentPta->getCallGraphSCC();
+        callGraphSCC->find();
+
+        CallGraph* callGraph = currentPta->getCallGraph();
+        currentICFG->updateCallGraph(callGraph);  // Update ICFG based on new CallGraph
+        SVFIRBuilder builder;
+        builder.updateCallGraph(callGraph);  // Update PAG based on new CallGraph
+    }
+    /// Release ownership of current PTA
+    static void _release_pta() {
+    	currentPta = nullptr;
+    }
+    /// Get current AndersenBase PTA (including subclasses)
+    static std::shared_ptr<AndersenBase> get_pta() {
+        return currentPta;
+    }
+    // @}
+
+    /// Easy build PAG, PTA, and SVFG
+    // @{
+    /**
+	* Build SVFIR (PAG) from bitcode file path, perform Andersen Pointer Analysis,
+    * and optionally build SVFG.
+	*/
+    static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
+      	get_svfir(bitcodePath);
+        run_pta(PointerAnalysis::AndersenWaveDiff_WPA);
+
+        // Release previous SVFGBuilder and SVFG if any
+        if (currentSVFGBuilder != nullptr) {
+            delete currentSVFGBuilder;
+            currentSVFGBuilder = nullptr;
+            currentSVFG = nullptr;
+        }
+        // Build SVFG if needed
+        if (buildSVFG) {
+            currentSVFGBuilder = new SVFGBuilder(currentSVFIR);
+            SVFG* svfg = currentSVFGBuilder->buildFullSVFG(currentPta.get());
+            currentSVFG = svfg;
+        }
+
+        lastAnalyzedModule = bitcodePath;
+
+        return currentSVFIR;  // Now we directly return SVFIR(pag)
+    }
+    /**
+	 * Release SVFIR (PAG), LLVMModuleSet, PTA, and SVFG
+     */
+    static void release_pag() {
+        _release_svfir();
+        _release_pta();
+        if (currentSVFG != nullptr) {
+          	delete currentSVFG;
+            currentSVFG = nullptr;
+        }
+    }
+    // @}
 
     static SVFIR* get_current_pag() {
         return currentSVFIR;
@@ -122,10 +198,10 @@ public:
         return currentSVFG;
     }
     static CallGraph* get_current_call_graph() {
-        return currentCallGraph;
+        return currentPta->getCallGraph();
     }
-    static Andersen::CallGraphSCC* get_current_call_graph_scc() {
-        return currentCallGraphSCC;
+    static PointerAnalysis::CallGraphSCC* get_current_call_graph_scc() {
+        return currentPta->getCallGraphSCC();
     }
     static ICFG* get_current_icfg() {
         return currentICFG;
@@ -161,6 +237,7 @@ void bind_svf_type(py::module& m);
 void bind_callgraph_node(py::module& m);
 void bind_callgraph_edge(py::module& m);
 void bind_callgraph(py::module& m);
+void bind_thread_call_graph(py::module& m);
 
 // Add this to svf_pybind.cpp
 void bind_basic_block(py::module& m);
@@ -187,12 +264,15 @@ void bind_constraint_graph(py::module& m);
 
 void bind_abstract_state(py::module& m);
 
+void bind_multi_thread_analysis(py::module& m);
+
 SVFIR* PySVF::currentSVFIR = nullptr;
-CallGraph* PySVF::currentCallGraph = nullptr;
-SVFG* PySVF::currentSVFG = nullptr;
 ICFG* PySVF::currentICFG = nullptr;
+SVFGBuilder* PySVF::currentSVFGBuilder = nullptr;
+SVFG* PySVF::currentSVFG = nullptr;
 std::string PySVF::lastAnalyzedModule = "";
-Andersen::CallGraphSCC* PySVF::currentCallGraphSCC = nullptr;
+std::shared_ptr<AndersenBase> PySVF::currentPta = nullptr;
+
 
 PYBIND11_MODULE(pysvf, m) {
     bind_svf(m);
@@ -205,6 +285,9 @@ PYBIND11_MODULE(pysvf, m) {
     m.def("buildSVFModule", &PySVF::buildSVFModule, py::arg("options"), "Build SVF module");
     m.def("getPAG", &PySVF::get_current_pag, py::return_value_policy::reference);
     m.def("releasePAG", &PySVF::release_pag, "Release SVFIR and LLVMModuleSet");
+    m.def("get_svfir", &PySVF::get_svfir, py::arg("bitcodePath"), py::return_value_policy::reference, "Get SVFIR (PAG) from bitcode file path");
+    m.def("run_pta", &PySVF::run_pta, py::arg("ptaType"), "Run pointer analysis, ptaType: AndersenBase, AndersenWaveDiff, Steensgaard");
+    m.def("get_pta", &PySVF::get_pta, py::return_value_policy::reference, "Get current (created most recently) AndersenBase pointer analysis instance");
     m.def("getICFG", &PySVF::get_current_icfg, py::return_value_policy::reference, "Get the interprocedural control flow graph");
     m.def("getCallGraph", &PySVF::get_current_call_graph, py::return_value_policy::reference, "Get the call graph");
     m.def("getCallGraphSCC", &PySVF::get_current_call_graph_scc, py::return_value_policy::reference, "Get the call graph SCC");
@@ -215,6 +298,7 @@ PYBIND11_MODULE(pysvf, m) {
     bind_callgraph_edge(m);
     bind_basic_block(m);
     bind_callgraph(m);
+    bind_thread_call_graph(m);
     bind_svfg_edge(m);
     bind_vfg_node(m);
     bind_svfg_node(m);
@@ -224,5 +308,5 @@ PYBIND11_MODULE(pysvf, m) {
     bind_points_to(m);
     bind_constraint_graph(m);
     bind_abstract_state(m);
-
+    bind_multi_thread_analysis(m);
 }
