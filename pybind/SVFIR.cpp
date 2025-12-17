@@ -831,7 +831,7 @@ void bind_svf_type(py::module& m) {
 
     py::class_<SVFStructType, SVFType>(m, "SVFStructType")
             .def("print", &SVFStructType::print)
-            .def("getName", &SVFStructType::getName)
+            .def("getName", py::overload_cast<>(&SVFStructType::getName))
             .def("setName", py::overload_cast<const std::string&>(&SVFStructType::setName))
             .def("setName", py::overload_cast<std::string&&>(&SVFStructType::setName));
 
@@ -842,10 +842,7 @@ void bind_svf_type(py::module& m) {
             .def("setNumOfElement", &SVFArrayType::setNumOfElement);
 
     py::class_<SVFOtherType, SVFType>(m, "SVFOtherType")
-            .def("print", &SVFOtherType::print)
-            .def("getRepr", &SVFOtherType::getRepr)
-            .def("setRepr", py::overload_cast<const std::string&>(&SVFOtherType::setRepr))
-            .def("setRepr", py::overload_cast<std::string&&>(&SVFOtherType::setRepr));
+            .def("print", &SVFOtherType::print);
 
 
 }
