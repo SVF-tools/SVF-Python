@@ -156,7 +156,7 @@ jobs:
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-osx" >> $GITHUB_ENV
           fi
-          echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
+          echo "LLVM_DIR=$PWD/node_modules/llvm-18.1.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
 
       - name: Set up Python
