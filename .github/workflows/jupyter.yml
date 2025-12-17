@@ -38,7 +38,7 @@ jobs:
         run: |
           npm install svf-lib
           echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-x86_64" >> $GITHUB_ENV
-          echo "LLVM_DIR=$PWD/node_modules/llvm-16.0.0.obj" >> $GITHUB_ENV
+          echo "LLVM_DIR=$PWD/node_modules/llvm-18.1.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
 
       - name: Get system architecture
