@@ -341,6 +341,18 @@ class SVFStmt:
     def getBB(self) -> "SVFBasicBlock": ...
     """Get the basic block that the SVF statement belongs to"""
 
+    def getSrcNode(self) -> ICFGNode: ...
+    """Get the source node of the SVF statement"""
+
+    def getDstNode(self) -> ICFGNode: ...
+    """Get the destination node of the SVF statement"""
+
+    def getSrcID(self) -> int: ...
+    """Get the ID of the source node of the SVF statement"""
+
+    def getDstID(self) -> int: ...
+    """Get the ID of the destination node of the SVF statement"""
+
     def isAddrStmt(self) -> bool: ...
     """Check if the SVF statement is an address statement"""
 
@@ -1244,12 +1256,6 @@ class SVFOtherType(SVFType):
     
     def print(self) -> None: ...
     """Print the SVF other type"""
-
-    def getRepr(self) -> str: ...
-    """Get the representation of the SVF other type"""
-
-    def setRepr(self, repr: str) -> None: ...
-    """Set the representation of the SVF other type"""
 
 
 class SVFIR(SVFLLVMValue):
