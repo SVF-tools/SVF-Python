@@ -345,7 +345,7 @@ void bind_abstract_state(py::module& m) {
         .def_static("isVirtualMemAddress", &AbstractState::isVirtualMemAddress, py::arg("val"))
         .def_static("getVirtualMemAddress", &AbstractState::getVirtualMemAddress, py::arg("idx"))
         .def_static("isNullMem", &AbstractState::isNullMem, py::arg("addr"))
-        .def_static("isInvalidMem", &AbstractState::isInvalidMem, py::arg("addr"))
+        .def_static("isBlackHoleObjAddr", &AbstractState::isBlackHoleObjAddr, py::arg("addr"))
 
         // State management
         .def("clear", &AbstractState::clear)

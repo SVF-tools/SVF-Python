@@ -397,7 +397,10 @@ void bind_callgraph(py::module& m) {
     py::class_<Andersen::CallGraphSCC>(m, "CallGraphSCC", "Call Graph SCC")
         .def("isInCycle", [](Andersen::CallGraphSCC& cg, NodeID id) {
             return cg.isInCycle(id);
-        }, py::arg("id"), py::return_value_policy::reference, "Check if a node is in a cycle");
+        }, py::arg("id"), py::return_value_policy::reference, "Check if a node is in a cycle")
+        .def("repNode", [](Andersen::CallGraphSCC& cg, NodeID id) {
+            return cg.repNode(id);
+        }, py::arg("id"), "Get the representative node ID of the SCC containing the given node");
 }
 
 void bind_thread_call_graph(py::module &m) {
