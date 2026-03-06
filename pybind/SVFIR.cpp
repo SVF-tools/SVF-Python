@@ -214,7 +214,7 @@ void bind_svf(py::module& m) {
             }
             return baseObj;
         }, py::arg("id"), py::return_value_policy::reference)
-        .def("getPAGNodeNum", &SVFIR::getPAGNodeNum)
+        .def("getSVFVarNum", &SVFIR::getSVFVarNum)
         .def("getGNode", [](SVFIR* pag, NodeID id) {
             const SVF::PAGNode* node = pag->getGNode(id);
             if (!node) {
