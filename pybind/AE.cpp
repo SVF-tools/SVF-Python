@@ -310,9 +310,10 @@ void bind_abstract_state(py::module& m) {
         .def("store", &AbstractState::store,
              py::arg("addr"), py::arg("val"))
 
-        // Load value from memory address
-        .def("load", &AbstractState::load,
-             py::arg("addr"), py::return_value_policy::reference)
+  	// Load value from memory address
+        .def("load", [](AbstractState& self, u32_t addr) -> AbstractValue& {
+            return self.load(addr);
+        }, py::arg("addr"), py::return_value_policy::reference)
 
         .def("storeValue", &AbstractState::storeValue,
              py::arg("varId"), py::arg("val"))
