@@ -921,8 +921,8 @@ void bind_vfg(py::module& m) {
 void bind_svfg(py::module& m) {
     py::class_<SVFG, VFG>(m, "SVFG", "Sparse Value Flow Graph")
         // SVFG specific methods
-        .def("hasDefSVFGNode", [](SVFG& svfg, const SVFVar* val) { return svfg.hasDefSVFGNode(val);}, py::arg("val"), "Check if there is a definition SVFG node for a given SVF variable")
-        .def("getDefSVFGNode", [](SVFG& svfg, const SVFVar* val) { return svfg.getDefSVFGNode(val);}, py::arg("val"), py::return_value_policy::reference, "Get all the definition SVFG nodes of a SVF variable")
+        .def("hasDefSVFGNode", [](SVFG& svfg, const ValVar* val) { return svfg.hasDefSVFGNode(val);}, py::arg("val"), "Check if there is a definition SVFG node for a given SVF variable")
+        .def("getDefSVFGNode", [](SVFG& svfg, const ValVar* val) { return svfg.getDefSVFGNode(val);}, py::arg("val"), py::return_value_policy::reference, "Get all the definition SVFG nodes of a SVF variable")
         .def("getActualOUTSVFGNodes", [](SVFG& svfg, const CallICFGNode* cs) { return svfg.getActualOUTSVFGNodes(cs); }, py::arg("cs"), py::return_value_policy::reference, "Get the ActualOUT SVFG nodes for a given call site")
         .def("getActualINSVFGNodes", [](SVFG& svfg, const CallICFGNode* cs) { return svfg.getActualINSVFGNodes(cs); }, py::arg("cs"), py::return_value_policy::reference, "Get the ActualIN SVFG nodes for a given call site")
         .def("getFormalOUTSVFGNodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.getFormalOUTSVFGNodes(fun); }, py::arg("fun"), py::return_value_policy::reference, "Get the FormalOUT SVFG nodes for a given function")
