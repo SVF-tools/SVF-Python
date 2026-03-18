@@ -269,7 +269,11 @@ void bind_callgraph_node(py::module& m) {
         .def("getId", &CallGraphNode::getId, "Get the ID of the CallGraph node")
         .def("getFunction", &CallGraphNode::getFunction, py::return_value_policy::reference, "Get the function of this call node")
         .def("getName", &CallGraphNode::getName, "Get the name of the function")
-        .def("isReachableFromProgEntry", &CallGraphNode::isReachableFromProgEntry, "Check if this function can be reached from main")
+        .def("isReachableFromProgEntry", [](const CallGraphNode* node) {
+            Map<NodeID, bool> reachableFromEntry;
+            NodeBS visitedNodes;
+            return node->isReachableFromProgEntry(reachableFromEntry, visitedNodes);
+        }, "Check if this function can be reached from main")
         // Get out edges and in edges
         .def("getOutEdges", [](const CallGraphNode *node) {
             std::vector<CallGraphEdge *> edges;
@@ -935,7 +939,23 @@ void bind_svfg(py::module& m) {
         .def("hasActualOUTSVFGNodes", [](SVFG& svfg, const CallICFGNode* cs) { return svfg.hasActualOUTSVFGNodes(cs); }, py::arg("cs"), "Check if there are ActualOUT SVFG nodes for a given call site")
         .def("hasActualINSVFGNodes", [](SVFG& svfg, const CallICFGNode* cs) { return svfg.hasActualINSVFGNodes(cs); }, py::arg("cs"), "Check if there are ActualIN SVFG nodes for a given call site")
         .def("hasFormalOUTSVFGNodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.hasFormalOUTSVFGNodes(fun); }, py::arg("fun"), "Check if there are FormalOUT SVFG nodes for a given function")
-        .def("hasFormalINSVFGNodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.hasFormalINSVFGNodes(fun); }, py::arg("fun"), "Check if there are FormalIN SVFG nodes for a given function");
+        .def("hasFormalINSVFGNodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.hasFormalINSVFGNodes(fun); }, py::arg("fun"), "Check if there are FormalIN SVFG nodes for a given function")
+        .def("getSVFGNode", [](SVFG& svfg, NodeID id) -> SVFGNode* { return svfg.getSVFGNode(id); }, py::arg("id"), py::return_value_policy::reference, "Get an SVFG node by ID")
+        .def("hasSVFGNode", [](SVFG& svfg, NodeID id) { return svfg.hasSVFGNode(id); }, py::arg("id"), "Check if an SVFG node exists")
+        .def("getDefSiteOfValVar", [](SVFG& svfg, const ValVar* var) { return svfg.getDefSiteOfValVar(var); }, py::arg("var"), py::return_value_policy::reference, "Get the definition site of a value variable")
+        .def("getDefSiteOfObjVar", [](SVFG& svfg, const ObjVar* obj, const ICFGNode* node) { return svfg.getDefSiteOfObjVar(obj, node); }, py::arg("obj"), py::arg("node"), py::return_value_policy::reference, "Get the definition site of an object variable")
+        .def("getUseSitesOfValVar", [](SVFG& svfg, const ValVar* var) {
+            Set<const ICFGNode*> sites = svfg.getUseSitesOfValVar(var);
+            std::vector<const ICFGNode*> result(sites.begin(), sites.end());
+            return result;
+        }, py::arg("var"), py::return_value_policy::reference, "Get the use sites of a value variable")
+        .def("getUseSitesOfObjVar", [](SVFG& svfg, const ObjVar* obj, const ICFGNode* node) {
+            Set<const ICFGNode*> sites = svfg.getUseSitesOfObjVar(obj, node);
+            std::vector<const ICFGNode*> result(sites.begin(), sites.end());
+            return result;
+        }, py::arg("obj"), py::arg("node"), py::return_value_policy::reference, "Get the use sites of an object variable")
+        .def("isFunEntrySVFGNode", [](SVFG& svfg, const SVFGNode* node) { return svfg.isFunEntrySVFGNode(node); }, py::arg("node"), py::return_value_policy::reference, "Check if the SVFG node is a function entry node, returns the function or nullptr")
+        .def("isCallSiteRetSVFGNode", [](SVFG& svfg, const SVFGNode* node) { return svfg.isCallSiteRetSVFGNode(node); }, py::arg("node"), py::return_value_policy::reference, "Check if the SVFG node is a call site return node, returns the call site or nullptr");
 }
 
 void bind_constraint_graph(py::module& m) {
