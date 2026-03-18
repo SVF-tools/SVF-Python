@@ -393,6 +393,11 @@ void bind_abstract_state(py::module& m) {
         .def("getPointeeElement", &AbstractState::getPointeeElement, py::arg("var_id"), py::return_value_policy::reference)
         .def("inVarToValTable", &AbstractState::inVarToValTable, py::arg("var_id"))
         .def("inVarToAddrsTable", &AbstractState::inVarToAddrsTable, py::arg("var_id"))
+        .def("inAddrToAddrsTable", &AbstractState::inAddrToAddrsTable, py::arg("id"))
+        .def("initObjVar", &AbstractState::initObjVar, py::arg("objVar"), "Initialize an object variable in the abstract state")
+        .def("addToFreedAddrs", &AbstractState::addToFreedAddrs, py::arg("addr"), "Add an address to the freed addresses set")
+        .def("isFreedMem", &AbstractState::isFreedMem, py::arg("addr"), "Check if an address is freed memory")
+        .def("hash", &AbstractState::hash, "Get the hash of this abstract state")
         .def("getGepObjAddrs", &AbstractState::getGepObjAddrs, py::arg("var_id"), py::arg("offset"))
         .def_static("isCmpBranchFeasible", [](SVFIR* svfir, const CmpStmt* cmpStmt, s64_t succ, AbstractState& as) {
             Map<s32_t, s32_t> _reverse_predicate = {
