@@ -717,6 +717,7 @@ void bind_svf_var(py::module &m) {
             .def("getReturnType", &SVF::FunObjVar::getReturnType, py::return_value_policy::reference)
             .def("arg_size", &SVF::FunObjVar::arg_size)
             .def("getArg", &SVF::FunObjVar::getArg, py::arg("index"), py::return_value_policy::reference)
+            .def("getSourceLoc", &SVF::FunObjVar::getSourceLoc, py::return_value_policy::reference)
 
             .def("dominates", [](SVF::FunObjVar* node, SVF::SVFBasicBlock* bbKey, SVF::SVFBasicBlock* bbValue) -> bool {
                 return node->dominate(bbKey, bbValue);
