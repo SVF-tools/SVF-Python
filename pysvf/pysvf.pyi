@@ -1093,9 +1093,12 @@ class FunObjVar(BaseObjVar):
     def toString(self) -> str: ...
     """Get the string representation of the SVF variable"""
     
+    def getSourceLoc(self) -> str: ...
+    """Get the source location of the function definition"""
+
     def dominates(self, bbKey: SVFBasicBlock, bbValue: SVFBasicBlock) -> bool: ...
     """Check if one basic block dominates another"""
-    
+
     def postDominate(self, bbKey: SVFBasicBlock, bbValue: SVFBasicBlock) -> bool: ...
     """Check if one basic block post-dominates another"""
 
