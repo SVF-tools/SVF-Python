@@ -21,26 +21,30 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Get next version from TestPyPI
+      - name: Get next version from PyPI and TestPyPI
         id: get_next_version
         run: |
           PACKAGE="pysvf"
-          INDEX_URL="https://test.pypi.org/pypi/$PACKAGE/json"
-          
-          echo "Querying $INDEX_URL ..."
-          VERSIONS=$(curl -s "$INDEX_URL" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$')
-          
-          if [ -z "$VERSIONS" ]; then
+
+          echo "Querying TestPyPI..."
+          TEST_VERSIONS=$(curl -s "https://test.pypi.org/pypi/$PACKAGE/json" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$' || true)
+
+          echo "Querying PyPI..."
+          PROD_VERSIONS=$(curl -s "https://pypi.org/pypi/$PACKAGE/json" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$' || true)
+
+          ALL_VERSIONS=$(echo -e "${TEST_VERSIONS}\n${PROD_VERSIONS}" | grep -v '^$' | sort -V | uniq)
+
+          if [ -z "$ALL_VERSIONS" ]; then
             LAST_VERSION="1.0.0.0"
           else
-            LAST_VERSION=$(echo "$VERSIONS" | sort -V | tail -n 1)
+            LAST_VERSION=$(echo "$ALL_VERSIONS" | tail -n 1)
           fi
-          
+
           echo "Last version: $LAST_VERSION"
-          
+
           NEXT_VERSION=$(echo "$LAST_VERSION" | awk -F. '{$NF+=1; print $1 "." $2 "." $3 "." $4}')
           echo "Next version: $NEXT_VERSION"
-          
+
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
 
   stubtest:
@@ -208,6 +212,14 @@ jobs:
           cd SVF-Python
           pip install twine
           twine upload --repository testpypi dist/* --verbose
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          cd SVF-Python
+          twine upload dist/* --verbose
 
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
