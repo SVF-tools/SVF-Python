@@ -120,8 +120,11 @@ void bind_svf_stmt(py::module& m) {
 
     py::class_<LoadStmt, AssignStmt>(m, "LoadStmt");
 
-    py::class_<CallPE, AssignStmt>(m, "CallPE")
-            .def("getCallSite", &CallPE::getCallSite, "Get the call site")
+    py::class_<CallPE, MultiOpndStmt>(m, "CallPE")
+            .def("getOpCallICFGNode", &CallPE::getOpCallICFGNode, py::return_value_policy::reference,
+                 "Get the CallICFGNode of the i-th operand")
+            .def("getOpCallICFGNodes", &CallPE::getOpCallICFGNodes, py::return_value_policy::reference,
+                 "Get all call site ICFGNodes")
             .def("getFunEntryICFGNode", &CallPE::getFunEntryICFGNode, py::return_value_policy::reference,
                  "Get the function entry ICFG node");
 

@@ -486,12 +486,15 @@ class StoreStmt(AssignStmt):
 class LoadStmt(AssignStmt):
     ...
 
-class CallPE(AssignStmt):
+class CallPE(MultiOpndStmt):
     def __init__(self, *args, **kwargs) -> None: ...
     """Not intended for direct instantiation."""
-    
-    def getCallSite(self) -> "CallICFGNode": ...
-    """Get the call site"""
+
+    def getOpCallICFGNode(self, op_idx: int) -> "CallICFGNode": ...
+    """Get the CallICFGNode of the i-th operand"""
+
+    def getOpCallICFGNodes(self) -> List["CallICFGNode"]: ...
+    """Get all call site ICFGNodes"""
 
     def getFunEntryICFGNode(self) -> "FunEntryICFGNode": ...
     """Get the function entry ICFG node"""
