@@ -2,6 +2,8 @@
 
 
 ## News
+* <b>Pysvf is now available on [PyPI](https://pypi.org/project/pysvf/). The previous Test PyPI distribution is no longer maintained.</b>
+* <b>Thanks to [mgree](https://github.com/mgree) for contributing the `FunObjVar::getSourceLoc` binding ([#46](https://github.com/SVF-tools/SVF-Python/pull/46)).</b>
 * <b>SVF-Python now supports MTA bindings and more pointer analysis strategies(AndersenWaveDiff, AndersenBase, and Steensgaard bindings). (Thank [JoelYYoung](https://github.com/JoelYYoung) for his help!).  </b>
 
 ## 1. Introduction
@@ -12,17 +14,17 @@
 
 Pysvf can be installed in two ways:
 
-### Method 1: Install via pip (Test PyPI)
+### Method 1: Install via pip
 
 #### Requirements
 
-- Python 3.8 - 3.11
+- Python 3.8 - 3.12
 - OS: Linux X86-64, Linux Arm64, MacOS
 
 #### Install Command
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ pysvf
+pip install pysvf
 ````
 
 ### Method 2: Build from Source
