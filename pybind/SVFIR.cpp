@@ -120,11 +120,6 @@ void bind_svf_stmt(py::module& m) {
 
     py::class_<LoadStmt, AssignStmt>(m, "LoadStmt");
 
-    py::class_<CallPE, AssignStmt>(m, "CallPE")
-            .def("getCallSite", &CallPE::getCallSite, "Get the call site")
-            .def("getFunEntryICFGNode", &CallPE::getFunEntryICFGNode, py::return_value_policy::reference,
-                 "Get the function entry ICFG node");
-
     py::class_<RetPE, AssignStmt>(m, "RetPE")
             .def("getCallSite", &RetPE::getCallSite, "Get the call site")
             .def("getFunExitICFGNode", &RetPE::getFunExitICFGNode, py::return_value_policy::reference,
@@ -154,6 +149,14 @@ void bind_svf_stmt(py::module& m) {
             .def("__iter__", [](MultiOpndStmt& stmt) {
                 return py::make_iterator(stmt.opVarBegin(), stmt.opVerEnd());
             }, py::keep_alive<0, 1>()); // Keep the iterator alive while iterating
+
+    py::class_<CallPE, MultiOpndStmt>(m, "CallPE")
+            .def("getOpCallICFGNode", &CallPE::getOpCallICFGNode, py::return_value_policy::reference,
+                 "Get the CallICFGNode of the i-th operand")
+            .def("getOpCallICFGNodes", &CallPE::getOpCallICFGNodes, py::return_value_policy::reference,
+                 "Get all call site ICFGNodes")
+            .def("getFunEntryICFGNode", &CallPE::getFunEntryICFGNode, py::return_value_policy::reference,
+                 "Get the function entry ICFG node");
 
     py::class_<PhiStmt, MultiOpndStmt>(m, "PhiStmt")
             // TODO: may implement get_op_var and get_op_var_id

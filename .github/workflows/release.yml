@@ -21,26 +21,24 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Get next version from TestPyPI
+      - name: Get next version from PyPI
         id: get_next_version
         run: |
           PACKAGE="pysvf"
-          INDEX_URL="https://test.pypi.org/pypi/$PACKAGE/json"
-          
+          INDEX_URL="https://pypi.org/pypi/$PACKAGE/json"
+
           echo "Querying $INDEX_URL ..."
-          VERSIONS=$(curl -s "$INDEX_URL" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$')
-          
+          VERSIONS=$(curl -s "$INDEX_URL" | jq -r '.releases | keys[]' | grep -E '^1\.0\.0\.[0-9]+$' || true)
+
           if [ -z "$VERSIONS" ]; then
-            LAST_VERSION="1.0.0.0"
+            NEXT_VERSION="1.0.0.0"
           else
             LAST_VERSION=$(echo "$VERSIONS" | sort -V | tail -n 1)
+            echo "Last version: $LAST_VERSION"
+            NEXT_VERSION=$(echo "$LAST_VERSION" | awk -F. '{$NF+=1; print $1 "." $2 "." $3 "." $4}')
           fi
-          
-          echo "Last version: $LAST_VERSION"
-          
-          NEXT_VERSION=$(echo "$LAST_VERSION" | awk -F. '{$NF+=1; print $1 "." $2 "." $3 "." $4}')
+
           echo "Next version: $NEXT_VERSION"
-          
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
 
   stubtest:
@@ -200,14 +198,13 @@ jobs:
           echo "Built wheel files:"
           ls -lh dist/
 
-      - name: Publish to TestPyPI
+      - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           cd SVF-Python
-          pip install twine
-          twine upload --repository testpypi dist/* --verbose
+          twine upload dist/* --verbose
 
       - name: Upload Python wheels
         uses: actions/upload-artifact@v4
