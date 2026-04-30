@@ -750,6 +750,10 @@ void bind_abstract_state(py::module& m) {
         .def("__getitem__", [](AbstractStateManager& self, const ICFGNode* node) -> AbstractState& {
             return self[node];
         }, py::arg("node"), py::return_value_policy::reference)
+        .def("__setitem__", [](AbstractStateManager& self, const ICFGNode* node, const AbstractState& state) {
+            self.updateAbstractState(node, state);
+        }, py::arg("node"), py::arg("state"))
+        .def("__contains__", &AbstractStateManager::hasAbstractState, py::arg("node"))
 
         // Def/Use site queries
         .def("getUseSitesOfObjVar", &AbstractStateManager::getUseSitesOfObjVar,
