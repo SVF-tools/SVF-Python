@@ -1,5 +1,10 @@
 pysvf.AbstractState
+pysvf.AbstractStateManager
+pysvf.AbstractInterpretation
+pysvf.AbstractInterpretation.__init__
 pysvf.AbstractValue
+pysvf.Options
+pysvf.Options.__init__
 pysvf.ActualINSVFGNode
 pysvf.ActualINSVFGNode.__init__
 pysvf.ActualOUTSVFGNode
