@@ -100,7 +100,7 @@ class CMakeBuild(build_ext):
         if platform.system() == "Linux":
             subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/z3.obj/bin/libz3.so", so_target], check=True)
             if os.path.exists(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.so")):
-                subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/llvm-16.0.0.obj/lib/libLLVM.so", so_target], check=True)
+                subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/llvm-21.1.0.obj/lib/libLLVM.so", so_target], check=True)
         
 
 
@@ -138,11 +138,11 @@ class CMakeBuild(build_ext):
             shutil.copytree(os.path.join(os.environ["Z3_DIR"], "lib"), os.path.join(self.build_lib, "pysvf", "SVF", "z3.obj", "lib"),dirs_exist_ok=True)
 
         # if exist  $LLVM_DIR/lib/libLLVM.so or libLLVM.dylib
-        os.makedirs(os.path.join(self.build_lib, "pysvf", "SVF", "llvm-16.0.0.obj", "lib"), exist_ok=True)
+        os.makedirs(os.path.join(self.build_lib, "pysvf", "SVF", "llvm-21.1.0.obj", "lib"), exist_ok=True)
         if os.path.exists(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.so")):
-            shutil.copyfile(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.so"), os.path.join(self.build_lib, "pysvf", "SVF", "llvm-16.0.0.obj", "lib", "libLLVM.so"))
+            shutil.copyfile(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.so"), os.path.join(self.build_lib, "pysvf", "SVF", "llvm-21.1.0.obj", "lib", "libLLVM.so"))
         if os.path.exists(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.dylib")):
-            shutil.copyfile(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.dylib"), os.path.join(self.build_lib, "pysvf", "SVF", "llvm-16.0.0.obj", "lib", "libLLVM.dylib"))
+            shutil.copyfile(os.path.join(os.environ["LLVM_DIR"], "lib", "libLLVM.dylib"), os.path.join(self.build_lib, "pysvf", "SVF", "llvm-21.1.0.obj", "lib", "libLLVM.dylib"))
 
 
 setup(
