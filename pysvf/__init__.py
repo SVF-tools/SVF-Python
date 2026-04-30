@@ -9,7 +9,7 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 EXTAPI_BC_PATH = os.path.join(CURRENT_DIR, "SVF/Release-build/lib/", "extapi.bc")
 SVF_DIR = os.path.join(CURRENT_DIR, "SVF")
 Z3_DIR = os.path.join(CURRENT_DIR, "SVF/z3.obj")
-LLVM_DIR = os.path.join(CURRENT_DIR, "SVF/llvm-16.0.0.obj")
+LLVM_DIR = os.path.join(CURRENT_DIR, "SVF/llvm-21.1.0.obj")
 BIN_DIR = os.path.join(SVF_DIR, "Release-build", "bin")
 
 # Set environment variables
@@ -229,8 +229,11 @@ from .pysvf import (
     IntervalValue,
     AddressValue,
     AbstractState,
+    AbstractStateManager,
+    AbstractInterpretation,
     AbstractValue,
     BoundedInt,
+    Options,
     MTA,
     MHP,
     LockAnalysis,

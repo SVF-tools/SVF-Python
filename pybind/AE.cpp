@@ -8,6 +8,8 @@
 #include "MemoryModel/PointerAnalysis.h"
 #include "WPA/Andersen.h"
 #include "AE/Core/AbstractState.h"
+#include "AE/Svfexe/AbstractStateManager.h"
+#include "AE/Svfexe/AbstractInterpretation.h"
 #include <pybind11/operators.h>
 
 
@@ -315,12 +317,6 @@ void bind_abstract_state(py::module& m) {
             return self.load(addr);
         }, py::arg("addr"), py::return_value_policy::reference)
 
-        .def("storeValue", &AbstractState::storeValue,
-             py::arg("varId"), py::arg("val"))
-
-        .def("loadValue", &AbstractState::loadValue,
-            py::arg("varId"), py::return_value_policy::reference)
-
         // Equality comparison
         .def("equals", &AbstractState::equals,
              py::arg("other"))
@@ -339,8 +335,6 @@ void bind_abstract_state(py::module& m) {
         .def("widening", &AbstractState::widening, py::arg("other"))
         .def("narrowing", &AbstractState::narrowing, py::arg("other"))
         .def("getIDFromAddr", &AbstractState::getIDFromAddr, py::arg("addr"))
-
-        .def("getAllocaInstByteSize", &AbstractState::getAllocaInstByteSize, py::arg("addr"))
 
         // Static utilities for address handling
         .def_static("isVirtualMemAddress", &AbstractState::isVirtualMemAddress, py::arg("val"))
@@ -385,12 +379,6 @@ void bind_abstract_state(py::module& m) {
          }, py::return_value_policy::move)
         .def("bottom", &AbstractState::bottom)
         .def("top", &AbstractState::top)
-        .def("getGepObjAddrs", &AbstractState::getGepObjAddrs, py::arg("ptr"), py::arg("offset"))
-        .def("getElementIndex", &AbstractState::getElementIndex, py::arg("gep"))
-        .def("getByteOffset", &AbstractState::getByteOffset, py::arg("gep"))
-        .def("loadValue", &AbstractState::loadValue, py::arg("var_id"))
-        .def("storeValue", &AbstractState::storeValue, py::arg("var_id"), py::arg("val"))
-        .def("getPointeeElement", &AbstractState::getPointeeElement, py::arg("var_id"), py::return_value_policy::reference)
         .def("inVarToValTable", &AbstractState::inVarToValTable, py::arg("var_id"))
         .def("inVarToAddrsTable", &AbstractState::inVarToAddrsTable, py::arg("var_id"))
         .def("inAddrToAddrsTable", &AbstractState::inAddrToAddrsTable, py::arg("id"))
@@ -398,7 +386,6 @@ void bind_abstract_state(py::module& m) {
         .def("addToFreedAddrs", &AbstractState::addToFreedAddrs, py::arg("addr"), "Add an address to the freed addresses set")
         .def("isFreedMem", &AbstractState::isFreedMem, py::arg("addr"), "Check if an address is freed memory")
         .def("hash", &AbstractState::hash, "Get the hash of this abstract state")
-        .def("getGepObjAddrs", &AbstractState::getGepObjAddrs, py::arg("var_id"), py::arg("offset"))
         .def_static("isCmpBranchFeasible", [](SVFIR* svfir, const CmpStmt* cmpStmt, s64_t succ, AbstractState& as) {
             Map<s32_t, s32_t> _reverse_predicate = {
                 {CmpStmt::Predicate::FCMP_OEQ, CmpStmt::Predicate::FCMP_ONE}, // == -> !=
@@ -691,5 +678,96 @@ void bind_abstract_state(py::module& m) {
             as = new_es;
             return true;
         }, py::arg("svfir"), py::arg("var"), py::arg("succ"), py::arg("as"));
+
+    // ---------------------------------------------------------------
+    // AbstractStateManager — owns the per-ICFGNode AbstractState trace
+    // and provides sparsity-aware getters that used to live on
+    // AbstractState (loadValue, storeValue, getGepByteOffset, etc.).
+    // ---------------------------------------------------------------
+    py::class_<AbstractStateManager>(m, "AbstractStateManager")
+        .def(py::init([](SVFIR* svfir, std::shared_ptr<AndersenWaveDiff> pta) {
+            return new AbstractStateManager(svfir, pta.get());
+        }), py::arg("svfir"), py::arg("pta"))
+
+        // Abstract value access (sparsity-aware)
+        .def("getAbstractValue",
+             py::overload_cast<const ValVar*, const ICFGNode*>(&AbstractStateManager::getAbstractValue),
+             py::arg("var"), py::arg("node"), py::return_value_policy::reference)
+        .def("getAbstractValue",
+             py::overload_cast<const ObjVar*, const ICFGNode*>(&AbstractStateManager::getAbstractValue),
+             py::arg("var"), py::arg("node"), py::return_value_policy::reference)
+        .def("getAbstractValue",
+             py::overload_cast<const SVFVar*, const ICFGNode*>(&AbstractStateManager::getAbstractValue),
+             py::arg("var"), py::arg("node"), py::return_value_policy::reference)
+
+        .def("hasAbstractValue",
+             py::overload_cast<const ValVar*, const ICFGNode*>(&AbstractStateManager::hasAbstractValue, py::const_),
+             py::arg("var"), py::arg("node"))
+        .def("hasAbstractValue",
+             py::overload_cast<const ObjVar*, const ICFGNode*>(&AbstractStateManager::hasAbstractValue, py::const_),
+             py::arg("var"), py::arg("node"))
+        .def("hasAbstractValue",
+             py::overload_cast<const SVFVar*, const ICFGNode*>(&AbstractStateManager::hasAbstractValue, py::const_),
+             py::arg("var"), py::arg("node"))
+
+        .def("updateAbstractValue",
+             py::overload_cast<const ValVar*, const AbstractValue&, const ICFGNode*>(&AbstractStateManager::updateAbstractValue),
+             py::arg("var"), py::arg("val"), py::arg("node"))
+        .def("updateAbstractValue",
+             py::overload_cast<const ObjVar*, const AbstractValue&, const ICFGNode*>(&AbstractStateManager::updateAbstractValue),
+             py::arg("var"), py::arg("val"), py::arg("node"))
+        .def("updateAbstractValue",
+             py::overload_cast<const SVFVar*, const AbstractValue&, const ICFGNode*>(&AbstractStateManager::updateAbstractValue),
+             py::arg("var"), py::arg("val"), py::arg("node"))
+
+        // State access
+        .def("getAbstractState",
+             py::overload_cast<const ICFGNode*>(&AbstractStateManager::getAbstractState),
+             py::arg("node"), py::return_value_policy::reference)
+        .def("hasAbstractState", &AbstractStateManager::hasAbstractState, py::arg("node"))
+        .def("updateAbstractState", &AbstractStateManager::updateAbstractState,
+             py::arg("node"), py::arg("state"))
+
+        // GEP helpers (the ones that used to be AbstractState::getByteOffset etc.)
+        .def("getGepElementIndex", &AbstractStateManager::getGepElementIndex, py::arg("gep"))
+        .def("getGepByteOffset", &AbstractStateManager::getGepByteOffset, py::arg("gep"))
+        .def("getGepObjAddrs", &AbstractStateManager::getGepObjAddrs,
+             py::arg("pointer"), py::arg("offset"))
+
+        // Load / store through pointer (require ValVar + ICFGNode now)
+        .def("loadValue", &AbstractStateManager::loadValue,
+             py::arg("pointer"), py::arg("node"))
+        .def("storeValue", &AbstractStateManager::storeValue,
+             py::arg("pointer"), py::arg("val"), py::arg("node"))
+
+        // Type / size helpers
+        .def("getPointeeElement", &AbstractStateManager::getPointeeElement,
+             py::arg("var"), py::arg("node"), py::return_value_policy::reference)
+        .def("getAllocaInstByteSize", &AbstractStateManager::getAllocaInstByteSize, py::arg("addr"))
+
+        // Direct trace access
+        .def("getTrace", &AbstractStateManager::getTrace, py::return_value_policy::reference)
+        .def("__getitem__", [](AbstractStateManager& self, const ICFGNode* node) -> AbstractState& {
+            return self[node];
+        }, py::arg("node"), py::return_value_policy::reference)
+
+        // Def/Use site queries
+        .def("getUseSitesOfObjVar", &AbstractStateManager::getUseSitesOfObjVar,
+             py::arg("obj"), py::arg("node"))
+        .def("getUseSitesOfValVar", &AbstractStateManager::getUseSitesOfValVar, py::arg("var"))
+        .def("getDefSiteOfValVar", &AbstractStateManager::getDefSiteOfValVar,
+             py::arg("var"), py::return_value_policy::reference)
+        .def("getDefSiteOfObjVar", &AbstractStateManager::getDefSiteOfObjVar,
+             py::arg("obj"), py::arg("node"), py::return_value_policy::reference);
+
+    // Minimal AbstractInterpretation binding so users can grab a stateMgr
+    // from a running analysis.
+    py::class_<AbstractInterpretation>(m, "AbstractInterpretation")
+        .def("getStateMgr", &AbstractInterpretation::getStateMgr,
+             py::return_value_policy::reference);
+
+    // Expose the few Options statics that downstream Python code relies on.
+    py::class_<Options>(m, "Options")
+        .def_static("max_field_limit", []() { return Options::MaxFieldLimit(); });
 }
 

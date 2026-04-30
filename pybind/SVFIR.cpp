@@ -136,7 +136,13 @@ void bind_svf_stmt(py::module& m) {
             .def("getOffsetVarAndGepTypePairVec", &GepStmt::getOffsetVarAndGepTypePairVec, py::return_value_policy::reference,
                  "Get the offset variable and GEP type pair vector of the GEP statement")
             .def("getSrcPointeeType", [](GepStmt& stmt) { return stmt.getAccessPath().gepSrcPointeeType(); },
-                 py::return_value_policy::reference);
+                 py::return_value_policy::reference)
+            .def("getStructFieldOffset",
+                 [](const GepStmt& stmt, const ValVar* idxVar, const SVFStructType* st) {
+                     return stmt.getAccessPath().getStructFieldOffset(idxVar, st);
+                 },
+                 py::arg("idx_var"), py::arg("struct_type"),
+                 "Compute the byte offset for a struct field index");
 
     py::class_<MultiOpndStmt, SVFStmt>(m, "MultiOpndStmt")
             .def("getOpVar", [](MultiOpndStmt& stmt, int ID) { return stmt.getOpVar(ID); },
