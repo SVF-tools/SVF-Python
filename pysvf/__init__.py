@@ -229,7 +229,6 @@ from .pysvf import (
     IntervalValue,
     AddressValue,
     AbstractState,
-    AbstractStateManager,
     AbstractInterpretation,
     AbstractValue,
     BoundedInt,

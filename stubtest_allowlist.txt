@@ -1,5 +1,4 @@
 pysvf.AbstractState
-pysvf.AbstractStateManager
 pysvf.AbstractInterpretation
 pysvf.AbstractInterpretation.__init__
 pysvf.AbstractValue
