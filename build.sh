@@ -38,8 +38,12 @@ fi
 # --break-system-packages is required on PEP 668 environments (macOS Homebrew
 # python, recent Debian/Ubuntu).  It's a no-op for older pip / non-managed
 # interpreters.
+# Do NOT include `pip` in the upgrade list: when the runner's pip was installed
+# by brew (macOS) or apt (Debian/Ubuntu) it has no RECORD file, so `pip install
+# -U pip` fails with `uninstall-no-record-file`.  The runner's pip is fresh
+# enough; we just need pybind11/setuptools/wheel/build.
 PIP_FLAGS="--break-system-packages"
-"$PYTHON_EXEC" -m pip install $PIP_FLAGS -U pip pybind11 setuptools wheel build
+"$PYTHON_EXEC" -m pip install $PIP_FLAGS -U pybind11 setuptools wheel build
 PYBIND11_DIR=$("$PYTHON_EXEC" -m pybind11 --cmakedir)
 
 # Step 6: Build the wheel
