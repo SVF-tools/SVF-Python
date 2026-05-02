@@ -30,12 +30,16 @@ fi
 if ! "$PYTHON_EXEC" -m pip &> /dev/null; then
     echo "pip not found for $PYTHON_EXEC. Installing pip..."
     curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    "$PYTHON_EXEC" get-pip.py
+    "$PYTHON_EXEC" get-pip.py --break-system-packages
     rm get-pip.py
 fi
 
-# Step 5: Install Python build dependencies
-"$PYTHON_EXEC" -m pip install -U pip pybind11 setuptools wheel build
+# Step 5: Install Python build dependencies.
+# --break-system-packages is required on PEP 668 environments (macOS Homebrew
+# python, recent Debian/Ubuntu).  It's a no-op for older pip / non-managed
+# interpreters.
+PIP_FLAGS="--break-system-packages"
+"$PYTHON_EXEC" -m pip install $PIP_FLAGS -U pip pybind11 setuptools wheel build
 PYBIND11_DIR=$("$PYTHON_EXEC" -m pybind11 --cmakedir)
 
 # Step 6: Build the wheel
