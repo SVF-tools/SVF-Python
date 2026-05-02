@@ -16,48 +16,34 @@ if [ -z "$SVF_DIR" ] || [ -z "$LLVM_DIR" ] || [ -z "$Z3_DIR" ]; then
     exit 1
 fi
 
-# Step 3: Ensure python3.10 is available
-if ! command -v python3.10 &> /dev/null; then
-    echo "Python 3.10 not found. Attempting to install..."
-
-    # Detect OS
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        sudo apt update
-        sudo apt install -y software-properties-common
-        sudo add-apt-repository -y ppa:deadsnakes/ppa
-        sudo apt update
-        sudo apt install -y python3.10 python3.10-venv python3.10-dev
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        if ! command -v brew &> /dev/null; then
-            echo "Homebrew not found. Please install Homebrew first: https://brew.sh/"
-            exit 1
-        fi
-        brew install python@3.10
-    else
-        echo "Unsupported OS: $OSTYPE"
-        exit 1
-    fi
-else
-    echo "Python 3.10 found."
+# Step 3: Use whatever python3 is on PATH (Ubuntu 24.04 ships 3.12; macOS via Homebrew).
+# We previously enforced python3.10 via ppa:deadsnakes/ppa, but Launchpad PPA
+# infrastructure has been intermittently unreachable from CI runners (HTTP 504
+# from add-apt-repository), so we no longer pin a specific Python version.
+PYTHON_EXEC=${PYTHON_EXEC:-python3}
+if ! command -v "$PYTHON_EXEC" &> /dev/null; then
+    echo "$PYTHON_EXEC not found. Please install python3 (>= 3.8)."
+    exit 1
 fi
 
-# Step 4: Ensure pip is installed for python3.10
-if ! python3.10 -m pip &> /dev/null; then
-    echo "pip not found for Python 3.10. Installing pip..."
+# Step 4: Ensure pip is available
+if ! "$PYTHON_EXEC" -m pip &> /dev/null; then
+    echo "pip not found for $PYTHON_EXEC. Installing pip..."
     curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    python3.10 get-pip.py
+    "$PYTHON_EXEC" get-pip.py
     rm get-pip.py
 fi
 
 # Step 5: Install Python build dependencies
-python3.10 -m pip install -U pip pybind11 setuptools wheel build
-PYBIND11_DIR=$(python3.10 -m pybind11 --cmakedir)
+"$PYTHON_EXEC" -m pip install -U pip pybind11 setuptools wheel build
+PYBIND11_DIR=$("$PYTHON_EXEC" -m pybind11 --cmakedir)
 
 # Step 6: Build the wheel
-SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python3.10 -m build --wheel
+SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} "$PYTHON_EXEC" -m build --wheel
 
 if [ $? -ne 0 ]; then
-    echo "Building for Python 3.10 failed."
+    echo "Wheel build failed."
+    exit 1
 else
-    echo "Successfully built for Python 3.10."
+    echo "Successfully built wheel for $($PYTHON_EXEC --version)."
 fi
