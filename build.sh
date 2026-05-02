@@ -26,35 +26,28 @@ if ! command -v "$PYTHON_EXEC" &> /dev/null; then
     exit 1
 fi
 
-# Step 4: Bootstrap a fresh pip / setuptools / wheel that have a RECORD file.
+# Step 4: Set up an isolated Python venv for the build.
 #
-# OS package managers ship pip / setuptools / wheel WITHOUT RECORD files, so
-# any later `pip install -U pip` (or wheel, or setuptools) fails with
-# `uninstall-no-record-file` — and `--break-system-packages` does NOT solve
-# that, since it's a separate uninstall-time check from PEP 668.
+# OS package managers (apt on Linux, brew on macOS) ship pip / setuptools /
+# wheel WITHOUT RECORD files, and the python interpreter itself is marked
+# EXTERNALLY-MANAGED (PEP 668).  Both `pip install -U pip` and
+# `--break-system-packages` workarounds collide with the no-RECORD problem
+# the moment any package needs to be uninstalled.
 #
-# Some downstream build deps require a recent pip, so we DO want to upgrade.
-# On Linux: remove the apt-managed copies first so they don't shadow the
-# pip-installed ones, then bootstrap via get-pip.py.  On macOS: skip the apt
-# remove step (brew bundles them with the python formula and they can't be
-# removed individually) — `--ignore-installed` on the bootstrap line keeps
-# pip from trying to uninstall brew's copy.
-if [[ "$OSTYPE" == "linux-gnu"* ]] && command -v apt-get >/dev/null 2>&1; then
-    sudo apt-get remove -y --purge python3-pip python3-setuptools python3-wheel 2>/dev/null || true
-fi
-curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-"$PYTHON_EXEC" get-pip.py --break-system-packages --ignore-installed
-rm get-pip.py
+# A venv side-steps both: it gives us a fully-managed pip with proper
+# RECORD files inside an isolated prefix, no system-site interference.
+# This is exactly what PEP 668 itself recommends.
+VENV_DIR="${VENV_DIR:-$(pwd)/.svfpy-build-venv}"
+"$PYTHON_EXEC" -m venv --clear "$VENV_DIR"
+# shellcheck disable=SC1091
+source "$VENV_DIR/bin/activate"
 
-# Step 5: Install Python build dependencies.
-# --break-system-packages still required on PEP 668 envs.  pip is now
-# upgradeable because get-pip.py installed a copy with a RECORD file.
-PIP_FLAGS="--break-system-packages"
-"$PYTHON_EXEC" -m pip install $PIP_FLAGS -U pip pybind11 setuptools wheel build
-PYBIND11_DIR=$("$PYTHON_EXEC" -m pybind11 --cmakedir)
+# Step 5: Install Python build dependencies into the venv.
+python -m pip install -U pip pybind11 setuptools wheel build
+PYBIND11_DIR=$(python -m pybind11 --cmakedir)
 
-# Step 6: Build the wheel
-SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} "$PYTHON_EXEC" -m build --wheel
+# Step 6: Build the wheel using the venv's python.
+SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} python -m build --wheel
 
 if [ $? -ne 0 ]; then
     echo "Wheel build failed."
