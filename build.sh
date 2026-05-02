@@ -26,18 +26,29 @@ if ! command -v "$PYTHON_EXEC" &> /dev/null; then
     exit 1
 fi
 
-# Step 4: Ensure pip is available
-if ! "$PYTHON_EXEC" -m pip &> /dev/null; then
-    echo "pip not found for $PYTHON_EXEC. Installing pip..."
-    curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    "$PYTHON_EXEC" get-pip.py --break-system-packages
-    rm get-pip.py
+# Step 4: Bootstrap a fresh pip / setuptools / wheel that have a RECORD file.
+#
+# OS package managers ship pip / setuptools / wheel WITHOUT RECORD files, so
+# any later `pip install -U pip` (or wheel, or setuptools) fails with
+# `uninstall-no-record-file` — and `--break-system-packages` does NOT solve
+# that, since it's a separate uninstall-time check from PEP 668.
+#
+# Some downstream build deps require a recent pip, so we DO want to upgrade.
+# On Linux: remove the apt-managed copies first so they don't shadow the
+# pip-installed ones, then bootstrap via get-pip.py.  On macOS: skip the apt
+# remove step (brew bundles them with the python formula and they can't be
+# removed individually) — `--ignore-installed` on the bootstrap line keeps
+# pip from trying to uninstall brew's copy.
+if [[ "$OSTYPE" == "linux-gnu"* ]] && command -v apt-get >/dev/null 2>&1; then
+    sudo apt-get remove -y --purge python3-pip python3-setuptools python3-wheel 2>/dev/null || true
 fi
+curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+"$PYTHON_EXEC" get-pip.py --break-system-packages --ignore-installed
+rm get-pip.py
 
 # Step 5: Install Python build dependencies.
-# --break-system-packages is required on PEP 668 environments (macOS Homebrew
-# python, recent Debian/Ubuntu).  It's a no-op for older pip / non-managed
-# interpreters.
+# --break-system-packages still required on PEP 668 envs.  pip is now
+# upgradeable because get-pip.py installed a copy with a RECORD file.
 PIP_FLAGS="--break-system-packages"
 "$PYTHON_EXEC" -m pip install $PIP_FLAGS -U pip pybind11 setuptools wheel build
 PYBIND11_DIR=$("$PYTHON_EXEC" -m pybind11 --cmakedir)
