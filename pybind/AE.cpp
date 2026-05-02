@@ -8,7 +8,6 @@
 #include "MemoryModel/PointerAnalysis.h"
 #include "WPA/Andersen.h"
 #include "AE/Core/AbstractState.h"
-#include "AE/Svfexe/AbstractStateManager.h"
 #include "AE/Svfexe/AbstractInterpretation.h"
 #include <pybind11/operators.h>
 
@@ -680,95 +679,74 @@ void bind_abstract_state(py::module& m) {
         }, py::arg("svfir"), py::arg("var"), py::arg("succ"), py::arg("as"));
 
     // ---------------------------------------------------------------
-    // AbstractStateManager — owns the per-ICFGNode AbstractState trace
-    // and provides sparsity-aware getters that used to live on
-    // AbstractState (loadValue, storeValue, getGepByteOffset, etc.).
+    // AbstractInterpretation — owns the per-ICFGNode AbstractState trace
+    // and exposes sparsity-aware getters that used to live on the
+    // (now-removed) AbstractStateManager: loadValue, storeValue, GEP
+    // helpers, def/use-site queries, and direct trace access.
     // ---------------------------------------------------------------
-    py::class_<AbstractStateManager>(m, "AbstractStateManager")
-        .def(py::init([](SVFIR* svfir, std::shared_ptr<AndersenWaveDiff> pta) {
-            return new AbstractStateManager(svfir, pta.get());
-        }), py::arg("svfir"), py::arg("pta"))
+    py::class_<AbstractInterpretation>(m, "AbstractInterpretation")
+        // No constructor / static factory bound here: the class has a
+        // protected ctor and is non-copyable.  Users receive instances via
+        // other bound entry points.
 
-        // Abstract value access (sparsity-aware)
-        .def("getAbstractValue",
-             py::overload_cast<const ValVar*, const ICFGNode*>(&AbstractStateManager::getAbstractValue),
-             py::arg("var"), py::arg("node"), py::return_value_policy::reference)
-        .def("getAbstractValue",
-             py::overload_cast<const ObjVar*, const ICFGNode*>(&AbstractStateManager::getAbstractValue),
-             py::arg("var"), py::arg("node"), py::return_value_policy::reference)
-        .def("getAbstractValue",
-             py::overload_cast<const SVFVar*, const ICFGNode*>(&AbstractStateManager::getAbstractValue),
-             py::arg("var"), py::arg("node"), py::return_value_policy::reference)
-
-        .def("hasAbstractValue",
-             py::overload_cast<const ValVar*, const ICFGNode*>(&AbstractStateManager::hasAbstractValue, py::const_),
-             py::arg("var"), py::arg("node"))
-        .def("hasAbstractValue",
-             py::overload_cast<const ObjVar*, const ICFGNode*>(&AbstractStateManager::hasAbstractValue, py::const_),
-             py::arg("var"), py::arg("node"))
-        .def("hasAbstractValue",
-             py::overload_cast<const SVFVar*, const ICFGNode*>(&AbstractStateManager::hasAbstractValue, py::const_),
-             py::arg("var"), py::arg("node"))
-
-        .def("updateAbstractValue",
-             py::overload_cast<const ValVar*, const AbstractValue&, const ICFGNode*>(&AbstractStateManager::updateAbstractValue),
-             py::arg("var"), py::arg("val"), py::arg("node"))
-        .def("updateAbstractValue",
-             py::overload_cast<const ObjVar*, const AbstractValue&, const ICFGNode*>(&AbstractStateManager::updateAbstractValue),
-             py::arg("var"), py::arg("val"), py::arg("node"))
-        .def("updateAbstractValue",
-             py::overload_cast<const SVFVar*, const AbstractValue&, const ICFGNode*>(&AbstractStateManager::updateAbstractValue),
-             py::arg("var"), py::arg("val"), py::arg("node"))
-
-        // State access
-        .def("getAbstractState",
-             py::overload_cast<const ICFGNode*>(&AbstractStateManager::getAbstractState),
+        // State access (replaces old AbstractStateManager::getAbstractState etc.).
+        .def("getAbsState",
+             py::overload_cast<const ICFGNode*>(&AbstractInterpretation::getAbsState),
              py::arg("node"), py::return_value_policy::reference)
-        .def("hasAbstractState", &AbstractStateManager::hasAbstractState, py::arg("node"))
-        .def("updateAbstractState", &AbstractStateManager::updateAbstractState,
+        .def("getAbsState",
+             py::overload_cast<const Set<const ValVar*>&, AbstractState&, const ICFGNode*>(&AbstractInterpretation::getAbsState),
+             py::arg("vars"), py::arg("result"), py::arg("node"))
+        .def("getAbsState",
+             py::overload_cast<const Set<const ObjVar*>&, AbstractState&, const ICFGNode*>(&AbstractInterpretation::getAbsState),
+             py::arg("vars"), py::arg("result"), py::arg("node"))
+        .def("getAbsState",
+             py::overload_cast<const Set<const SVFVar*>&, AbstractState&, const ICFGNode*>(&AbstractInterpretation::getAbsState),
+             py::arg("vars"), py::arg("result"), py::arg("node"))
+        .def("updateAbsState", &AbstractInterpretation::updateAbsState,
              py::arg("node"), py::arg("state"))
 
-        // GEP helpers (the ones that used to be AbstractState::getByteOffset etc.)
-        .def("getGepElementIndex", &AbstractStateManager::getGepElementIndex, py::arg("gep"))
-        .def("getGepByteOffset", &AbstractStateManager::getGepByteOffset, py::arg("gep"))
-        .def("getGepObjAddrs", &AbstractStateManager::getGepObjAddrs,
+        // GEP helpers.
+        .def("getGepElementIndex", &AbstractInterpretation::getGepElementIndex, py::arg("gep"))
+        .def("getGepByteOffset", &AbstractInterpretation::getGepByteOffset, py::arg("gep"))
+        .def("getGepObjAddrs", &AbstractInterpretation::getGepObjAddrs,
              py::arg("pointer"), py::arg("offset"))
 
-        // Load / store through pointer (require ValVar + ICFGNode now)
-        .def("loadValue", &AbstractStateManager::loadValue,
+        // Load / store through pointer.
+        .def("loadValue", &AbstractInterpretation::loadValue,
              py::arg("pointer"), py::arg("node"))
-        .def("storeValue", &AbstractStateManager::storeValue,
+        .def("storeValue", &AbstractInterpretation::storeValue,
              py::arg("pointer"), py::arg("val"), py::arg("node"))
 
-        // Type / size helpers
-        .def("getPointeeElement", &AbstractStateManager::getPointeeElement,
+        // Type / size helpers.
+        .def("getPointeeElement", &AbstractInterpretation::getPointeeElement,
              py::arg("var"), py::arg("node"), py::return_value_policy::reference)
-        .def("getAllocaInstByteSize", &AbstractStateManager::getAllocaInstByteSize, py::arg("addr"))
+        .def("getAllocaInstByteSize", &AbstractInterpretation::getAllocaInstByteSize, py::arg("addr"))
 
-        // Direct trace access
-        .def("getTrace", &AbstractStateManager::getTrace, py::return_value_policy::reference)
-        .def("__getitem__", [](AbstractStateManager& self, const ICFGNode* node) -> AbstractState& {
+        // Direct trace access.
+        .def("getTrace", &AbstractInterpretation::getTrace, py::return_value_policy::reference)
+        .def("__getitem__", [](AbstractInterpretation& self, const ICFGNode* node) -> AbstractState& {
             return self[node];
         }, py::arg("node"), py::return_value_policy::reference)
-        .def("__setitem__", [](AbstractStateManager& self, const ICFGNode* node, const AbstractState& state) {
-            self.updateAbstractState(node, state);
+        .def("__setitem__", [](AbstractInterpretation& self, const ICFGNode* node, const AbstractState& state) {
+            self.updateAbsState(node, state);
         }, py::arg("node"), py::arg("state"))
-        .def("__contains__", &AbstractStateManager::hasAbstractState, py::arg("node"))
+        .def("__contains__", [](AbstractInterpretation& self, const ICFGNode* node) {
+            return self.getTrace().count(node) > 0;
+        }, py::arg("node"))
 
-        // Def/Use site queries
-        .def("getUseSitesOfObjVar", &AbstractStateManager::getUseSitesOfObjVar,
+        // Def/Use site queries.
+        .def("getUseSitesOfObjVar", &AbstractInterpretation::getUseSitesOfObjVar,
              py::arg("obj"), py::arg("node"))
-        .def("getUseSitesOfValVar", &AbstractStateManager::getUseSitesOfValVar, py::arg("var"))
-        .def("getDefSiteOfValVar", &AbstractStateManager::getDefSiteOfValVar,
+        .def("getUseSitesOfValVar", &AbstractInterpretation::getUseSitesOfValVar, py::arg("var"))
+        .def("getDefSiteOfValVar", &AbstractInterpretation::getDefSiteOfValVar,
              py::arg("var"), py::return_value_policy::reference)
-        .def("getDefSiteOfObjVar", &AbstractStateManager::getDefSiteOfObjVar,
-             py::arg("obj"), py::arg("node"), py::return_value_policy::reference);
+        .def("getDefSiteOfObjVar", &AbstractInterpretation::getDefSiteOfObjVar,
+             py::arg("obj"), py::arg("node"), py::return_value_policy::reference)
 
-    // Minimal AbstractInterpretation binding so users can grab a stateMgr
-    // from a running analysis.
-    py::class_<AbstractInterpretation>(m, "AbstractInterpretation")
-        .def("getStateMgr", &AbstractInterpretation::getStateMgr,
-             py::return_value_policy::reference);
+        // Top-level driver methods.
+        .def("analyse", &AbstractInterpretation::analyse)
+        .def("analyzeFromAllProgEntries", &AbstractInterpretation::analyzeFromAllProgEntries)
+        .def("runOnModule", &AbstractInterpretation::runOnModule);
 
     // Expose the few Options statics that downstream Python code relies on.
     py::class_<Options>(m, "Options")
