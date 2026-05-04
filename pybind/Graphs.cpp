@@ -942,18 +942,26 @@ void bind_svfg(py::module& m) {
         .def("hasFormalINSVFGNodes", [](SVFG& svfg, const FunObjVar* fun) { return svfg.hasFormalINSVFGNodes(fun); }, py::arg("fun"), "Check if there are FormalIN SVFG nodes for a given function")
         .def("getSVFGNode", [](SVFG& svfg, NodeID id) -> SVFGNode* { return svfg.getSVFGNode(id); }, py::arg("id"), py::return_value_policy::reference, "Get an SVFG node by ID")
         .def("hasSVFGNode", [](SVFG& svfg, NodeID id) { return svfg.hasSVFGNode(id); }, py::arg("id"), "Check if an SVFG node exists")
-        .def("getDefSiteOfValVar", [](SVFG& svfg, const ValVar* var) { return svfg.getDefSiteOfValVar(var); }, py::arg("var"), py::return_value_policy::reference, "Get the definition site of a value variable")
-        .def("getDefSiteOfObjVar", [](SVFG& svfg, const ObjVar* obj, const ICFGNode* node) { return svfg.getDefSiteOfObjVar(obj, node); }, py::arg("obj"), py::arg("node"), py::return_value_policy::reference, "Get the definition site of an object variable")
+        // Upstream PR #1812 follow-up retyped these from ICFGNode to SVFGNode.
+        // The SVFGNode is the SVFG-internal representation of a def/use site;
+        // callers can map back to ICFGNode via SVFGNode::getICFGNode() if
+        // they need ICFG-side information.
+        .def("getDefSiteOfValVar", [](SVFG& svfg, const ValVar* var) { return svfg.getDefSiteOfValVar(var); }, py::arg("var"), py::return_value_policy::reference, "Get the SVFG definition site of a value variable")
+        .def("getDefSiteOfObjVar", [](SVFG& svfg, const ObjVar* obj, const SVFGNode* node) {
+            Set<const SVFGNode*> sites = svfg.getDefSiteOfObjVar(obj, node);
+            std::vector<const SVFGNode*> result(sites.begin(), sites.end());
+            return result;
+        }, py::arg("obj"), py::arg("node"), py::return_value_policy::reference, "Get the SVFG definition sites of an object variable reaching this SVFG node")
         .def("getUseSitesOfValVar", [](SVFG& svfg, const ValVar* var) {
-            Set<const ICFGNode*> sites = svfg.getUseSitesOfValVar(var);
-            std::vector<const ICFGNode*> result(sites.begin(), sites.end());
+            Set<const SVFGNode*> sites = svfg.getUseSitesOfValVar(var);
+            std::vector<const SVFGNode*> result(sites.begin(), sites.end());
             return result;
-        }, py::arg("var"), py::return_value_policy::reference, "Get the use sites of a value variable")
-        .def("getUseSitesOfObjVar", [](SVFG& svfg, const ObjVar* obj, const ICFGNode* node) {
-            Set<const ICFGNode*> sites = svfg.getUseSitesOfObjVar(obj, node);
-            std::vector<const ICFGNode*> result(sites.begin(), sites.end());
+        }, py::arg("var"), py::return_value_policy::reference, "Get the SVFG use sites of a value variable")
+        .def("getUseSitesOfObjVar", [](SVFG& svfg, const ObjVar* obj, const SVFGNode* node) {
+            Set<const SVFGNode*> sites = svfg.getUseSitesOfObjVar(obj, node);
+            std::vector<const SVFGNode*> result(sites.begin(), sites.end());
             return result;
-        }, py::arg("obj"), py::arg("node"), py::return_value_policy::reference, "Get the use sites of an object variable")
+        }, py::arg("obj"), py::arg("node"), py::return_value_policy::reference, "Get the SVFG use sites of an object variable starting from this SVFG def-site node")
         .def("isFunEntrySVFGNode", [](SVFG& svfg, const SVFGNode* node) { return svfg.isFunEntrySVFGNode(node); }, py::arg("node"), py::return_value_policy::reference, "Check if the SVFG node is a function entry node, returns the function or nullptr")
         .def("isCallSiteRetSVFGNode", [](SVFG& svfg, const SVFGNode* node) { return svfg.isCallSiteRetSVFGNode(node); }, py::arg("node"), py::return_value_policy::reference, "Check if the SVFG node is a call site return node, returns the call site or nullptr");
 }
