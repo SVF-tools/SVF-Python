@@ -734,14 +734,12 @@ void bind_abstract_state(py::module& m) {
             return self.getTrace().count(node) > 0;
         }, py::arg("node"))
 
-        // Def/Use site queries.
-        .def("getUseSitesOfObjVar", &AbstractInterpretation::getUseSitesOfObjVar,
-             py::arg("obj"), py::arg("node"))
-        .def("getUseSitesOfValVar", &AbstractInterpretation::getUseSitesOfValVar, py::arg("var"))
-        .def("getDefSiteOfValVar", &AbstractInterpretation::getDefSiteOfValVar,
-             py::arg("var"), py::return_value_policy::reference)
-        .def("getDefSiteOfObjVar", &AbstractInterpretation::getDefSiteOfObjVar,
-             py::arg("obj"), py::arg("node"), py::return_value_policy::reference)
+        // Def/Use site queries used to live on AbstractInterpretation but
+        // moved to FullSparseAbstractInterpretation in upstream PR #1812
+        // (sparse-AE refactor).  They aren't part of the dense base class
+        // public API any more, and pysvf has no FullSparseAbstractInterpretation
+        // binding yet, so they're dropped here.  Equivalent SVFG-based
+        // queries are available on the SVFG class directly.
 
         // Top-level driver methods.
         .def("analyse", &AbstractInterpretation::analyse)
