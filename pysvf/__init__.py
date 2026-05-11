@@ -243,6 +243,12 @@ from .pysvf import buildSVFModule as _buildSVFModule
 from .pysvf import AndersenWaveDiff_WPA as AndersenWaveDiff_WPA
 from .pysvf import Steensgaard_WPA as Steensgaard_WPA
 
+# AbstractInterpretation.getAEInstance is bound at module level (see comment
+# in pybind/AE.cpp); attach it as a staticmethod here so users can call
+# pysvf.AbstractInterpretation.getAEInstance() the same way the C++ class does.
+from .pysvf import _AbstractInterpretation_getAEInstance as _ae_instance_shim
+AbstractInterpretation.getAEInstance = staticmethod(_ae_instance_shim)
+
 # argument can be a string or a list of strings
 def buildSVFModule(args) -> None:
     if isinstance(args, str):

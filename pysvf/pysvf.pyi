@@ -2003,6 +2003,9 @@ class AbstractInterpretation:
     AbstractStateManager (folded back into AbstractInterpretation upstream
     when the AbstractStateManager.h header was removed)."""
 
+    @staticmethod
+    def getAEInstance() -> 'AbstractInterpretation': ...
+
     # State access (replaces old getAbstractState / updateAbstractState).
     def getAbsState(self, node: 'ICFGNode') -> AbstractState: ...
     def updateAbsState(self, node: 'ICFGNode', state: AbstractState) -> None: ...

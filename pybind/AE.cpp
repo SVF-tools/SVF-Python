@@ -11,6 +11,20 @@
 #include "AE/Svfexe/AbstractInterpretation.h"
 #include <pybind11/operators.h>
 
+// Tell pybind11 that AbstractInterpretation is non-copyable and non-movable.
+// The class owns a std::vector<std::unique_ptr<AEDetector>>, so its implicit
+// copy/move ctors are ill-formed — but std::is_(copy|move)_constructible
+// reports true until the body is instantiated, which it isn't unless we
+// expose getAEInstance.  Without these specialisations pybind11 instantiates
+// make_(copy|move)_constructor in type_caster_base whenever a binding returns
+// AbstractInterpretation* / AbstractInterpretation&, and the static_assert
+// inside <bits/stl_uninitialized.h> fires.
+namespace pybind11 { namespace detail {
+template <>
+struct is_copy_constructible<SVF::AbstractInterpretation> : std::false_type {};
+template <>
+struct is_move_constructible<SVF::AbstractInterpretation> : std::false_type {};
+}}
 
 namespace py = pybind11;
 using namespace SVF;
@@ -684,10 +698,20 @@ void bind_abstract_state(py::module& m) {
     // (now-removed) AbstractStateManager: loadValue, storeValue, GEP
     // helpers, def/use-site queries, and direct trace access.
     // ---------------------------------------------------------------
-    py::class_<AbstractInterpretation>(m, "AbstractInterpretation")
-        // No constructor / static factory bound here: the class has a
-        // protected ctor and is non-copyable.  Users receive instances via
-        // other bound entry points.
+    // Module-level shim for AbstractInterpretation::getAEInstance.  Exposing
+    // it via .def_static directly didn't work even with the trait
+    // specialisations above (pybind11's def_static path takes a different
+    // SFINAE route), so we bind a free function here and attach it as a
+    // staticmethod on the class from Python (pysvf/__init__.py).
+    m.def("_AbstractInterpretation_getAEInstance", []() -> AbstractInterpretation* {
+        return &AbstractInterpretation::getAEInstance();
+    }, py::return_value_policy::reference);
+
+    py::class_<AbstractInterpretation,
+               std::unique_ptr<AbstractInterpretation, py::nodelete>>(m, "AbstractInterpretation")
+        // getAEInstance is attached as a staticmethod from pysvf/__init__.py
+        // via the module-level shim above.  The py::nodelete holder keeps
+        // pybind from trying to free the SVF-owned singleton.
 
         // State access (replaces old AbstractStateManager::getAbstractState etc.).
         .def("getAbsState",
