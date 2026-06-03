@@ -233,6 +233,8 @@ from .pysvf import (
     AbstractValue,
     BoundedInt,
     Options,
+    NullMemAddr,
+    BlackHoleObjAddr,
     MTA,
     MHP,
     LockAnalysis,

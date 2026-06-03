@@ -103,6 +103,7 @@ void bind_icfg_node(py::module& m) {
             .def("addActualParms", &CallICFGNode::addActualParms, "Add an actual parameter to the call")
             .def("isVarArg", &CallICFGNode::isVarArg, "Check if the call is a vararg call")
             .def("isVirtualCall", &CallICFGNode::isVirtualCall, "Check if the call is a virtual call")
+            .def("arg_size", &CallICFGNode::arg_size, "Get the number of actual arguments at the call site")
             .def("getRetICFGNode", &CallICFGNode::getRetICFGNode, py::return_value_policy::reference, "Get the return node");
 
     // === RetICFGNode ===
@@ -219,6 +220,12 @@ void bind_icfg_graph(py::module& m) {
                 }
                 return nodes;
             }, py::return_value_policy::reference)
+
+            // getICFGEdge(src, dst, kind): 0=IntraCF, 1=CallCF, 2=RetCF. Returns None if absent.
+            .def("getICFGEdge", [](ICFG& icfg, const ICFGNode* src, const ICFGNode* dst, int kind) -> ICFGEdge* {
+                return icfg.getICFGEdge(src, dst, static_cast<ICFGEdge::ICFGEdgeK>(kind));
+            }, py::arg("src"), py::arg("dst"), py::arg("kind") = 0, py::return_value_policy::reference,
+               "Get the ICFG edge between src and dst of the given kind (0=IntraCF,1=CallCF,2=RetCF); None if absent")
 
             // getGNode(id)
             .def("getGNode", [](ICFG& icfg, NodeID id) -> ICFGNode* {
@@ -404,7 +411,13 @@ void bind_callgraph(py::module& m) {
         }, py::arg("id"), py::return_value_policy::reference, "Check if a node is in a cycle")
         .def("repNode", [](Andersen::CallGraphSCC& cg, NodeID id) {
             return cg.repNode(id);
-        }, py::arg("id"), "Get the representative node ID of the SCC containing the given node");
+        }, py::arg("id"), "Get the representative node ID of the SCC containing the given node")
+        .def("subNodes", [](Andersen::CallGraphSCC& cg, NodeID rep) {
+            std::vector<NodeID> out;
+            for (NodeID n : cg.subNodes(rep))
+                out.push_back(n);
+            return out;
+        }, py::arg("rep"), "Get the call-graph node IDs in the SCC represented by 'rep'");
 }
 
 void bind_thread_call_graph(py::module &m) {
