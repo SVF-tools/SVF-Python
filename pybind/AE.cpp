@@ -31,6 +31,11 @@ using namespace SVF;
 
 void bind_abstract_state(py::module& m) {
 
+    // Virtual-memory address constants from AddressValue.h, exposed so Python
+    // code can build the null / black-hole address without hard-coding literals.
+    m.attr("NullMemAddr") = (uint32_t)(NullMemAddr);
+    m.attr("BlackHoleObjAddr") = (uint32_t)(BlackHoleObjAddr);
+
     py::class_<BoundedInt>(m, "BoundedInt")
         .def(py::init([](int64_t val) {
             return new BoundedInt(val);

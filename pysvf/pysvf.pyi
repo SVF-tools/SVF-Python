@@ -10,6 +10,10 @@ LLVM_DIR: str
 EXTAPI_BC_PATH: str
 Z3_DIR: str
 
+# Virtual-memory address constants (from AddressValue.h).
+NullMemAddr: int
+BlackHoleObjAddr: int
+
 def run_tool(tool_name: str, args: List[str]) -> None: ...
 
 SVFFunction = Any
@@ -197,6 +201,9 @@ class CallGraphSCC:
     def repNode(self, id: int) -> int: ...
     """Get the representative node ID of the SCC containing the given node"""
 
+    def subNodes(self, rep: int) -> List[int]: ...
+    """Get the call-graph node IDs in the SCC represented by 'rep'"""
+
 class FunEntryICFGNode(ICFGNode):
     def __init__(self, *args, **kwargs) -> None: ...
     """Not intended for direct instantiation."""
@@ -235,6 +242,9 @@ class CallICFGNode(ICFGNode):
 
     def getArgument(self, idx: int) -> "SVFVar": ...
     """Get the argument at the given index"""
+
+    def arg_size(self) -> int: ...
+    """Get the number of actual arguments at the call site"""
 
     def isVarArg(self) -> bool: ...
     """Check if the call is a vararg call"""
@@ -644,6 +654,9 @@ class ICFG:
     
     def getNodes(self) -> List[ICFGNode]: ...
     """Get the nodes of the ICFG"""
+
+    def getICFGEdge(self, src: ICFGNode, dst: ICFGNode, kind: int = ...) -> Optional["ICFGEdge"]: ...
+    """Get the ICFG edge between src and dst of the given kind (0=IntraCF,1=CallCF,2=RetCF); None if absent"""
 
     def getGNode(self, id: int) -> ICFGNode: ...
     """Get the ICFG node with the given ID"""
