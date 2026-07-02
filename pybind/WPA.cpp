@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Graphs/ICFG.h"
+#include "MemoryModel/PTATY.h"
 #include "SVFIR/SVFType.h"
 #include "SVFIR/SVFStatements.h"
 #include "MemoryModel/PointerAnalysis.h"
@@ -53,9 +54,9 @@ void bind_andersen_base(py::module& m) {
         .value("PartialAlias", AliasResult::PartialAlias)
         .export_values();
 
-    py::enum_<PointerAnalysis::PTATY>(m, "PTATY")
-        .value("AndersenWaveDiff_WPA", PointerAnalysis::PTATY::AndersenWaveDiff_WPA)
-        .value("Steensgaard_WPA", PointerAnalysis::PTATY::Steensgaard_WPA)
+    py::enum_<PTATY>(m, "PTATY")
+        .value("AndersenWaveDiff_WPA", PTATY::AndersenWaveDiff_WPA)
+        .value("Steensgaard_WPA", PTATY::Steensgaard_WPA)
         .export_values();
 
     py::class_<AndersenBase, std::shared_ptr<AndersenBase>>(m, "AndersenBase_", "AndersenBase");
@@ -87,10 +88,11 @@ void bind_andersen_base(py::module& m) {
             base.dumpPts(id, pts);
         }, py::arg("id"), py::arg("pts"), "Dump points-to information")
         .def("alias", [](PublicAndersen& base, NodeID id1, NodeID id2) {
-            AliasResult res =  base.alias(id1, id2);
-            std::cout << "Alias result: " << res << std::endl;
-            return res;
-        }, py::arg("id1"), py::arg("id2"), "Check if two nodes are aliases")
+            return base.alias(id1, id2) != AliasResult::NoAlias;
+        }, py::arg("id1"), py::arg("id2"), "Return true if two nodes may, must, or partially alias")
+        .def("aliasKind", [](PublicAndersen& base, NodeID id1, NodeID id2) {
+            return base.alias(id1, id2);
+        }, py::arg("id1"), py::arg("id2"), "Return the detailed alias classification enum")
         .def("isWorklistEmpty", &PublicAndersen::isWorklistEmpty, "Check if the worklist is empty")
         .def("popFromWorklist", [](PublicAndersen& base) {
             return base.popFromWorklist();
