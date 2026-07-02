@@ -32,6 +32,7 @@
 #include <pybind11/stl.h>
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Graphs/ICFG.h"
+#include "MemoryModel/PTATY.h"
 #include "WPA/Andersen.h"
 #include "WPA/Steensgaard.h"
 #include <pybind11/operators.h>
@@ -114,16 +115,16 @@ public:
         NodeIDAllocator::unset();
     }
     /// Run PTA, ptaType: AndersenWaveDiff, Steensgaard
-	static void run_pta(PointerAnalysis::PTATY ptaType)
+	static void run_pta(PTATY ptaType)
    	{
         if (currentSVFIR == nullptr) {
             throw py::value_error("SVFIR is not built. Please build SVFIR before running PTA.");
         }
         _release_pta();
-        if(ptaType == PointerAnalysis::AndersenWaveDiff_WPA) {
+        if(ptaType == PTATY::AndersenWaveDiff_WPA) {
         	currentPta = std::make_shared<AndersenWaveDiff>(currentSVFIR);
         }
-        else if (ptaType == PointerAnalysis::Steensgaard_WPA)
+        else if (ptaType == PTATY::Steensgaard_WPA)
         {
         	currentPta = std::make_shared<Steensgaard>(currentSVFIR);
         }
@@ -159,7 +160,7 @@ public:
 	*/
     static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
       	get_svfir(bitcodePath);
-        run_pta(PointerAnalysis::AndersenWaveDiff_WPA);
+        run_pta(PTATY::AndersenWaveDiff_WPA);
 
         // Release previous SVFGBuilder and SVFG if any
         if (currentSVFGBuilder != nullptr) {
