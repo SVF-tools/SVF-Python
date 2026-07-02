@@ -88,11 +88,11 @@ void bind_andersen_base(py::module& m) {
             base.dumpPts(id, pts);
         }, py::arg("id"), py::arg("pts"), "Dump points-to information")
         .def("alias", [](PublicAndersen& base, NodeID id1, NodeID id2) {
-            return base.alias(id1, id2) != AliasResult::NoAlias;
-        }, py::arg("id1"), py::arg("id2"), "Return true if two nodes may, must, or partially alias")
-        .def("aliasKind", [](PublicAndersen& base, NodeID id1, NodeID id2) {
             return base.alias(id1, id2);
         }, py::arg("id1"), py::arg("id2"), "Return the detailed alias classification enum")
+        .def("mayAlias", [](PublicAndersen& base, NodeID id1, NodeID id2) {
+            return static_cast<PointerAnalysis&>(base).mayAlias(id1, id2);
+        }, py::arg("id1"), py::arg("id2"), "Return true if two nodes may, must, or partially alias")
         .def("isWorklistEmpty", &PublicAndersen::isWorklistEmpty, "Check if the worklist is empty")
         .def("popFromWorklist", [](PublicAndersen& base) {
             return base.popFromWorklist();
