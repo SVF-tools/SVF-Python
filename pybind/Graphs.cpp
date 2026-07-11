@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Graphs/ICFG.h"
+#include "Graphs/SVFG.h"
 #include "Graphs/ThreadCallGraph.h"
 #include "SVFIR/SVFType.h"
 #include "SVFIR/SVFStatements.h"
