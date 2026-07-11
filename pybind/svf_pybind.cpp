@@ -35,6 +35,7 @@
 #include "MemoryModel/PTATY.h"
 #include "WPA/Andersen.h"
 #include "WPA/Steensgaard.h"
+#include "MSSA/SVFGBuilder.h"
 #include <pybind11/operators.h>
 #include "Util/CommandLine.h"
 #include <iostream>
