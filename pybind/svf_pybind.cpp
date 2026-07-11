@@ -32,6 +32,8 @@
 #include <pybind11/stl.h>
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Graphs/ICFG.h"
+#include "Graphs/SVFG.h"
+#include "MSSA/SVFGBuilder.h"
 #include "MemoryModel/PTATY.h"
 #include "WPA/Andersen.h"
 #include "WPA/Steensgaard.h"

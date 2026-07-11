@@ -4,6 +4,7 @@
 #include "SVF-LLVM/SVFIRBuilder.h"
 #include "Graphs/ICFG.h"
 #include "Graphs/ThreadCallGraph.h"
+#include "Graphs/SVFG.h"
 #include "SVFIR/SVFType.h"
 #include "SVFIR/SVFStatements.h"
 #include "MemoryModel/PointerAnalysis.h"
