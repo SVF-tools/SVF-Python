@@ -402,13 +402,6 @@ void bind_svf_var(py::module &m) {
                 return SVFUtil::dyn_cast<SVF::GlobalValVar>(node);
             }, py::return_value_policy::reference)
 
-            .def("isConstAggValVar", [](SVF::ValVar* node) -> bool {
-                return SVFUtil::isa<SVF::ConstAggValVar>(node);
-            })
-            .def("asConstAggValVar", [](SVF::ValVar* node) -> SVF::ConstAggValVar* {
-                return SVFUtil::dyn_cast<SVF::ConstAggValVar>(node);
-            }, py::return_value_policy::reference)
-
             .def("isConstDataValVar", [](SVF::ValVar* node) -> bool {
                 return SVFUtil::isa<SVF::ConstDataValVar>(node);
             })
@@ -531,12 +524,6 @@ void bind_svf_var(py::module &m) {
             }, py::return_value_policy::reference)
             .def("asStackObjVar", [](SVF::ObjVar* node) -> SVF::StackObjVar* {
                 return SVFUtil::dyn_cast<SVF::StackObjVar>(node);
-            }, py::return_value_policy::reference)
-            .def("isConstAggObjVar", [](SVF::ObjVar* node) -> bool {
-                return SVFUtil::isa<SVF::ConstAggObjVar>(node);
-            }, py::return_value_policy::reference)
-            .def("asConstAggObjVar", [](SVF::ObjVar* node) -> SVF::ConstAggObjVar* {
-                return SVFUtil::dyn_cast<SVF::ConstAggObjVar>(node);
             }, py::return_value_policy::reference)
             .def("isConstDataObjVar", [](SVF::ObjVar* node) -> bool {
                 return SVFUtil::isa<SVF::ConstDataObjVar>(node);
@@ -662,12 +649,6 @@ void bind_svf_var(py::module &m) {
             .def("asStackObjVar", [](SVF::BaseObjVar* node) -> SVF::StackObjVar* {
                 return SVFUtil::dyn_cast<SVF::StackObjVar>(node);
             }, py::return_value_policy::reference)
-            .def("isConstAggObjVar", [](SVF::BaseObjVar* node) -> bool {
-                return SVFUtil::isa<SVF::ConstAggObjVar>(node);
-            }, py::return_value_policy::reference)
-            .def("asConstAggObjVar", [](SVF::BaseObjVar* node) -> SVF::ConstAggObjVar* {
-                return SVFUtil::dyn_cast<SVF::ConstAggObjVar>(node);
-            }, py::return_value_policy::reference)
             .def("isConstDataObjVar", [](SVF::BaseObjVar* node) -> bool {
                 return SVFUtil::isa<SVF::ConstDataObjVar>(node);
             }, py::return_value_policy::reference)
@@ -743,9 +724,6 @@ void bind_svf_var(py::module &m) {
     /// GlobalValVar
     py::class_<SVF::GlobalValVar, SVF::ValVar>(m, "GlobalValVar");
 
-    ///ConstAggValVar
-    py::class_<SVF::ConstAggValVar, SVF::ValVar>(m, "ConstAggValVar");
-
     ///ConstDataValVar
     py::class_<SVF::ConstDataValVar, SVF::ValVar>(m, "ConstDataValVar");
 
@@ -766,9 +744,6 @@ void bind_svf_var(py::module &m) {
 
     ///GlobalObjVar
     py::class_<SVF::GlobalObjVar, SVF::BaseObjVar>(m, "GlobalObjVar");
-
-    ///ConstAggObjVar
-    py::class_<SVF::ConstAggObjVar, SVF::BaseObjVar>(m, "ConstAggObjVar");
 
     ///ConstDataObjVar
     py::class_<SVF::ConstDataObjVar, SVF::BaseObjVar>(m, "ConstDataObjVar");

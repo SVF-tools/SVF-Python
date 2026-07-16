@@ -46,8 +46,6 @@ pysvf.CallPE
 pysvf.CmpStmt
 pysvf.CmpVFGNode
 pysvf.CmpVFGNode.__init__
-pysvf.ConstAggObjVar
-pysvf.ConstAggValVar
 pysvf.ConstDataObjVar
 pysvf.ConstDataValVar
 pysvf.ConstFPObjVar
