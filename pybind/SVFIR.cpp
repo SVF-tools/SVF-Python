@@ -403,10 +403,10 @@ void bind_svf_var(py::module &m) {
             }, py::return_value_policy::reference)
 
             .def("isConstAggValVar", [](SVF::ValVar* node) -> bool {
-                return SVFUtil::isa<SVF::ConstAggValVar>(node);
+                return SVFUtil::isa<SVF::ConstDataValVar>(node);
             })
-            .def("asConstAggValVar", [](SVF::ValVar* node) -> SVF::ConstAggValVar* {
-                return SVFUtil::dyn_cast<SVF::ConstAggValVar>(node);
+            .def("asConstAggValVar", [](SVF::ValVar* node) -> SVF::ConstDataValVar* {
+                return SVFUtil::dyn_cast<SVF::ConstDataValVar>(node);
             }, py::return_value_policy::reference)
 
             .def("isConstDataValVar", [](SVF::ValVar* node) -> bool {
@@ -533,10 +533,10 @@ void bind_svf_var(py::module &m) {
                 return SVFUtil::dyn_cast<SVF::StackObjVar>(node);
             }, py::return_value_policy::reference)
             .def("isConstAggObjVar", [](SVF::ObjVar* node) -> bool {
-                return SVFUtil::isa<SVF::ConstAggObjVar>(node);
+                return SVFUtil::isa<SVF::ConstDataObjVar>(node);
             }, py::return_value_policy::reference)
-            .def("asConstAggObjVar", [](SVF::ObjVar* node) -> SVF::ConstAggObjVar* {
-                return SVFUtil::dyn_cast<SVF::ConstAggObjVar>(node);
+            .def("asConstAggObjVar", [](SVF::ObjVar* node) -> SVF::ConstDataObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstDataObjVar>(node);
             }, py::return_value_policy::reference)
             .def("isConstDataObjVar", [](SVF::ObjVar* node) -> bool {
                 return SVFUtil::isa<SVF::ConstDataObjVar>(node);
@@ -663,10 +663,10 @@ void bind_svf_var(py::module &m) {
                 return SVFUtil::dyn_cast<SVF::StackObjVar>(node);
             }, py::return_value_policy::reference)
             .def("isConstAggObjVar", [](SVF::BaseObjVar* node) -> bool {
-                return SVFUtil::isa<SVF::ConstAggObjVar>(node);
+                return SVFUtil::isa<SVF::ConstDataObjVar>(node);
             }, py::return_value_policy::reference)
-            .def("asConstAggObjVar", [](SVF::BaseObjVar* node) -> SVF::ConstAggObjVar* {
-                return SVFUtil::dyn_cast<SVF::ConstAggObjVar>(node);
+            .def("asConstAggObjVar", [](SVF::BaseObjVar* node) -> SVF::ConstDataObjVar* {
+                return SVFUtil::dyn_cast<SVF::ConstDataObjVar>(node);
             }, py::return_value_policy::reference)
             .def("isConstDataObjVar", [](SVF::BaseObjVar* node) -> bool {
                 return SVFUtil::isa<SVF::ConstDataObjVar>(node);
@@ -743,11 +743,11 @@ void bind_svf_var(py::module &m) {
     /// GlobalValVar
     py::class_<SVF::GlobalValVar, SVF::ValVar>(m, "GlobalValVar");
 
-    ///ConstAggValVar
-    py::class_<SVF::ConstAggValVar, SVF::ValVar>(m, "ConstAggValVar");
-
     ///ConstDataValVar
-    py::class_<SVF::ConstDataValVar, SVF::ValVar>(m, "ConstDataValVar");
+    auto const_data_val_var = py::class_<SVF::ConstDataValVar, SVF::ValVar>(m, "ConstDataValVar");
+
+    ///ConstAggValVar (backward-compatible alias for ConstDataValVar)
+    m.attr("ConstAggValVar") = const_data_val_var;
 
     ///BlackHoleValVar
     py::class_<SVF::BlackHoleValVar, SVF::ValVar>(m, "BlackHoleValVar");
@@ -767,11 +767,11 @@ void bind_svf_var(py::module &m) {
     ///GlobalObjVar
     py::class_<SVF::GlobalObjVar, SVF::BaseObjVar>(m, "GlobalObjVar");
 
-    ///ConstAggObjVar
-    py::class_<SVF::ConstAggObjVar, SVF::BaseObjVar>(m, "ConstAggObjVar");
-
     ///ConstDataObjVar
-    py::class_<SVF::ConstDataObjVar, SVF::BaseObjVar>(m, "ConstDataObjVar");
+    auto const_data_obj_var = py::class_<SVF::ConstDataObjVar, SVF::BaseObjVar>(m, "ConstDataObjVar");
+
+    ///ConstAggObjVar (backward-compatible alias for ConstDataObjVar)
+    m.attr("ConstAggObjVar") = const_data_obj_var;
 
     //// ConstFPObjVar
     py::class_<SVF::ConstFPObjVar, SVF::ConstDataObjVar>(m, "ConstFPObjVar")
