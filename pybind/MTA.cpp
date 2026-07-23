@@ -57,7 +57,7 @@ void bind_multi_thread_analysis(py::module& m) {
                 TCT* tct = self.getTCT();
                 self.analyze(tct->getPTA()->getICFG(), static_cast<CallGraph*>(tct->getThreadCallGraph()));
             }, "Analysis entry")
-        .def("isProtectedByCommandLock", &LockAnalysis::isProtectedByCommonLock,
+        .def("isProtectedByCommonLock", &LockAnalysis::isProtectedByCommonLock,
             py::arg("node1"), py::arg("node2"),
             "Check if two ICFG nodes are protected by common locks");
 
