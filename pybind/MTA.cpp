@@ -22,6 +22,7 @@ void bind_multi_thread_analysis(py::module& m) {
     public:
         using MTA::MTA;
         using MTA::runOnModule;
+        void detect() { reportRaces(); }
     };
 
     py::class_<PublicMTA, std::shared_ptr<PublicMTA>>(m, "MTA", "Multi-Thread Analysis class")
@@ -38,7 +39,10 @@ void bind_multi_thread_analysis(py::module& m) {
             }),
             py::arg("tct"), "Initialize MHP analysis",
             py::keep_alive<1, 2>())
-        .def("analyze", &MHP::analyze, "Analyze entry")
+        .def("analyze", [](MHP& self) {
+                TCT* tct = self.getTCT();
+                self.analyze(tct->getPTA()->getICFG(), static_cast<CallGraph*>(tct->getThreadCallGraph()));
+            }, "Analyze entry")
         .def("mayHappenInParallelInst", &MHP::mayHappenInParallelInst,
             py::arg("node1"), py::arg("node2"),
             "Check if two ICFG nodes may happen in parallel");
@@ -46,11 +50,14 @@ void bind_multi_thread_analysis(py::module& m) {
     py::class_<LockAnalysis, std::shared_ptr<LockAnalysis>>(m, "LockAnalysis", "Lock Set Analysis class")
         .def(py::init([](std::shared_ptr<TCT> tct){
                 return std::make_shared<LockAnalysis>(tct.get());
-            ;})
+            })
             , py::arg("tct"), "Initialize Lock Set analysis",
             py::keep_alive<1, 2>())
-        .def("analyze", &LockAnalysis::analyze, "Analysis entry")
-        .def("isProtectedByCommandLock", &LockAnalysis::isProtectedByCommonLock,
+        .def("analyze", [](LockAnalysis& self) {
+                TCT* tct = self.getTCT();
+                self.analyze(tct->getPTA()->getICFG(), static_cast<CallGraph*>(tct->getThreadCallGraph()));
+            }, "Analysis entry")
+        .def("isProtectedByCommonLock", &LockAnalysis::isProtectedByCommonLock,
             py::arg("node1"), py::arg("node2"),
             "Check if two ICFG nodes are protected by common locks");
 
