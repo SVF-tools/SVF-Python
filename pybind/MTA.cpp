@@ -41,7 +41,15 @@ void bind_multi_thread_analysis(py::module& m) {
             py::keep_alive<1, 2>())
         .def("analyze", [](MHP& self) {
                 TCT* tct = self.getTCT();
-                self.analyze(tct->getPTA()->getICFG(), static_cast<CallGraph*>(tct->getThreadCallGraph()));
+                if (tct == nullptr)
+                    throw py::value_error("MHP::analyze: TCT is null!");
+                PointerAnalysis* pta = tct->getPTA();
+                if (pta == nullptr)
+                    throw py::value_error("MHP::analyze: Pointer analysis is null!");
+                CallGraph* tcg = static_cast<CallGraph*>(tct->getThreadCallGraph());
+                if (tcg == nullptr)
+                    throw py::value_error("MHP::analyze: Thread call graph is null!");
+                self.analyze(pta->getICFG(), tcg);
             }, "Analyze entry")
         .def("mayHappenInParallelInst", &MHP::mayHappenInParallelInst,
             py::arg("node1"), py::arg("node2"),
@@ -55,7 +63,15 @@ void bind_multi_thread_analysis(py::module& m) {
             py::keep_alive<1, 2>())
         .def("analyze", [](LockAnalysis& self) {
                 TCT* tct = self.getTCT();
-                self.analyze(tct->getPTA()->getICFG(), static_cast<CallGraph*>(tct->getThreadCallGraph()));
+                if (tct == nullptr)
+                    throw py::value_error("LockAnalysis::analyze: TCT is null!");
+                PointerAnalysis* pta = tct->getPTA();
+                if (pta == nullptr)
+                    throw py::value_error("LockAnalysis::analyze: Pointer analysis is null!");
+                CallGraph* tcg = static_cast<CallGraph*>(tct->getThreadCallGraph());
+                if (tcg == nullptr)
+                    throw py::value_error("LockAnalysis::analyze: Thread call graph is null!");
+                self.analyze(pta->getICFG(), tcg);
             }, "Analysis entry")
         .def("isProtectedByCommonLock", &LockAnalysis::isProtectedByCommonLock,
             py::arg("node1"), py::arg("node2"),
