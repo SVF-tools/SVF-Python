@@ -68,3 +68,20 @@ class PTAType(IntEnum):
 
     Andersen = 0        # Andersen's analysis
     Steensgaard = 1     # Steensgaard's analysis
+
+
+class CopyKind(IntEnum):
+    """Copy kinds for CopyStmt (mirrors SVF::CopyStmt::CopyKind)"""
+
+    COPYVAL = 0         # Value copies (default one)
+    ZEXT = 1            # Zero extend integers
+    SEXT = 2            # Sign extend integers
+    BITCAST = 3         # Type cast
+    TRUNC = 4           # Truncate integers
+    FPTRUNC = 5         # Truncate floating point
+    FPTOUI = 6          # floating point -> UInt
+    FPTOSI = 7          # floating point -> SInt
+    UITOFP = 8          # UInt -> floating point
+    SITOFP = 9          # SInt -> floating point
+    INTTOPTR = 10       # Integer -> Pointer
+    PTRTOINT = 11       # Pointer -> Integer
