@@ -113,27 +113,12 @@ void bind_abstract_state(py::module& m) {
 
             return new IntervalValue(to_bounded_int(lb), to_bounded_int(ub));
         }), py::arg("lb"), py::arg("ub"))
-
-        // Equality
-        // C++'s operator== / operator!= return an IntervalValue (abstract "boolean" domain:
-        // [1,1] definitely true, [0,0] definitely false, [0,1]/top/bottom ambiguous). Mirror
-        // that here so Python's `==`/`!=` behave the same as C++'s `==`/`!=`. `equals()`
-        // remains the separate, real bool-returning concrete-equality check.
         .def("__eq__", [](const IntervalValue &self, const IntervalValue &other) {
-            return self.operator==(other);
+            return self.equals(other);
         })
         .def("__ne__", [](const IntervalValue &self, const IntervalValue &other) {
-            return self.operator!=(other);
+            return !self.equals(other);
         })
-        // Truthiness: only a definite [1,1] result is truthy, so common patterns like
-        // `if a == b:` continue to behave sensibly even though `==` now returns an
-        // IntervalValue rather than a bool. Ambiguous/top/bottom/other-numeral results
-        // are falsy; callers needing three-way logic should inspect the IntervalValue
-        // directly (e.g. via is_numeral()/getIntNumeral() or eq_interval()).
-        .def("__bool__", [](const IntervalValue &self) {
-            return self.is_numeral() && self.getIntNumeral() == 1;
-        })
-
         .def("clone", [](const IntervalValue &self) {
             return std::make_unique<IntervalValue>(self);
         }, py::return_value_policy::move)
@@ -362,23 +347,8 @@ void bind_abstract_state(py::module& m) {
         // Abstract operations
         .def("joinWith", &AbstractState::joinWith, py::arg("other"))
         .def("meetWith", &AbstractState::meetWith, py::arg("other"))
-        // `widening`/`narrowing` construct a brand-new AbstractState in C++, so a naive
-        // binding would silently downgrade any Python subclass (e.g. `class AEState
-        // (AbstractState): ...`) back to a plain AbstractState. Reconstruct an instance of
-        // the caller's actual runtime type (assumes a no-arg constructor, true for
-        // subclasses that don't override __init__) and copy the computed state into it.
-        .def("widening", [](py::object self, const AbstractState& other) -> py::object {
-            AbstractState result = py::cast<AbstractState&>(self).widening(other);
-            py::object new_obj = self.attr("__class__")();
-            py::cast<AbstractState&>(new_obj) = result;
-            return new_obj;
-        }, py::arg("other"))
-        .def("narrowing", [](py::object self, const AbstractState& other) -> py::object {
-            AbstractState result = py::cast<AbstractState&>(self).narrowing(other);
-            py::object new_obj = self.attr("__class__")();
-            py::cast<AbstractState&>(new_obj) = result;
-            return new_obj;
-        }, py::arg("other"))
+        .def("widening", &AbstractState::widening, py::arg("other"))
+        .def("narrowing", &AbstractState::narrowing, py::arg("other"))
         .def("getIDFromAddr", &AbstractState::getIDFromAddr, py::arg("addr"))
 
         // Static utilities for address handling
@@ -419,13 +389,9 @@ void bind_abstract_state(py::module& m) {
         .def("getVarToVal", &AbstractState::getVarToVal, py::return_value_policy::reference)
         .def("getLocToVal", &AbstractState::getLocToVal, py::return_value_policy::reference)
         .def("printAbstractState", &AbstractState::printAbstractState)
-        .def("clone", [](py::object self) -> py::object {
-            // See widening/narrowing above: preserve the caller's actual Python
-            // (sub)class rather than always returning a plain AbstractState.
-            py::object new_obj = self.attr("__class__")();
-            py::cast<AbstractState&>(new_obj) = py::cast<const AbstractState&>(self);
-            return new_obj;
-         })
+        .def("clone", [](const AbstractState &self) {
+            return std::make_unique<AbstractState>(self);  // clone
+        }, py::return_value_policy::move)
         .def("bottom", &AbstractState::bottom)
         .def("top", &AbstractState::top)
         .def("inVarToValTable", &AbstractState::inVarToValTable, py::arg("var_id"))
