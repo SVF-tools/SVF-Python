@@ -113,12 +113,15 @@ void bind_abstract_state(py::module& m) {
 
             return new IntervalValue(to_bounded_int(lb), to_bounded_int(ub));
         }), py::arg("lb"), py::arg("ub"))
+
+        // Equality
         .def("__eq__", [](const IntervalValue &self, const IntervalValue &other) {
             return self.equals(other);
         })
         .def("__ne__", [](const IntervalValue &self, const IntervalValue &other) {
             return !self.equals(other);
         })
+
         .def("clone", [](const IntervalValue &self) {
             return std::make_unique<IntervalValue>(self);
         }, py::return_value_policy::move)
@@ -160,11 +163,11 @@ void bind_abstract_state(py::module& m) {
         .def("is_int", &IntervalValue::is_int)
         .def("equals", &IntervalValue::equals, py::arg("other"))
         .def("eq_interval", [](const IntervalValue &self, const IntervalValue &other) {
-                return self.operator==(other);
-            }, py::arg("other"))
+            return self.operator==(other);
+        }, py::arg("other"))
         .def("ne_interval", [](const IntervalValue &self, const IntervalValue &other) {
-                return self.operator!=(other);
-            }, py::arg("other"))
+            return self.operator!=(other);
+        }, py::arg("other"))
         .def("getNumeral", &IntervalValue::getNumeral)
         .def("getIntNumeral", &IntervalValue::getIntNumeral)
         .def("getRealNumeral", &IntervalValue::getRealNumeral)
