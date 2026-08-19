@@ -163,11 +163,11 @@ void bind_abstract_state(py::module& m) {
         .def("is_int", &IntervalValue::is_int)
         .def("equals", &IntervalValue::equals, py::arg("other"))
         .def("eq_interval", [](const IntervalValue &self, const IntervalValue &other) {
-                return self.operator==(other);
-            }, py::arg("other"))
+            return self.operator==(other);
+        }, py::arg("other"))
         .def("ne_interval", [](const IntervalValue &self, const IntervalValue &other) {
-                return self.operator!=(other);
-            }, py::arg("other"))
+            return self.operator!=(other);
+        }, py::arg("other"))
         .def("getNumeral", &IntervalValue::getNumeral)
         .def("getIntNumeral", &IntervalValue::getIntNumeral)
         .def("getRealNumeral", &IntervalValue::getRealNumeral)
@@ -394,7 +394,7 @@ void bind_abstract_state(py::module& m) {
         .def("printAbstractState", &AbstractState::printAbstractState)
         .def("clone", [](const AbstractState &self) {
             return std::make_unique<AbstractState>(self);  // clone
-         }, py::return_value_policy::move)
+        }, py::return_value_policy::move)
         .def("bottom", &AbstractState::bottom)
         .def("top", &AbstractState::top)
         .def("inVarToValTable", &AbstractState::inVarToValTable, py::arg("var_id"))
