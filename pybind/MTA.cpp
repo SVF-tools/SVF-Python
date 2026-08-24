@@ -35,7 +35,10 @@ void bind_multi_thread_analysis(py::module& m) {
 
     py::class_<MHP, std::shared_ptr<MHP>>(m, "MHP", "May-Happen-in-Parallel analysis class")
         .def(py::init([](std::shared_ptr<TCT> tct){
-                return std::make_shared<MHP>(tct.get());
+                std::unique_ptr<MHP> mhp = MHP::create(
+                    tct.get(), tct->getPTA()->getICFG(),
+                    static_cast<CallGraph*>(tct->getThreadCallGraph()));
+                return std::shared_ptr<MHP>(mhp.release());
             }),
             py::arg("tct"), "Initialize MHP analysis",
             py::keep_alive<1, 2>())
@@ -63,9 +66,11 @@ void bind_multi_thread_analysis(py::module& m) {
 
     py::class_<TCT, std::shared_ptr<TCT>>(m, "TCT", "Thread Creation Tree class")
         .def(py::init([](std::shared_ptr<AndersenBase> pta){
-                return std::make_shared<TCT>(SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
+                std::unique_ptr<TCT> tct = TCT::create(
+                    SVFUtil::dyn_cast<PointerAnalysis>(pta.get()));
+                return std::shared_ptr<TCT>(tct.release());
             }), py::arg("pa"), "Initialize Thread Creation Tree with AndersenBase Pointer Analysis",
-            py::keep_alive<2,1>())
+            py::keep_alive<1, 2>())
     .def("getThreadCallGraph", [](TCT &self) -> CallGraph* {
             ThreadCallGraph* tcg = self.getThreadCallGraph();
             if (tcg == nullptr)
