@@ -64,8 +64,8 @@ jobs:
             exit 1
           fi
 
-      - name: Install and test wheel with Python 3.14
-        if: matrix.os == 'ubuntu-26.04'
+      - name: Install and test wheel
+        if: runner.os == 'Linux'
         working-directory: ${{ runner.temp }}
         env:
           WHEEL_DIR: ${{ github.workspace }}/dist
@@ -78,7 +78,8 @@ jobs:
           import sys
           import pysvf
 
-          assert sys.version_info[:2] == (3, 14), sys.version
+          if os.environ["PYTHON_EXEC"] == "python3.14":
+              assert sys.version_info[:2] == (3, 14), sys.version
           print(f"Python: {sys.version}")
           print(f"Installed pysvf: {pysvf.__file__}")
           svfir = pysvf.get_svfir(os.environ["BITCODE_PATH"])
