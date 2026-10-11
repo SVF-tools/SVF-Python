@@ -35,6 +35,16 @@ jobs:
             cmake g++ nodejs doxygen graphviz lcov libncurses-dev libtinfo6 libzstd-dev \
             libffi-dev zlib1g-dev python3-dev python3-venv patchelf
 
+      - name: Set up native LLVM 21 (Ubuntu 26.04)
+        if: matrix.os == 'ubuntu-26.04'
+        run: |
+          # The Ubuntu 22.04 LLVM SDK requires libxml2.so.2, absent on Ubuntu 26.04.
+          sudo apt-get install -y llvm-21-dev clang-21
+          llvm-config-21 --version
+          test "$(llvm-config-21 --has-rtti)" = YES
+          echo "LLVM_DIR=$(llvm-config-21 --prefix)" >> "$GITHUB_ENV"
+          /usr/lib/llvm-21/bin/clang --version
+
       - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
