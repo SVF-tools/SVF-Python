@@ -95,8 +95,7 @@ class CMakeBuild(build_ext):
         if platform.system() == "Darwin":
             subprocess.run(["install_name_tool", "-change", "libz3.dylib", "@rpath/libz3.dylib", so_target], check=True)
 
-        # Use the bundled Z3 runtime on Linux. Do not force-load libLLVM.so:
-        # SVF may already contain static LLVM components, causing duplicate option registration.
+        # Do not force-load libLLVM.so; SVF already links LLVM statically.
         #e.g. patchelf --add-needed '$ORIGIN/SVF/z3.obj/bin/libz3.so' pysvf.cpython-310-aarch64-linux-gnu.so (pay attention to python vers)
         if platform.system() == "Linux":
             subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/z3.obj/bin/libz3.so", so_target], check=True)
