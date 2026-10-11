@@ -117,6 +117,10 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-14, ubuntu-22.04-arm]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        include:
+          - os: ubuntu-26.04
+            python-version: "3.14"
+            wheel-platform: linux
 
     steps:
       - name: Checkout repository
@@ -141,7 +145,7 @@ jobs:
           # add-apt-repository), and ubuntu-24.04's default gcc-13 is sufficient.
           sudo apt-get update
           sudo apt-get install -y \
-              cmake gcc g++ nodejs doxygen graphviz lcov libncurses5-dev libtinfo6 libzstd-dev \
+              cmake gcc g++ nodejs doxygen graphviz lcov libncurses-dev libtinfo6 libzstd-dev \
               python3 python3-pip python3-venv patchelf
 
       - name: Install svf-lib and set environment variables
@@ -194,7 +198,7 @@ jobs:
             ${PYTHON_EXEC} setup.py bdist_wheel --plat-name macosx-11.0-arm64
           else
             SVF_DIR=${SVF_DIR} LLVM_DIR=${LLVM_DIR} Z3_DIR=${Z3_DIR} PYBIND11_DIR=${PYBIND11_DIR} \
-            ${PYTHON_EXEC} setup.py bdist_wheel --plat-name manylinux2014_$(uname -m)
+            ${PYTHON_EXEC} setup.py bdist_wheel --plat-name ${{ matrix.wheel-platform || 'manylinux2014' }}_$(uname -m)
           fi
 
           echo "Built wheel files:"
