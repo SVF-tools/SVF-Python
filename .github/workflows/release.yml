@@ -204,6 +204,15 @@ jobs:
           echo "Built wheel files:"
           ls -lh dist/
 
+      - name: Repair Python 3.14 wheel for PyPI
+        if: matrix.os == 'ubuntu-26.04'
+        run: |
+          cd SVF-Python
+          auditwheel repair --strip -w wheelhouse dist/*.whl
+          rm dist/*.whl
+          mv wheelhouse/*.whl dist/
+          python -c "from pathlib import Path; assert all(w.stat().st_size < 100 * 1024**2 for w in Path('dist').glob('*.whl')), 'Repaired wheel exceeds PyPI limit'"
+
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__

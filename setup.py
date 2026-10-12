@@ -95,10 +95,6 @@ class CMakeBuild(build_ext):
         if platform.system() == "Darwin":
             subprocess.run(["install_name_tool", "-change", "libz3.dylib", "@rpath/libz3.dylib", so_target], check=True)
 
-        # Do not force-load libLLVM.so; SVF already links LLVM statically.
-        #e.g. patchelf --add-needed '$ORIGIN/SVF/z3.obj/bin/libz3.so' pysvf.cpython-310-aarch64-linux-gnu.so (pay attention to python vers)
-        if platform.system() == "Linux":
-            subprocess.run(["patchelf", "--add-needed", "$ORIGIN/SVF/z3.obj/bin/libz3.so", so_target], check=True)
         
 
 
@@ -128,6 +124,12 @@ class CMakeBuild(build_ext):
         # libSvfLLVM embeds LLVM; a separate LLVM runtime would duplicate it.
         shutil.copytree(os.path.join(SVF_SRC_DIR, "lib"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "lib"),dirs_exist_ok=True)
         shutil.copytree(os.path.join(SVF_SRC_DIR, "bin"), os.path.join(self.build_lib, "pysvf", "SVF", "Release-build", "bin"),dirs_exist_ok=True)
+
+        # Both the libraries and tools must find dependencies inside the wheel.
+        if platform.system() == "Linux":
+            svf_build = os.path.join(self.build_lib, "pysvf", "SVF", "Release-build")
+            for binary in glob.glob(os.path.join(svf_build, "lib", "*.so*")) + glob.glob(os.path.join(svf_build, "bin", "*")):
+                subprocess.run(["patchelf", "--set-rpath", "$ORIGIN/../lib:$ORIGIN/../../z3.obj/bin:$ORIGIN/../../z3.obj/lib", binary], check=True)
 
         # cp -rf $GITHUB_WORKSPACE/z3/bin .build_lib/pysvf/z3/bin
         # if exist bin or lib
