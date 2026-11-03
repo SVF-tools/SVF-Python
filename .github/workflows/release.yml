@@ -220,7 +220,7 @@ jobs:
           # requirement while letting auditwheel vendor dependencies and strip
           # every Linux wheel below PyPI's 100 MB limit.
           if [[ "${{ matrix.python-version }}" == "3.8" ]]; then
-            auditwheel repair --strip -w wheelhouse dist/*.whl
+            auditwheel repair --plat "manylinux_2_39_$(uname -m)" --strip -w wheelhouse dist/*.whl
           else
             auditwheel repair --disable-isa-ext-check --strip -z 9 -w wheelhouse dist/*.whl
           fi
