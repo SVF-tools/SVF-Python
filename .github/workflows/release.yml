@@ -121,6 +121,9 @@ jobs:
           - os: ubuntu-26.04
             python-version: "3.14"
             wheel-platform: linux
+          - os: ubuntu-26.04-arm
+            python-version: "3.14"
+            wheel-platform: linux
 
     steps:
       - name: Checkout repository
@@ -205,7 +208,7 @@ jobs:
           ls -lh dist/
 
       - name: Repair Python 3.14 wheel for PyPI
-        if: matrix.os == 'ubuntu-26.04'
+        if: startsWith(matrix.os, 'ubuntu-26.04')
         run: |
           cd SVF-Python
           auditwheel repair --strip -w wheelhouse dist/*.whl
