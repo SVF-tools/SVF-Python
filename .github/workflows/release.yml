@@ -212,8 +212,8 @@ jobs:
           echo "Built wheel files:"
           ls -lh dist/
 
-      - name: Repair Python 3.14 wheel for PyPI
-        if: startsWith(matrix.os, 'ubuntu-26.04')
+      - name: Repair Linux wheel for PyPI
+        if: runner.os == 'Linux'
         run: |
           cd SVF-Python
           auditwheel repair --strip -w wheelhouse dist/*.whl
