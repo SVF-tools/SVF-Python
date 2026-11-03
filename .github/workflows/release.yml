@@ -219,7 +219,11 @@ jobs:
           # SVF's x86_64 package uses the x86_64_v3 ISA. Preserve that existing
           # requirement while letting auditwheel vendor dependencies and strip
           # every Linux wheel below PyPI's 100 MB limit.
-          auditwheel repair --disable-isa-ext-check --strip -z 9 -w wheelhouse dist/*.whl
+          if [[ "${{ matrix.python-version }}" == "3.8" ]]; then
+            auditwheel repair --strip -w wheelhouse dist/*.whl
+          else
+            auditwheel repair --disable-isa-ext-check --strip -z 9 -w wheelhouse dist/*.whl
+          fi
           rm dist/*.whl
           mv wheelhouse/*.whl dist/
           python -c "from pathlib import Path; assert all(w.stat().st_size < 100 * 1024**2 for w in Path('dist').glob('*.whl')), 'Repaired wheel exceeds PyPI limit'"
