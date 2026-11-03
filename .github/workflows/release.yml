@@ -118,6 +118,7 @@ jobs:
     needs: [calculate-version, stubtest]
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-14, ubuntu-22.04-arm]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
@@ -211,8 +212,8 @@ jobs:
           echo "Built wheel files:"
           ls -lh dist/
 
-      - name: Repair Python 3.14 wheel for PyPI
-        if: startsWith(matrix.os, 'ubuntu-26.04')
+      - name: Repair Linux wheel for PyPI
+        if: runner.os == 'Linux'
         run: |
           cd SVF-Python
           auditwheel repair --strip -w wheelhouse dist/*.whl
