@@ -118,6 +118,7 @@ jobs:
     needs: [calculate-version, stubtest]
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-14, ubuntu-22.04-arm]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
