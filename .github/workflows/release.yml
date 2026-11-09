@@ -212,6 +212,23 @@ jobs:
           echo "Built wheel files:"
           ls -lh dist/
 
+      - name: Remove duplicate shared libraries from Linux wheel
+        if: runner.os == 'Linux'
+        run: |
+          cd SVF-Python
+          # Wheels cannot hold symlinks, so libX.so -> libX.so.3 -> libX.so.3.4 from
+          # svf-lib are packed as full copies. Keep only the SONAME files that the
+          # extension and tools load (libSvfLLVM.so.3, libSvfCore.so.3, libz3.so).
+          python -m wheel unpack -d unpacked dist/*.whl
+          rm dist/*.whl
+          root=$(echo unpacked/*)
+          rm -fv "$root"/pysvf/SVF/Release-build/lib/libSvf*.so \
+                 "$root"/pysvf/SVF/Release-build/lib/libSvf*.so.*.* \
+                 "$root"/pysvf/SVF/z3.obj/bin/libz3.so.*
+          python -m wheel pack -d dist "$root"
+          rm -rf unpacked
+          ls -lh dist/
+
       - name: Repair Linux wheel for PyPI
         if: runner.os == 'Linux'
         run: |
