@@ -13,7 +13,7 @@ on:
 
 env:
   # Pin the SVF package source so every wheel in one release uses the same build.
-  SVF_NPM_REF: '57521fe34dec6421b2104a7490611f01bbe62e8b'
+  SVF_NPM_REF: '3bd51adea5f1005cce41885df749151d86a0fc2f'
 
 jobs:
   calculate-version:
@@ -77,7 +77,7 @@ jobs:
         run: |
           npm install "github:SVF-tools/SVF-npm#${SVF_NPM_REF}"
           echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-x86_64" >> $GITHUB_ENV
-          echo "LLVM_DIR=$PWD/node_modules/llvm-21.1.0.obj" >> $GITHUB_ENV
+          echo "LLVM_DIR=$PWD/node_modules/llvm-22.1.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
 
       - name: Set up Python
@@ -120,7 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-14, ubuntu-22.04-arm]
+        os: [ubuntu-24.04, macos-14, ubuntu-24.04-arm]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         include:
           - os: ubuntu-26.04
@@ -168,7 +168,7 @@ jobs:
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-osx" >> $GITHUB_ENV
           fi
-          echo "LLVM_DIR=$PWD/node_modules/llvm-21.1.0.obj" >> $GITHUB_ENV
+          echo "LLVM_DIR=$PWD/node_modules/llvm-22.1.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
 
       - name: Set up Python
@@ -210,6 +210,23 @@ jobs:
           fi
 
           echo "Built wheel files:"
+          ls -lh dist/
+
+      - name: Remove duplicate shared libraries from Linux wheel
+        if: runner.os == 'Linux'
+        run: |
+          cd SVF-Python
+          # Wheels cannot hold symlinks, so libX.so -> libX.so.3 -> libX.so.3.4 from
+          # svf-lib are packed as full copies. Keep only the SONAME files that the
+          # extension and tools load (libSvfLLVM.so.3, libSvfCore.so.3, libz3.so).
+          python -m wheel unpack -d unpacked dist/*.whl
+          rm dist/*.whl
+          root=$(echo unpacked/*)
+          rm -fv "$root"/pysvf/SVF/Release-build/lib/libSvf*.so \
+                 "$root"/pysvf/SVF/Release-build/lib/libSvf*.so.*.* \
+                 "$root"/pysvf/SVF/z3.obj/bin/libz3.so.*
+          python -m wheel pack -d dist "$root"
+          rm -rf unpacked
           ls -lh dist/
 
       - name: Repair Linux wheel for PyPI
