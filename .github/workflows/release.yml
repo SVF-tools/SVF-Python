@@ -120,7 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-14, ubuntu-24.04-arm]
+        os: [ubuntu-24.04, macos-15, ubuntu-24.04-arm]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         include:
           - os: ubuntu-26.04
@@ -138,12 +138,14 @@ jobs:
         if: runner.os == 'macOS'
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.3.0'
+          xcode-version: 'latest-stable'
 
       - name: macOS Workaround
         if: runner.os == 'macOS'
         run: |
-          ln -sfn /Applications/Xcode_15.3.0.app /Applications/Xcode.app
+          # GitHub retired the macos-14 runners; use the Xcode selected above.
+          XCODE_PATH=$(dirname "$(dirname "$(xcode-select -p)")")
+          sudo ln -sfn "$XCODE_PATH" /Applications/Xcode.app
 
       - name: Linux Setup
         if: runner.os == 'Linux'
