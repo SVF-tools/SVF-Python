@@ -12,8 +12,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-24.04, ubuntu-26.04, macos-14]
+        # SVF's build.sh pins the Ubuntu 26 LLVM prebuilts, whose clang needs
+        # libxml2.so.16 (not available on Ubuntu 24.04).
+        os: [ubuntu-26.04, macos-14]
 
     steps:
       - name: Checkout repository
@@ -28,11 +31,11 @@ jobs:
             cmake g++ nodejs doxygen graphviz lcov libncurses-dev libtinfo6 libzstd-dev \
             libffi-dev zlib1g-dev
 
-      - name: Set up native LLVM 21 (Ubuntu 26.04)
+      - name: Set up native LLVM 22 (Ubuntu 26.04)
         if: matrix.os == 'ubuntu-26.04'
         run: |
-          sudo apt-get install -y llvm-21-dev clang-21
-          echo "LLVM_DIR=/usr/lib/llvm-21" >> "$GITHUB_ENV"
+          sudo apt-get install -y llvm-22-dev clang-22
+          echo "LLVM_DIR=/usr/lib/llvm-22" >> "$GITHUB_ENV"
 
       - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'

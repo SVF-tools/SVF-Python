@@ -77,7 +77,7 @@ jobs:
         run: |
           npm install "github:SVF-tools/SVF-npm#${SVF_NPM_REF}"
           echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-x86_64" >> $GITHUB_ENV
-          echo "LLVM_DIR=$PWD/node_modules/llvm-21.1.0.obj" >> $GITHUB_ENV
+          echo "LLVM_DIR=$PWD/node_modules/llvm-22.1.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
 
       - name: Set up Python
@@ -120,7 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-14, ubuntu-22.04-arm]
+        os: [ubuntu-24.04, macos-14, ubuntu-24.04-arm]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         include:
           - os: ubuntu-26.04
@@ -168,7 +168,7 @@ jobs:
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-osx" >> $GITHUB_ENV
           fi
-          echo "LLVM_DIR=$PWD/node_modules/llvm-21.1.0.obj" >> $GITHUB_ENV
+          echo "LLVM_DIR=$PWD/node_modules/llvm-22.1.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
 
       - name: Set up Python
