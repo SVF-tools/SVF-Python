@@ -16,7 +16,7 @@ jobs:
       matrix:
         # SVF's build.sh pins the Ubuntu 26 LLVM prebuilts, whose clang needs
         # libxml2.so.16 (not available on Ubuntu 24.04).
-        os: [ubuntu-26.04, macos-14]
+        os: [ubuntu-26.04, macos-15]
 
     steps:
       - name: Checkout repository
