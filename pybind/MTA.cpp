@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include "Util/Options.h"
 #include <pybind11/stl.h>
-#include "SVF-LLVM/SVFIRBuilder.h"
+#include "SVF-LLVM/PAGBuilder.h"
 #include "Graphs/ICFG.h"
 #include <pybind11/operators.h>
 #include "MTA/TCT.h"

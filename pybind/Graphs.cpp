@@ -1,12 +1,12 @@
 #include <pybind11/pybind11.h>
 #include "Util/Options.h"
 #include <pybind11/stl.h>
-#include "SVF-LLVM/SVFIRBuilder.h"
+#include "SVF-LLVM/PAGBuilder.h"
 #include "Graphs/ICFG.h"
 #include "Graphs/SVFG.h"
 #include "Graphs/ThreadCallGraph.h"
-#include "SVFIR/SVFType.h"
-#include "SVFIR/SVFStatements.h"
+#include "SVFValues/SVFType.h"
+#include "SVFValues/SVFStatements.h"
 #include "MemoryModel/PointerAnalysis.h"
 #include "WPA/Andersen.h"
 #include "AE/Core/AbstractState.h"

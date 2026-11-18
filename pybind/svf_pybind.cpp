@@ -30,7 +30,7 @@
 #include <pybind11/pybind11.h>
 #include "Util/Options.h"
 #include <pybind11/stl.h>
-#include "SVF-LLVM/SVFIRBuilder.h"
+#include "SVF-LLVM/PAGBuilder.h"
 #include "Graphs/ICFG.h"
 #include "MemoryModel/PTATY.h"
 #include "WPA/Andersen.h"
@@ -46,8 +46,8 @@ namespace py = pybind11;
 using namespace SVF;
 
 class PySVF {
-static SVFIR* currentSVFIR; /// Singleton, user controls life cycle
-static ICFG* currentICFG;  /// Owned by currentSVFIR
+static PAG* currentPAG; /// Singleton, user controls life cycle
+static ICFG* currentICFG;  /// Owned by currentPAG
 static SVFGBuilder* currentSVFGBuilder; /// Singleton
 static SVFG* currentSVFG;  /// Owned by currentSVFGBuilder
 static std::string lastAnalyzedModule;
@@ -87,7 +87,7 @@ public:
     /// Flexible build SVFIR (PAG), PTA
     // @{
     /// Build SVFIR (PAG) from bitcode file path
-    static SVFIR* get_svfir(std::string bitcodePath) {
+    static PAG* get_svfir(std::string bitcodePath) {
         _release_svfir();
 
         std::vector<std::string> moduleNameVec = { bitcodePath };
@@ -101,33 +101,33 @@ public:
         }
 		LLVMModuleSet::buildSVFModule(moduleNameVec);
 
-        SVFIRBuilder builder;
+        PAGBuilder builder;
         builder.build();
-        currentSVFIR = builder.getPAG();
-        currentICFG = currentSVFIR->getICFG();
-        return currentSVFIR;
+        currentPAG = builder.getPAG();
+        currentICFG = currentPAG->getICFG();
+        return currentPAG;
     }
     /// Release SVFIR (PAG) and LLVMModuleSet
     static void _release_svfir() {
     	SVF::LLVMModuleSet::releaseLLVMModuleSet();
-        SVF::SVFIR::releaseSVFIR();
-        currentSVFIR = nullptr;
+        SVF::PAG::releasePAG();
+        currentPAG = nullptr;
         currentICFG = nullptr;
         NodeIDAllocator::unset();
     }
     /// Run PTA, ptaType: AndersenWaveDiff, Steensgaard
 	static void run_pta(PTATY ptaType)
    	{
-        if (currentSVFIR == nullptr) {
+        if (currentPAG == nullptr) {
             throw py::value_error("SVFIR is not built. Please build SVFIR before running PTA.");
         }
         _release_pta();
         if(ptaType == PTATY::AndersenWaveDiff_WPA) {
-        	currentPta = std::make_shared<AndersenWaveDiff>(currentSVFIR);
+            currentPta = std::make_shared<AndersenWaveDiff>(currentPAG);
         }
         else if (ptaType == PTATY::Steensgaard_WPA)
         {
-        	currentPta = std::make_shared<Steensgaard>(currentSVFIR);
+            currentPta = std::make_shared<Steensgaard>(currentPAG);
         }
         else
         {
@@ -140,7 +140,7 @@ public:
 
         CallGraph* callGraph = currentPta->getCallGraph();
         currentICFG->updateCallGraph(callGraph);  // Update ICFG based on new CallGraph
-        SVFIRBuilder builder;
+        PAGBuilder builder;
         builder.updateCallGraph(callGraph);  // Update PAG based on new CallGraph
     }
     /// Release ownership of current PTA
@@ -159,7 +159,7 @@ public:
 	* Build SVFIR (PAG) from bitcode file path, perform Andersen Pointer Analysis,
     * and optionally build SVFG.
 	*/
-    static SVFIR* get_pag(std::string bitcodePath, bool buildSVFG = false) {
+    static PAG* get_pag(std::string bitcodePath, bool buildSVFG = false) {
       	get_svfir(bitcodePath);
         run_pta(PTATY::AndersenWaveDiff_WPA);
 
@@ -171,14 +171,14 @@ public:
         }
         // Build SVFG if needed
         if (buildSVFG) {
-            currentSVFGBuilder = new SVFGBuilder(currentSVFIR);
+            currentSVFGBuilder = new SVFGBuilder(currentPAG);
             SVFG* svfg = currentSVFGBuilder->buildFullSVFG(currentPta.get());
             currentSVFG = svfg;
         }
 
         lastAnalyzedModule = bitcodePath;
 
-        return currentSVFIR;  // Now we directly return SVFIR(pag)
+        return currentPAG;  // Now we directly return SVFIR(pag)
     }
     /**
 	 * Release SVFIR (PAG), LLVMModuleSet, PTA, and SVFG
@@ -193,8 +193,8 @@ public:
     }
     // @}
 
-    static SVFIR* get_current_pag() {
-        return currentSVFIR;
+    static PAG* get_current_pag() {
+        return currentPAG;
     }
     static SVFG* get_current_svfg() {
         return currentSVFG;
@@ -268,7 +268,7 @@ void bind_abstract_state(py::module& m);
 
 void bind_multi_thread_analysis(py::module& m);
 
-SVFIR* PySVF::currentSVFIR = nullptr;
+PAG* PySVF::currentPAG = nullptr;
 ICFG* PySVF::currentICFG = nullptr;
 SVFGBuilder* PySVF::currentSVFGBuilder = nullptr;
 SVFG* PySVF::currentSVFG = nullptr;

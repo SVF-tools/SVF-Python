@@ -1,11 +1,11 @@
 #include <pybind11/pybind11.h>
 #include "Util/Options.h"
 #include <pybind11/stl.h>
-#include "SVF-LLVM/SVFIRBuilder.h"
+#include "SVF-LLVM/PAGBuilder.h"
 #include "Graphs/ICFG.h"
 #include "MemoryModel/PTATY.h"
-#include "SVFIR/SVFType.h"
-#include "SVFIR/SVFStatements.h"
+#include "SVFValues/SVFType.h"
+#include "SVFValues/SVFStatements.h"
 #include "MemoryModel/PointerAnalysis.h"
 #include "WPA/Andersen.h"
 #include "WPA/Steensgaard.h"
@@ -61,7 +61,7 @@ void bind_andersen_base(py::module& m) {
 
     py::class_<AndersenBase, std::shared_ptr<AndersenBase>>(m, "AndersenBase_", "AndersenBase");
     py::class_<PublicAndersen, AndersenBase, std::shared_ptr<PublicAndersen>>(m, "AndersenBase", "Anderson's analysis base class")
-        .def(py::init([](SVFIR* svfir) {
+        .def(py::init([](PAG* svfir) {
             return std::make_shared<PublicAndersen>(svfir);
         }))
         .def("analyze", &PublicAndersen::analyze, "Analysis entry")
@@ -103,13 +103,13 @@ void bind_andersen_base(py::module& m) {
 
     py::class_<Andersen, AndersenBase, std::shared_ptr<Andersen>>(m, "Andersen", "Andersen's pts");
     py::class_<AndersenWaveDiff, Andersen, std::shared_ptr<AndersenWaveDiff>>(m, "AndersenWaveDiff", "AndersenWaveDiff Pointer Analysis")
-        .def(py::init([](SVFIR *svfir){
+        .def(py::init([](PAG *svfir){
             return std::make_shared<AndersenWaveDiff>(svfir);
         }))
         .def("analyze", &AndersenWaveDiff::analyze, "Analysis entry");
 
     py::class_<Steensgaard, AndersenBase, std::shared_ptr<Steensgaard>>(m, "Steensgaard", "Steensgaard's pts")
-        .def(py::init([](SVFIR *svfir){
+        .def(py::init([](PAG *svfir){
             return std::make_shared<Steensgaard>(svfir);
         }))
         .def("analyze", &Steensgaard::analyze, "Analysis entry");

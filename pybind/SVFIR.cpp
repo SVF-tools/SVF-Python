@@ -1,10 +1,10 @@
 #include <pybind11/pybind11.h>
 #include "Util/Options.h"
 #include <pybind11/stl.h>
-#include "SVF-LLVM/SVFIRBuilder.h"
+#include "SVF-LLVM/PAGBuilder.h"
 #include "Graphs/ICFG.h"
-#include "SVFIR/SVFType.h"
-#include "SVFIR/SVFStatements.h"
+#include "SVFValues/SVFType.h"
+#include "SVFValues/SVFStatements.h"
 #include "MemoryModel/PointerAnalysis.h"
 #include "WPA/Andersen.h"
 #include "AE/Core/AbstractState.h"
@@ -203,12 +203,12 @@ void bind_svf_stmt(py::module& m) {
 }
 
 
-// Bind SVFIR (PAG)
+// Bind C++ PAG under the existing Python name for backwards compatibility.
 void bind_svf(py::module& m) {
-    py::class_<SVFIR>(m, "SVFIR")
-        .def("getICFG", [](SVFIR* pag) { return pag->getICFG(); }, py::return_value_policy::reference)
-        .def("getCallGraph", [](SVFIR* pag) { return pag->getCallGraph(); }, py::return_value_policy::reference)
-        .def("getCallSites", [](SVFIR *pag) {
+    py::class_<PAG>(m, "SVFIR")
+        .def("getICFG", [](PAG* pag) { return pag->getICFG(); }, py::return_value_policy::reference)
+        .def("getCallGraph", [](PAG* pag) { return pag->getCallGraph(); }, py::return_value_policy::reference)
+        .def("getCallSites", [](PAG *pag) {
             // move  pag->getCallSiteSet() to vector
             std::vector<const CallICFGNode*> callSites;
             for (auto &callSite : pag->getCallSiteSet()) {
@@ -216,52 +216,52 @@ void bind_svf(py::module& m) {
             }
             return callSites;
             }, py::return_value_policy::reference)
-        .def("getBaseObject", [&](SVFIR* pag, NodeID id) { //TODO: get_base_obj
+        .def("getBaseObject", [&](PAG* pag, NodeID id) { //TODO: get_base_obj
             const BaseObjVar* baseObj = pag->getBaseObject(id);
             if (!baseObj) {
                 throw std::runtime_error("Base object with given ID not found.");
             }
             return baseObj;
         }, py::arg("id"), py::return_value_policy::reference)
-        .def("getSVFVarNum", &SVFIR::getSVFVarNum)
-        .def("getGNode", [](SVFIR* pag, NodeID id) {
+        .def("getSVFVarNum", &PAG::getSVFVarNum)
+        .def("getGNode", [](PAG* pag, NodeID id) {
             const SVF::PAGNode* node = pag->getGNode(id);
             if (!node) {
                 throw std::runtime_error("PAGNode with given ID not found.");
             }
             return node;
         }, py::arg("id"), py::return_value_policy::reference)
-        .def("__iter__", [](SVFIR* pag) {
+        .def("__iter__", [](PAG* pag) {
             return py::make_iterator(pag->begin(), pag->end());
         }, py::keep_alive<0, 1>(), "Iterate over the PAG nodes")
-        .def("getGepObjVar", [](SVFIR* pag, NodeID id, const APOffset& offset) {
+        .def("getGepObjVar", [](PAG* pag, NodeID id, const APOffset& offset) {
             NodeID gepObjVarID = pag->getGepObjVar(id, offset);
             return gepObjVarID;
         }, py::arg("id"), py::arg("offset"), py::return_value_policy::reference)
         //u32_t getNumOfFlattenElements(const SVFType* T);
-        .def("getNumOfFlattenElements", [](SVFIR* pag, const SVFType* T) {
+        .def("getNumOfFlattenElements", [](PAG* pag, const SVFType* T) {
             return pag->getNumOfFlattenElements(T);
         }, py::arg("T"), py::return_value_policy::reference)
         //u32_t getFlattenedElemIdx(const SVFType* T, u32_t origId);
-        .def("getFlattenedElemIdx", [](SVFIR* pag, const SVFType* T, u32_t origId) {
+        .def("getFlattenedElemIdx", [](PAG* pag, const SVFType* T, u32_t origId) {
             return pag->getFlattenedElemIdx(T, origId);
         }, py::arg("T"), py::arg("origId"), py::return_value_policy::reference)
-        .def("getFunObjVar", [](SVFIR* pag, std::string funName) {
+        .def("getFunObjVar", [](PAG* pag, std::string funName) {
             const FunObjVar* funObj = pag->getFunObjVar(funName);
             if (!funObj) {
                 throw std::runtime_error("Function object with given ID not found.");
             }
             return funObj;
         }, py::arg("funName"), py::return_value_policy::reference)
-        .def("getFunRet", [](SVFIR* pag, const FunObjVar* funObj) {
+        .def("getFunRet", [](PAG* pag, const FunObjVar* funObj) {
             auto retVal = pag->getFunRet(funObj);
             if (!retVal) {
                 throw std::runtime_error("Return value with given ID not found.");
             }
             return retVal;
         }, py::arg("funObj"), py::return_value_policy::reference)
-        .def("getModuleIdentifier", &SVFIR::getModuleIdentifier)
-        .def("dump", [](SVFIR* pag, std::string file) {
+        .def("getModuleIdentifier", &PAG::getModuleIdentifier)
+        .def("dump", [](PAG* pag, std::string file) {
             pag->dump(file);
         }, py::arg("file"));
 }
