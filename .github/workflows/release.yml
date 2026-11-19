@@ -13,7 +13,7 @@ on:
 
 env:
   # Pin the SVF package source so every wheel in one release uses the same build.
-  SVF_NPM_REF: '3387c23b0c7450a6d36fc17921c7d3913ff6e956'
+  SVF_NPM_REF: '751b1e4ec00d082eb191f453c7bb6a318c1c0929'
 
 jobs:
   calculate-version:

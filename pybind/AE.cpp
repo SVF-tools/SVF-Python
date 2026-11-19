@@ -446,7 +446,7 @@ void bind_abstract_state(py::module& m) {
         .def("getGepElementIndex", &AbstractInterpretation::getGepElementIndex, py::arg("gep"))
         .def("getGepByteOffset", &AbstractInterpretation::getGepByteOffset, py::arg("gep"))
         .def("getGepObjAddrs", &AbstractInterpretation::getGepObjAddrs,
-             py::arg("pointer"), py::arg("offset"))
+             py::arg("node"), py::arg("pointer"), py::arg("offset"))
 
         // Load / store through pointer.
         .def("loadValue", &AbstractInterpretation::loadValue,
