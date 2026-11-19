@@ -11,10 +11,6 @@ on:
     branches:
       - main
 
-env:
-  # Pin the SVF package source so every wheel in one release uses the same build.
-  SVF_NPM_REF: '3387c23b0c7450a6d36fc17921c7d3913ff6e956'
-
 jobs:
   calculate-version:
     name: Calculate Next Version
@@ -75,7 +71,7 @@ jobs:
 
       - name: Install svf-lib and set environment variables
         run: |
-          npm install "github:SVF-tools/SVF-npm#${SVF_NPM_REF}"
+          npm install svf-lib
           echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-x86_64" >> $GITHUB_ENV
           echo "LLVM_DIR=$PWD/node_modules/llvm-22.1.0.obj" >> $GITHUB_ENV
           echo "Z3_DIR=$PWD/node_modules/z3.obj" >> $GITHUB_ENV
@@ -160,7 +156,7 @@ jobs:
 
       - name: Install svf-lib and set environment variables
         run: |
-          npm install "github:SVF-tools/SVF-npm#${SVF_NPM_REF}"
+          npm install svf-lib
           if [[ "$RUNNER_OS" == "Linux" ]]; then
             if [[ "$(uname -m)" == "x86_64" ]]; then
               echo "SVF_DIR=$PWD/node_modules/svf-lib/SVF-linux-x86_64" >> $GITHUB_ENV
